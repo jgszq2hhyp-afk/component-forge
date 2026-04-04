@@ -1,1 +1,5 @@
 timestamp,component_id,action,from_version,to_version,before_score,after_score,changes,trigger
+2026-04-05,16,improve,1.0.0,1.1.0,68,84,CSS vars + keyboard nav + ARIA + focus-visible + prefers-reduced-motion,forge-optimize
+2026-04-05,57,improve,1.0.0,1.1.0,72,82,next/image + mobile-first columns + strict TS + focus-visible + motion-safe,forge-optimize
+2026-04-05,21,improve,1.0.0,1.1.0,75,83,Stable keys + clamp() + focus-visible + aria-label + extracted constants,forge-optimize
+2026-04-05,94,improve,1.0.0,1.1.0,74,82,Browser fallback + responsive speed + disabled prop + aria support,forge-optimize

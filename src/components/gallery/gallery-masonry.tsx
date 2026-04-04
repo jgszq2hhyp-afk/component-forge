@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 1.1.0
 // @category gallery
 // @name Gallery Masonry
 // @source custom-implementation
@@ -6,6 +6,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface GalleryImage {
@@ -17,26 +18,48 @@ interface GalleryImage {
 }
 
 interface GalleryMasonryProps {
-  images?: GalleryImage[];
-  columns?: number;
+  images: GalleryImage[];
+  columns?: 1 | 2 | 3 | 4;
   gap?: number;
   className?: string;
   onImageClick?: (image: GalleryImage, index: number) => void;
 }
 
-const defaultImages: GalleryImage[] = [
-  { src: "/placeholder-1.jpg", alt: "Project 1", width: 800, height: 600, category: "Web" },
-  { src: "/placeholder-2.jpg", alt: "Project 2", width: 600, height: 900, category: "Brand" },
-  { src: "/placeholder-3.jpg", alt: "Project 3", width: 800, height: 500, category: "Web" },
-  { src: "/placeholder-4.jpg", alt: "Project 4", width: 600, height: 800, category: "Print" },
-  { src: "/placeholder-5.jpg", alt: "Project 5", width: 800, height: 600, category: "Brand" },
-  { src: "/placeholder-6.jpg", alt: "Project 6", width: 600, height: 700, category: "Web" },
-  { src: "/placeholder-7.jpg", alt: "Project 7", width: 800, height: 500, category: "Print" },
-  { src: "/placeholder-8.jpg", alt: "Project 8", width: 600, height: 900, category: "Brand" },
-];
+/**
+ * Distributes images across columns by shortest-column-first.
+ * Returns column arrays and a map from image reference to global index.
+ */
+function distributeImages(images: GalleryImage[], columnCount: number) {
+  const cols: GalleryImage[][] = Array.from({ length: columnCount }, () => []);
+  const heights = new Array<number>(columnCount).fill(0);
+  const indexMap = new Map<GalleryImage, number>();
+
+  images.forEach((image, globalIndex) => {
+    let shortestCol = 0;
+    let minHeight = heights[0];
+    for (let i = 1; i < columnCount; i++) {
+      if (heights[i] < minHeight) {
+        minHeight = heights[i];
+        shortestCol = i;
+      }
+    }
+    cols[shortestCol].push(image);
+    heights[shortestCol] += image.height / image.width;
+    indexMap.set(image, globalIndex);
+  });
+
+  return { cols, indexMap };
+}
+
+const responsiveGridClasses: Record<number, string> = {
+  1: "grid-cols-1",
+  2: "grid-cols-1 md:grid-cols-2",
+  3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+  4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+};
 
 export default function GalleryMasonry({
-  images = defaultImages,
+  images,
   columns = 3,
   gap = 4,
   className,
@@ -44,78 +67,93 @@ export default function GalleryMasonry({
 }: GalleryMasonryProps) {
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
-  const columnArrays = useMemo(() => {
-    const cols: GalleryImage[][] = Array.from({ length: columns }, () => []);
-    const heights = new Array(columns).fill(0);
-
-    images.forEach((image) => {
-      const shortestCol = heights.indexOf(Math.min(...heights));
-      cols[shortestCol].push(image);
-      heights[shortestCol] += image.height / image.width;
-    });
-
-    return cols;
-  }, [images, columns]);
+  const { cols, indexMap } = useMemo(
+    () => distributeImages(images, columns),
+    [images, columns],
+  );
 
   const handleImageLoad = (index: number) => {
     setLoadedImages((prev) => new Set(prev).add(index));
   };
 
+  if (!images.length) {
+    return null;
+  }
+
+  const gapPx = `${gap * 4}px`;
+
   return (
-    <section className={cn("py-16 sm:py-24 bg-[var(--gallery-bg,hsl(0_0%_100%))]", className)}>
+    <section
+      className={cn(
+        "py-16 sm:py-24",
+        "bg-[var(--gallery-bg,hsl(0_0%_100%))]",
+        className,
+      )}
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div
-          className="grid"
-          style={{
-            gridTemplateColumns: `repeat(${columns}, 1fr)`,
-            gap: `${gap * 4}px`,
-          }}
+          className={cn("grid", responsiveGridClasses[columns])}
+          style={{ gap: gapPx }}
         >
-          {columnArrays.map((colImages, colIndex) => (
-            <div key={colIndex} className="flex flex-col" style={{ gap: `${gap * 4}px` }}>
+          {cols.map((colImages, colIndex) => (
+            <div
+              key={colIndex}
+              className="flex flex-col"
+              style={{ gap: gapPx }}
+            >
               {colImages.map((image, imgIndex) => {
-                const globalIndex = images.indexOf(image);
+                const globalIndex = indexMap.get(image) ?? -1;
                 const isLoaded = loadedImages.has(globalIndex);
 
                 return (
                   <button
                     key={`${colIndex}-${imgIndex}`}
+                    type="button"
                     onClick={() => onImageClick?.(image, globalIndex)}
                     className={cn(
-                      "group relative overflow-hidden rounded-xl transition-shadow duration-300",
-                      "hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[var(--gallery-ring,hsl(220_90%_56%))] focus:ring-offset-2",
-                      "motion-reduce:transition-none"
+                      "group relative overflow-hidden rounded-xl",
+                      "transition-shadow duration-300",
+                      "motion-safe:hover:shadow-xl",
+                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gallery-ring,hsl(220_90%_56%))] focus-visible:ring-offset-2",
+                      "motion-reduce:transition-none",
                     )}
                     style={{ aspectRatio: `${image.width}/${image.height}` }}
                   >
-                    {/* Placeholder */}
+                    {/* Skeleton placeholder */}
                     <div
                       className={cn(
-                        "absolute inset-0 bg-[var(--gallery-placeholder,hsl(0_0%_92%))] transition-opacity duration-500",
-                        isLoaded ? "opacity-0" : "opacity-100"
+                        "absolute inset-0 bg-[var(--gallery-placeholder,hsl(0_0%_92%))]",
+                        "transition-opacity duration-500",
+                        "motion-reduce:transition-none",
+                        isLoaded ? "opacity-0" : "opacity-100",
                       )}
                     />
 
                     {/* Image */}
-                    <img
+                    <Image
                       src={image.src}
                       alt={image.alt}
-                      loading="lazy"
+                      width={image.width}
+                      height={image.height}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       onLoad={() => handleImageLoad(globalIndex)}
                       className={cn(
-                        "h-full w-full object-cover transition-transform duration-500",
-                        "group-hover:scale-105",
-                        "motion-reduce:group-hover:scale-100 motion-reduce:transition-none"
+                        "h-full w-full object-cover",
+                        "motion-safe:transition-transform motion-safe:duration-500",
+                        "motion-safe:group-hover:scale-105",
+                        "motion-reduce:transform-none motion-reduce:transition-none",
                       )}
                     />
 
-                    {/* Overlay */}
+                    {/* Hover overlay */}
                     <div
                       className={cn(
-                        "absolute inset-0 flex items-end p-4 transition-opacity duration-300",
+                        "absolute inset-0 flex items-end p-4",
                         "bg-gradient-to-t from-[var(--gallery-overlay,hsl(0_0%_0%/0.6))] to-transparent",
-                        "opacity-0 group-hover:opacity-100",
-                        "motion-reduce:transition-none"
+                        "opacity-0",
+                        "motion-safe:transition-opacity motion-safe:duration-300",
+                        "motion-safe:group-hover:opacity-100",
+                        "motion-reduce:transition-none motion-reduce:group-hover:opacity-100",
                       )}
                     >
                       <div>

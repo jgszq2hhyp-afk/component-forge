@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 1.1.0
 // @category features
 // @name feature-bento-grid
 // @source self-authored
@@ -29,7 +29,7 @@ interface FeatureBentoGridProps {
 }
 
 // ---------------------------------------------------------------------------
-// Keyframe styles
+// Keyframe styles & custom properties
 // ---------------------------------------------------------------------------
 
 const keyframes = `
@@ -49,6 +49,14 @@ const keyframes = `
     from { opacity: 0; }
     to   { opacity: 1; }
   }
+
+  .bento-card {
+    transition: none !important;
+  }
+
+  .bento-card-image {
+    transition: none !important;
+  }
 }
 `;
 
@@ -62,6 +70,19 @@ const spanClasses: Record<NonNullable<BentoItem['span']>, string> = {
   tall: 'md:col-span-1 md:row-span-2',
   large: 'md:col-span-2 md:row-span-2',
 };
+
+/** Generate a stable slug from the title for use as React key */
+function toSlug(title: string, index: number): string {
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  return slug || `bento-item-${index}`;
+}
+
+/** Base delay in seconds, incremented per card */
+const ANIMATION_BASE_DELAY = 0.1;
+const ANIMATION_STEP_DELAY = 0.08;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -78,6 +99,7 @@ export default function FeatureBentoGrid({
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
+        aria-label={headline ?? 'Feature overview'}
         className={cn(
           'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
           className,
@@ -89,8 +111,11 @@ export default function FeatureBentoGrid({
           <div className="max-w-2xl mx-auto text-center mb-12 lg:mb-16">
             {headline && (
               <h2
-                className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight"
-                style={{ color: 'var(--foreground)' }}
+                className="font-bold tracking-tight"
+                style={{
+                  color: 'var(--foreground)',
+                  fontSize: 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)',
+                }}
               >
                 {headline}
               </h2>
@@ -110,18 +135,22 @@ export default function FeatureBentoGrid({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
           {items.map((item, index) => (
             <div
-              key={index}
+              key={toSlug(item.title, index)}
+              tabIndex={0}
               className={cn(
+                'bento-card',
                 'group relative rounded-2xl overflow-hidden border p-6 lg:p-8',
                 'transition-shadow duration-300 hover:shadow-lg',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                 spanClasses[item.span ?? 'default'],
               )}
               style={{
                 backgroundColor: 'var(--card)',
                 borderColor: 'var(--border)',
+                '--tw-ring-color': 'var(--ring, hsl(215 20% 65%))',
                 animation: 'bento-fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
-                animationDelay: `${0.1 + index * 0.08}s`,
-              }}
+                animationDelay: `${ANIMATION_BASE_DELAY + index * ANIMATION_STEP_DELAY}s`,
+              } as React.CSSProperties}
             >
               {/* Optional image */}
               {item.imageSrc && (
@@ -130,7 +159,11 @@ export default function FeatureBentoGrid({
                     src={item.imageSrc}
                     alt={item.imageAlt ?? item.title}
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    className={cn(
+                      'bento-card-image',
+                      'object-cover transition-transform duration-500 group-hover:scale-105',
+                    )}
                   />
                 </div>
               )}
