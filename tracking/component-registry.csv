@@ -75,3 +75,16 @@ id,category,name,version,score,accessibility,performance,visual,code,responsive,
 74,team,team-with-bio,1.0.0,,,,,,,,production,2026-04-04,2026-04-04
 75,team,team-minimal-list,1.0.0,,,,,,,,production,2026-04-04,2026-04-04
 76,team,about-story-timeline,1.0.0,,,,,,,,production,2026-04-04,2026-04-04
+77,blog,blog-cards-grid,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+78,blog,blog-featured-post,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+79,blog,blog-minimal-list,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+80,blog,blog-sidebar-layout,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+81,error,error-404-minimal,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+82,error,error-404-illustrated,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+83,error,error-500-server,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+84,error,error-maintenance,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+85,cta,cta-split-highlight,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+86,cta,cta-banner-gradient,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+87,cta,cta-card-centered,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+88,cta,cta-with-testimonial,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+89,cta,cta-newsletter,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
