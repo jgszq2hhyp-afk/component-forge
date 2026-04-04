@@ -1,13 +1,32 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category testimonials
 // @name testimonial-video-cards
 // @source self-authored
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SECTION_MAX_WIDTH = 'max-w-7xl';
+const HEADER_MAX_WIDTH = 'max-w-2xl';
+const MODAL_MAX_WIDTH = 'max-w-4xl';
+const CARD_RADIUS = 'rounded-2xl';
+const CLOSE_BUTTON_SIZE = 'w-10 h-10';
+const PLAY_ICON_SIZE = 48;
+const CLOSE_ICON_SIZE = 24;
+const PLAY_CIRCLE_RADIUS = 24;
+const ANIMATION_CARD_DURATION = '0.5s';
+const ANIMATION_MODAL_DURATION = '0.3s';
+const ANIMATION_BASE_DELAY_S = 0.1;
+const ANIMATION_STAGGER_S = 0.1;
+const ANIMATION_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const HEADING_CLAMP = 'clamp(1.875rem, 2.5vw + 1rem, 3rem)';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -58,12 +77,24 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes video-card-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from, to {
+      opacity: 1;
+      transform: none;
+    }
   }
   @keyframes video-modal-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from, to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 `;
@@ -75,13 +106,13 @@ const keyframes = `
 function PlayIcon() {
   return (
     <svg
-      width="48"
-      height="48"
+      width={PLAY_ICON_SIZE}
+      height={PLAY_ICON_SIZE}
       viewBox="0 0 48 48"
       fill="none"
       aria-hidden="true"
     >
-      <circle cx="24" cy="24" r="24" fill="currentColor" fillOpacity="0.9" />
+      <circle cx={PLAY_CIRCLE_RADIUS} cy={PLAY_CIRCLE_RADIUS} r={PLAY_CIRCLE_RADIUS} fill="currentColor" fillOpacity="0.9" />
       <path d="M19 16L33 24L19 32V16Z" fill="white" />
     </svg>
   );
@@ -93,7 +124,7 @@ function PlayIcon() {
 
 function CloseIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg width={CLOSE_ICON_SIZE} height={CLOSE_ICON_SIZE} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
@@ -114,24 +145,42 @@ export default function TestimonialVideoCards({
   const openVideo = useCallback((url: string) => setActiveVideo(url), []);
   const closeVideo = useCallback(() => setActiveVideo(null), []);
 
+  // Close modal on Escape key
+  useEffect(() => {
+    if (!activeVideo) return;
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        closeVideo();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [activeVideo, closeVideo]);
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
+        aria-label={headline ?? 'Video-Kundenstimmen'}
         className={cn(
-          'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
+          `${SECTION_MAX_WIDTH} mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24`,
           className,
         )}
         style={{ backgroundColor: 'var(--background)' }}
       >
         {/* Header */}
         {(headline || subheadline) && (
-          <div className="max-w-2xl mx-auto text-center mb-12 lg:mb-16">
+          <header className={`${HEADER_MAX_WIDTH} mx-auto text-center mb-12 lg:mb-16`}>
             {headline && (
               <h2
-                className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight"
-                style={{ color: 'var(--foreground)' }}
+                className="font-bold tracking-tight"
+                style={{
+                  fontSize: HEADING_CLAMP,
+                  color: 'var(--foreground)',
+                }}
               >
                 {headline}
               </h2>
@@ -144,30 +193,38 @@ export default function TestimonialVideoCards({
                 {subheadline}
               </p>
             )}
-          </div>
+          </header>
         )}
 
         {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" role="list">
           {testimonials.map((testimonial, index) => (
-            <div
+            <article
               key={index}
+              role="listitem"
               className={cn(
-                'rounded-2xl border overflow-hidden',
-                'transition-shadow duration-300 hover:shadow-lg',
+                `${CARD_RADIUS} border overflow-hidden`,
+                'transition-shadow duration-300 hover:shadow-lg motion-reduce:transition-none',
               )}
               style={{
                 backgroundColor: 'var(--card)',
                 borderColor: 'var(--border)',
-                animation: 'video-card-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both',
-                animationDelay: `${0.1 + index * 0.1}s`,
+                animation: `video-card-in ${ANIMATION_CARD_DURATION} ${ANIMATION_EASING} both`,
+                animationDelay: `${ANIMATION_BASE_DELAY_S + index * ANIMATION_STAGGER_S}s`,
               }}
             >
               {/* Thumbnail */}
               <button
+                type="button"
                 onClick={() => openVideo(testimonial.videoUrl)}
-                className="relative w-full aspect-video group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset"
-                style={{ ['--tw-ring-color' as string]: 'var(--primary)' }}
+                className={cn(
+                  'relative w-full aspect-video group',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                )}
+                style={{
+                  ['--tw-ring-color' as string]: 'var(--primary)',
+                  ['--tw-ring-offset-color' as string]: 'var(--card)',
+                }}
                 aria-label={`Video von ${testimonial.name} abspielen`}
               >
                 <Image
@@ -178,8 +235,9 @@ export default function TestimonialVideoCards({
                 />
                 {/* Play overlay */}
                 <div
-                  className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-100 opacity-80"
+                  className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 group-hover:opacity-100 opacity-80 motion-reduce:transition-none"
                   style={{ color: 'var(--primary)' }}
+                  aria-hidden="true"
                 >
                   <PlayIcon />
                 </div>
@@ -191,15 +249,15 @@ export default function TestimonialVideoCards({
                   className="text-sm leading-relaxed line-clamp-3"
                   style={{ color: 'var(--card-foreground)' }}
                 >
-                  &ldquo;{testimonial.quote}&rdquo;
+                  <p>&ldquo;{testimonial.quote}&rdquo;</p>
                 </blockquote>
-                <div className="mt-4">
-                  <p
-                    className="text-sm font-semibold"
+                <footer className="mt-4">
+                  <cite
+                    className="text-sm font-semibold not-italic block"
                     style={{ color: 'var(--card-foreground)' }}
                   >
                     {testimonial.name}
-                  </p>
+                  </cite>
                   {(testimonial.role || testimonial.company) && (
                     <p
                       className="text-xs"
@@ -210,9 +268,9 @@ export default function TestimonialVideoCards({
                         .join(' · ')}
                     </p>
                   )}
-                </div>
+                </footer>
               </div>
-            </div>
+            </article>
           ))}
         </div>
 
@@ -228,14 +286,17 @@ export default function TestimonialVideoCards({
             <div
               className="absolute inset-0 bg-black/70 backdrop-blur-sm"
               onClick={closeVideo}
-              aria-hidden="true"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') closeVideo(); }}
+              role="button"
+              tabIndex={-1}
+              aria-label="Video schließen"
             />
 
             {/* Content */}
             <div
-              className="relative w-full max-w-4xl aspect-video rounded-2xl overflow-hidden"
+              className={`relative w-full ${MODAL_MAX_WIDTH} aspect-video ${CARD_RADIUS} overflow-hidden`}
               style={{
-                animation: 'video-modal-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both',
+                animation: `video-modal-in ${ANIMATION_MODAL_DURATION} ${ANIMATION_EASING} both`,
               }}
             >
               <iframe
@@ -248,17 +309,20 @@ export default function TestimonialVideoCards({
 
               {/* Close button */}
               <button
+                type="button"
                 onClick={closeVideo}
                 className={cn(
                   'absolute top-4 right-4 inline-flex items-center justify-center',
-                  'w-10 h-10 rounded-full',
-                  'transition-opacity duration-200 hover:opacity-80',
-                  'focus-visible:outline-none focus-visible:ring-2',
+                  CLOSE_BUTTON_SIZE,
+                  'rounded-full',
+                  'transition-opacity duration-200 hover:opacity-80 motion-reduce:transition-none',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                 )}
                 style={{
                   backgroundColor: 'rgba(0, 0, 0, 0.6)',
                   color: 'white',
                   ['--tw-ring-color' as string]: 'white',
+                  ['--tw-ring-offset-color' as string]: 'transparent',
                 }}
                 aria-label="Video schließen"
               >

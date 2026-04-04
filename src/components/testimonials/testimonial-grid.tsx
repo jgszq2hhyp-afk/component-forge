@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category testimonials
 // @name testimonial-grid
 // @source self-authored
@@ -7,6 +7,21 @@
 
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SECTION_MAX_WIDTH = 'max-w-7xl';
+const HEADER_MAX_WIDTH = 'max-w-2xl';
+const CARD_PADDING = 'p-6 lg:p-8';
+const CARD_RADIUS = 'rounded-2xl';
+const AVATAR_SIZE = 'w-10 h-10';
+const ANIMATION_DURATION = '0.6s';
+const ANIMATION_BASE_DELAY_S = 0.1;
+const ANIMATION_STAGGER_S = 0.06;
+const ANIMATION_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const HEADING_CLAMP = 'clamp(1.875rem, 2.5vw + 1rem, 3rem)';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -47,8 +62,18 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes grid-card-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from, to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 `;
@@ -69,19 +94,23 @@ export default function TestimonialGrid({
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
+        aria-label={headline ?? 'Kundenstimmen'}
         className={cn(
-          'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
+          `${SECTION_MAX_WIDTH} mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24`,
           className,
         )}
         style={{ backgroundColor: 'var(--background)' }}
       >
         {/* Header */}
         {(headline || subheadline) && (
-          <div className="max-w-2xl mx-auto text-center mb-12 lg:mb-16">
+          <header className={`${HEADER_MAX_WIDTH} mx-auto text-center mb-12 lg:mb-16`}>
             {headline && (
               <h2
-                className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight"
-                style={{ color: 'var(--foreground)' }}
+                className="font-bold tracking-tight"
+                style={{
+                  fontSize: HEADING_CLAMP,
+                  color: 'var(--foreground)',
+                }}
               >
                 {headline}
               </h2>
@@ -94,7 +123,7 @@ export default function TestimonialGrid({
                 {subheadline}
               </p>
             )}
-          </div>
+          </header>
         )}
 
         {/* Masonry-like grid using CSS columns */}
@@ -105,13 +134,15 @@ export default function TestimonialGrid({
               ? 'columns-1 sm:columns-2'
               : 'columns-1 sm:columns-2 lg:columns-3',
           )}
+          role="list"
         >
           {testimonials.map((testimonial, index) => (
-            <div
+            <article
               key={index}
+              role="listitem"
               className={cn(
-                'break-inside-avoid mb-6 rounded-2xl border p-6 lg:p-8',
-                'transition-shadow duration-300 hover:shadow-lg',
+                `break-inside-avoid mb-6 ${CARD_RADIUS} border ${CARD_PADDING}`,
+                'transition-shadow duration-300 hover:shadow-lg motion-reduce:transition-none',
                 testimonial.featured && 'ring-2',
               )}
               style={{
@@ -120,8 +151,8 @@ export default function TestimonialGrid({
                 ['--tw-ring-color' as string]: testimonial.featured
                   ? 'var(--primary)'
                   : 'transparent',
-                animation: 'grid-card-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
-                animationDelay: `${0.1 + index * 0.06}s`,
+                animation: `grid-card-in ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+                animationDelay: `${ANIMATION_BASE_DELAY_S + index * ANIMATION_STAGGER_S}s`,
               }}
             >
               {/* Quote */}
@@ -132,28 +163,28 @@ export default function TestimonialGrid({
                 )}
                 style={{ color: 'var(--card-foreground)' }}
               >
-                &ldquo;{testimonial.quote}&rdquo;
+                <p>&ldquo;{testimonial.quote}&rdquo;</p>
               </blockquote>
 
               {/* Author */}
-              <div className="mt-5 flex items-center gap-3">
+              <footer className="mt-5 flex items-center gap-3">
                 {testimonial.avatarSrc && (
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                  <div className={`relative ${AVATAR_SIZE} rounded-full overflow-hidden flex-shrink-0`}>
                     <Image
                       src={testimonial.avatarSrc}
-                      alt={testimonial.name}
+                      alt={`Profilbild von ${testimonial.name}`}
                       fill
                       className="object-cover"
                     />
                   </div>
                 )}
                 <div>
-                  <p
-                    className="text-sm font-semibold"
+                  <cite
+                    className="text-sm font-semibold not-italic"
                     style={{ color: 'var(--card-foreground)' }}
                   >
                     {testimonial.name}
-                  </p>
+                  </cite>
                   {(testimonial.role || testimonial.company) && (
                     <p
                       className="text-xs"
@@ -165,8 +196,8 @@ export default function TestimonialGrid({
                     </p>
                   )}
                 </div>
-              </div>
-            </div>
+              </footer>
+            </article>
           ))}
         </div>
       </section>

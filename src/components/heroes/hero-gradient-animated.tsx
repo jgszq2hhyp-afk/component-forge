@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category heroes
 // @name hero-gradient-animated
 // @source https://ui.aceternity.com/components/background-gradient-animation
@@ -7,6 +7,27 @@
 
 import { cn } from '@/lib/utils';
 import { useEffect, useRef } from 'react';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const ANIMATION_DURATION = '0.9s';
+const ANIMATION_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const FADE_UP_TRANSLATE_Y = '24px';
+const FADE_UP_BLUR = '6px';
+const BLOB_BLUR = '80px';
+const BLOB_SIZE = '50%';
+const INTERACTIVE_BLOB_SIZE = '40%';
+const BLOB_OPACITY = 0.25;
+const INTERACTIVE_BLOB_OPACITY = 0.15;
+const BLOB_TOP_START = 15;
+const BLOB_TOP_STEP = 12;
+const BLOB_LEFT_START = 10;
+const BLOB_LEFT_STEP = 15;
+const HEADLINE_DELAY = '0.15s';
+const SUBHEADLINE_DELAY = '0.3s';
+const CTA_DELAY = '0.45s';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -49,8 +70,8 @@ const keyframes = `
 @keyframes hga-fade-up {
   from {
     opacity: 0;
-    filter: blur(6px);
-    transform: translateY(24px);
+    filter: blur(${FADE_UP_BLUR});
+    transform: translateY(${FADE_UP_TRANSLATE_Y});
   }
   to {
     opacity: 1;
@@ -61,16 +82,16 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hga-move-horizontal {
-    0%, 100% { transform: translateX(0) translateY(0); }
+    0%, 50%, 100% { transform: translateX(0) translateY(0); }
   }
   @keyframes hga-move-circle {
-    0%, 100% { transform: rotate(0deg); }
+    0%, 50%, 100% { transform: rotate(0deg); }
   }
   @keyframes hga-move-vertical {
-    0%, 100% { transform: translateY(0); }
+    0%, 50%, 100% { transform: translateY(0); }
   }
   @keyframes hga-fade-up {
-    from { opacity: 0; }
+    from { opacity: 1; }
     to   { opacity: 1; }
   }
 }
@@ -113,6 +134,9 @@ export default function HeroGradientAnimated({
   useEffect(() => {
     if (!interactive) return;
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
     function handleMouseMove(e: MouseEvent) {
       if (!interactiveRef.current) return;
       const rect = interactiveRef.current.parentElement?.getBoundingClientRect();
@@ -129,13 +153,13 @@ export default function HeroGradientAnimated({
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
+        aria-label="Hero with animated gradient"
         className={cn(
           'relative min-h-[90vh] flex items-center justify-center overflow-hidden',
           'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
           className,
         )}
         style={{
-          /* Gradient blobs use CSS vars from the theme */
           '--hga-first': 'var(--primary)',
           '--hga-second': 'color-mix(in srgb, var(--primary) 60%, var(--background))',
           '--hga-third': 'color-mix(in srgb, var(--primary) 40%, var(--foreground) 10%)',
@@ -147,7 +171,7 @@ export default function HeroGradientAnimated({
         {/* Animated gradient blobs */}
         <div
           className="absolute inset-0"
-          style={{ filter: 'blur(80px)' }}
+          style={{ filter: `blur(${BLOB_BLUR})` }}
           aria-hidden="true"
         >
           {blobs.map((blob, i) => (
@@ -155,12 +179,12 @@ export default function HeroGradientAnimated({
               key={i}
               className="absolute rounded-full mix-blend-hard-light"
               style={{
-                width: '50%',
-                height: '50%',
-                top: `${15 + i * 12}%`,
-                left: `${10 + i * 15}%`,
+                width: BLOB_SIZE,
+                height: BLOB_SIZE,
+                top: `${BLOB_TOP_START + i * BLOB_TOP_STEP}%`,
+                left: `${BLOB_LEFT_START + i * BLOB_LEFT_STEP}%`,
                 backgroundColor: `var(${blob.cssVar})`,
-                opacity: 0.25,
+                opacity: BLOB_OPACITY,
                 animation: `${blob.animation} ${blob.duration} ease-in-out infinite`,
               }}
             />
@@ -170,12 +194,12 @@ export default function HeroGradientAnimated({
           {interactive && (
             <div
               ref={interactiveRef}
-              className="absolute top-1/2 left-1/2 rounded-full mix-blend-hard-light transition-transform duration-300 ease-out"
+              className="absolute top-1/2 left-1/2 rounded-full mix-blend-hard-light transition-transform duration-300 ease-out motion-reduce:transition-none"
               style={{
-                width: '40%',
-                height: '40%',
+                width: INTERACTIVE_BLOB_SIZE,
+                height: INTERACTIVE_BLOB_SIZE,
                 backgroundColor: 'var(--hga-first)',
-                opacity: 0.15,
+                opacity: INTERACTIVE_BLOB_OPACITY,
               }}
             />
           )}
@@ -188,8 +212,8 @@ export default function HeroGradientAnimated({
             style={{
               fontSize: 'clamp(2.5rem, 5vw + 1rem, 5rem)',
               color: 'var(--foreground)',
-              animation: 'hga-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-              animationDelay: '0.15s',
+              animation: `hga-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+              animationDelay: HEADLINE_DELAY,
             }}
           >
             {headline}
@@ -197,11 +221,12 @@ export default function HeroGradientAnimated({
 
           {subheadline && (
             <p
-              className="mx-auto mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-xl"
+              className="mx-auto mt-5 md:mt-6 leading-relaxed max-w-xl"
               style={{
+                fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)',
                 color: 'var(--muted-foreground)',
-                animation: 'hga-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-                animationDelay: '0.3s',
+                animation: `hga-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+                animationDelay: SUBHEADLINE_DELAY,
               }}
             >
               {subheadline}
@@ -212,8 +237,8 @@ export default function HeroGradientAnimated({
             <div
               className="mt-8 md:mt-10 flex flex-wrap items-center justify-center gap-4"
               style={{
-                animation: 'hga-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-                animationDelay: '0.45s',
+                animation: `hga-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+                animationDelay: CTA_DELAY,
               }}
             >
               {ctaText && (
@@ -222,10 +247,10 @@ export default function HeroGradientAnimated({
                   className={cn(
                     'inline-flex items-center justify-center',
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
-                    'backdrop-blur-sm transition-all duration-200',
+                    'backdrop-blur-sm transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110 hover:shadow-lg',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    'active:scale-[0.98]',
+                    'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
@@ -244,10 +269,10 @@ export default function HeroGradientAnimated({
                   className={cn(
                     'inline-flex items-center justify-center',
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
-                    'border backdrop-blur-md transition-all duration-200',
+                    'border backdrop-blur-md transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    'active:scale-[0.98]',
+                    'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     color: 'var(--foreground)',

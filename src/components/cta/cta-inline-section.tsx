@@ -1,6 +1,21 @@
-// @version 1.0.0 // @category cta // @name cta-inline-section // @score pending
+// @version 2.0.0
+// @category cta
+// @name cta-inline-section
+// @source self-authored
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const CONTENT_MAX_WIDTH = 'max-w-3xl';
+const DESCRIPTION_MAX_WIDTH = 'max-w-xl';
+const BUTTON_RADIUS = 'rounded-lg';
+const BUTTON_PADDING = 'px-7 py-3.5';
+const BUTTON_FONT_SIZE = 'text-[0.9375rem]';
+const HEADING_CLAMP = 'clamp(1.75rem, 3.5vw + 0.5rem, 3rem)';
+const ACTIVE_SCALE = 'active:scale-[0.98]';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -122,6 +137,7 @@ export default function CtaInlineSection({
 
   return (
     <section
+      aria-label={headline}
       className={cn(
         'relative overflow-hidden',
         'px-6 py-20 md:px-12 lg:py-28',
@@ -129,7 +145,7 @@ export default function CtaInlineSection({
       )}
       style={styles.section}
     >
-      {/* Decorative abstract shape — top-right */}
+      {/* Decorative abstract shape -- top-right */}
       <div
         className="pointer-events-none absolute inset-0"
         aria-hidden="true"
@@ -137,12 +153,12 @@ export default function CtaInlineSection({
       />
 
       {/* Content */}
-      <div className="relative mx-auto max-w-3xl text-center">
+      <div className={`relative mx-auto ${CONTENT_MAX_WIDTH} text-center`}>
         {/* Headline */}
         <h2
           className="font-bold tracking-tight leading-[1.1]"
           style={{
-            fontSize: 'clamp(1.75rem, 3.5vw + 0.5rem, 3rem)',
+            fontSize: HEADING_CLAMP,
             ...styles.headline,
           }}
         >
@@ -152,7 +168,7 @@ export default function CtaInlineSection({
         {/* Description */}
         {description && (
           <p
-            className="mx-auto mt-4 max-w-xl text-base leading-relaxed md:mt-5 md:text-lg"
+            className={`mx-auto mt-4 ${DESCRIPTION_MAX_WIDTH} text-base leading-relaxed md:mt-5 md:text-lg`}
             style={styles.description}
           >
             {description}
@@ -160,17 +176,18 @@ export default function CtaInlineSection({
         )}
 
         {/* CTAs */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4 md:mt-10">
+        <nav className="mt-8 flex flex-wrap items-center justify-center gap-4 md:mt-10" aria-label="Handlungsaufforderungen">
           {/* Primary CTA */}
           <a
             href={ctaHref}
             className={cn(
               'inline-flex items-center justify-center',
-              'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
-              'transition-all duration-200',
+              `${BUTTON_RADIUS} ${BUTTON_PADDING} ${BUTTON_FONT_SIZE} font-semibold`,
+              'transition-all duration-200 motion-reduce:transition-none',
               'hover:brightness-110 hover:shadow-lg',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-              'active:scale-[0.98]',
+              ACTIVE_SCALE,
+              'motion-reduce:active:scale-100',
             )}
             style={{
               ...styles.primaryCta,
@@ -187,11 +204,12 @@ export default function CtaInlineSection({
               href={secondaryCtaHref}
               className={cn(
                 'inline-flex items-center justify-center',
-                'rounded-lg border px-7 py-3.5 text-[0.9375rem] font-semibold',
-                'bg-transparent transition-all duration-200',
+                `${BUTTON_RADIUS} border ${BUTTON_PADDING} ${BUTTON_FONT_SIZE} font-semibold`,
+                'bg-transparent transition-all duration-200 motion-reduce:transition-none',
                 'hover:brightness-110',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                'active:scale-[0.98]',
+                ACTIVE_SCALE,
+                'motion-reduce:active:scale-100',
               )}
               style={{
                 ...styles.secondaryCta,
@@ -202,7 +220,7 @@ export default function CtaInlineSection({
               {secondaryCtaText}
             </a>
           )}
-        </div>
+        </nav>
       </div>
     </section>
   );

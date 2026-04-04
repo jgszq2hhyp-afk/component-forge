@@ -1,4 +1,4 @@
-// @version 1.1.0
+// @version 2.0.0
 // @category navigation
 // @name Nav Pill Transform
 // @source custom-implementation
@@ -7,6 +7,19 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const DEFAULT_SCROLL_THRESHOLD = 50;
+const TRANSITION_DURATION = "duration-500";
+const PILL_MAX_WIDTH = "max-w-3xl";
+const FULL_MAX_WIDTH = "max-w-7xl";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface NavLink {
   label: string;
@@ -22,8 +35,16 @@ interface NavPillTransformProps {
   scrollThreshold?: number;
 }
 
+// ---------------------------------------------------------------------------
+// Shared styles
+// ---------------------------------------------------------------------------
+
 const focusRing =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring,var(--primary))] focus-visible:ring-offset-2";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring,var(--primary))] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]";
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function NavPillTransform({
   logo = "Brand",
@@ -36,7 +57,7 @@ export default function NavPillTransform({
   ctaLabel = "Get Started",
   ctaHref = "#cta",
   className,
-  scrollThreshold = 50,
+  scrollThreshold = DEFAULT_SCROLL_THRESHOLD,
 }: NavPillTransformProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -53,7 +74,7 @@ export default function NavPillTransform({
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
+        `fixed top-0 left-0 right-0 z-50 transition-all ${TRANSITION_DURATION}`,
         "motion-reduce:transition-none",
         isScrolled ? "top-3 px-4 sm:px-8 md:px-16 lg:px-32" : "px-0",
         className
@@ -62,11 +83,11 @@ export default function NavPillTransform({
       <nav
         aria-label="Main navigation"
         className={cn(
-          "mx-auto flex items-center justify-between transition-all duration-500",
+          `mx-auto flex items-center justify-between transition-all ${TRANSITION_DURATION}`,
           "motion-reduce:transition-none",
           isScrolled
-            ? "max-w-3xl rounded-full px-4 py-2 shadow-lg backdrop-blur-md bg-[var(--background)]/85 border border-[var(--border)]"
-            : "max-w-7xl px-4 sm:px-6 lg:px-8 py-4 bg-[var(--background)]"
+            ? `${PILL_MAX_WIDTH} rounded-full px-4 py-2 shadow-lg backdrop-blur-md bg-[var(--background)]/85 border border-[var(--border)]`
+            : `${FULL_MAX_WIDTH} px-4 sm:px-6 lg:px-8 py-4 bg-[var(--background)]`
         )}
       >
         {/* Logo */}
@@ -74,7 +95,7 @@ export default function NavPillTransform({
           href="/"
           className={cn(
             focusRing,
-            "rounded-lg font-bold transition-all duration-500 motion-reduce:transition-none text-[var(--foreground)]",
+            `rounded-lg font-bold transition-all ${TRANSITION_DURATION} motion-reduce:transition-none text-[var(--foreground)]`,
             isScrolled ? "text-lg" : "text-xl"
           )}
         >
@@ -82,7 +103,7 @@ export default function NavPillTransform({
         </a>
 
         {/* Desktop Links */}
-        <ul className="hidden md:flex items-center gap-1">
+        <ul className="hidden md:flex items-center gap-1" role="list">
           {links.map((link) => (
             <li key={link.href}>
               <a
@@ -106,7 +127,7 @@ export default function NavPillTransform({
           href={ctaHref}
           className={cn(
             focusRing,
-            "hidden md:inline-flex items-center rounded-full font-medium transition-all duration-500 motion-reduce:transition-none",
+            `hidden md:inline-flex items-center rounded-full font-medium transition-all ${TRANSITION_DURATION} motion-reduce:transition-none`,
             "bg-[var(--primary)] text-[var(--primary-foreground)]",
             "hover:bg-[var(--primary)]/90",
             isScrolled ? "px-4 py-1.5 text-sm" : "px-5 py-2 text-sm"
@@ -117,6 +138,7 @@ export default function NavPillTransform({
 
         {/* Mobile Toggle */}
         <button
+          type="button"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           className={cn(
             focusRing,
@@ -131,6 +153,7 @@ export default function NavPillTransform({
             viewBox="0 0 24 24"
             strokeWidth={2}
             stroke="currentColor"
+            aria-hidden="true"
           >
             {isMobileOpen ? (
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -149,12 +172,15 @@ export default function NavPillTransform({
             "bg-[var(--background)]/95",
             "border border-[var(--border)]"
           )}
+          role="menu"
+          aria-label="Mobile navigation"
         >
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-1" role="list">
             {links.map((link) => (
-              <li key={link.href}>
+              <li key={link.href} role="none">
                 <a
                   href={link.href}
+                  role="menuitem"
                   onClick={() => setIsMobileOpen(false)}
                   className={cn(
                     focusRing,
@@ -167,9 +193,10 @@ export default function NavPillTransform({
                 </a>
               </li>
             ))}
-            <li>
+            <li role="none">
               <a
                 href={ctaHref}
+                role="menuitem"
                 onClick={() => setIsMobileOpen(false)}
                 className={cn(
                   focusRing,

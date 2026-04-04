@@ -1,4 +1,4 @@
-// @version 1.1.0
+// @version 2.0.0
 // @category navigation
 // @name Nav Transparent Dark
 // @source custom-implementation
@@ -7,6 +7,17 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const DEFAULT_SCROLL_THRESHOLD = 100;
+const TRANSITION_DURATION = "duration-500";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface NavLink {
   label: string;
@@ -22,8 +33,16 @@ interface NavTransparentDarkProps {
   scrollThreshold?: number;
 }
 
+// ---------------------------------------------------------------------------
+// Shared styles
+// ---------------------------------------------------------------------------
+
 const focusRing =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring,var(--primary))] focus-visible:ring-offset-2";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring,var(--primary))] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]";
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function NavTransparentDark({
   logo = "Brand",
@@ -36,7 +55,7 @@ export default function NavTransparentDark({
   ctaLabel = "Get Started",
   ctaHref = "#cta",
   className,
-  scrollThreshold = 100,
+  scrollThreshold = DEFAULT_SCROLL_THRESHOLD,
 }: NavTransparentDarkProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -53,7 +72,7 @@ export default function NavTransparentDark({
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 motion-reduce:transition-none",
+        `fixed top-0 left-0 right-0 z-50 transition-all ${TRANSITION_DURATION} motion-reduce:transition-none`,
         isScrolled
           ? "bg-[var(--background)] shadow-sm border-b border-[var(--border)]"
           : "bg-transparent",
@@ -69,24 +88,27 @@ export default function NavTransparentDark({
           href="/"
           className={cn(
             focusRing,
-            "rounded-lg text-xl font-bold transition-colors duration-500 motion-reduce:transition-none",
+            `rounded-lg text-xl font-bold transition-colors ${TRANSITION_DURATION} motion-reduce:transition-none`,
             isScrolled
               ? "text-[var(--foreground)]"
               : "text-[var(--nav-dark-logo,var(--background))]"
           )}
+          style={{
+            fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)',
+          }}
         >
           {logo}
         </a>
 
         {/* Desktop Links */}
-        <ul className="hidden md:flex items-center gap-1">
+        <ul className="hidden md:flex items-center gap-1" role="list">
           {links.map((link) => (
             <li key={link.href}>
               <a
                 href={link.href}
                 className={cn(
                   focusRing,
-                  "rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-500 motion-reduce:transition-none",
+                  `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${TRANSITION_DURATION} motion-reduce:transition-none`,
                   isScrolled
                     ? "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                     : "text-[var(--nav-dark-link,var(--background)/0.8)] hover:text-[var(--nav-dark-link-hover,var(--background))]"
@@ -103,7 +125,7 @@ export default function NavTransparentDark({
           href={ctaHref}
           className={cn(
             focusRing,
-            "hidden md:inline-flex items-center rounded-lg px-5 py-2 text-sm font-medium transition-all duration-500 motion-reduce:transition-none",
+            `hidden md:inline-flex items-center rounded-lg px-5 py-2 text-sm font-medium transition-all ${TRANSITION_DURATION} motion-reduce:transition-none`,
             isScrolled
               ? "bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90"
               : "bg-[var(--background)] text-[var(--foreground)] hover:bg-[var(--background)]/90"
@@ -114,6 +136,7 @@ export default function NavTransparentDark({
 
         {/* Mobile Toggle */}
         <button
+          type="button"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           className={cn(
             focusRing,
@@ -125,7 +148,7 @@ export default function NavTransparentDark({
           aria-label={isMobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={isMobileOpen}
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
             {isMobileOpen ? (
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             ) : (
@@ -144,12 +167,15 @@ export default function NavTransparentDark({
               ? "bg-[var(--background)]"
               : "bg-[var(--nav-dark-mobile-bg,hsl(0_0%_0%/0.9))] backdrop-blur-md"
           )}
+          role="menu"
+          aria-label="Mobile navigation"
         >
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-1" role="list">
             {links.map((link) => (
-              <li key={link.href}>
+              <li key={link.href} role="none">
                 <a
                   href={link.href}
+                  role="menuitem"
                   onClick={() => setIsMobileOpen(false)}
                   className={cn(
                     focusRing,
@@ -163,9 +189,10 @@ export default function NavTransparentDark({
                 </a>
               </li>
             ))}
-            <li>
+            <li role="none">
               <a
                 href={ctaHref}
+                role="menuitem"
                 onClick={() => setIsMobileOpen(false)}
                 className={cn(
                   focusRing,

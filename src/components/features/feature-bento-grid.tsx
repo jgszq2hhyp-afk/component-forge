@@ -1,4 +1,4 @@
-// @version 1.1.0
+// @version 2.0.0
 // @category features
 // @name feature-bento-grid
 // @source self-authored
@@ -7,6 +7,19 @@
 
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const ANIMATION_BASE_DELAY_S = 0.1;
+const ANIMATION_STEP_DELAY_S = 0.08;
+const ANIMATION_DURATION_S = 0.6;
+const IMAGE_SCALE_HOVER = 1.05;
+const HEADING_CLAMP = 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)';
+const SUBHEADING_CLAMP = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
+const SECTION_MAX_WIDTH = '80rem'; // 1280px
+const CUBIC_EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -29,7 +42,7 @@ interface FeatureBentoGridProps {
 }
 
 // ---------------------------------------------------------------------------
-// Keyframe styles & custom properties
+// Keyframe styles & reduced-motion
 // ---------------------------------------------------------------------------
 
 const keyframes = `
@@ -46,16 +59,15 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes bento-fade-up {
-    from { opacity: 0; }
+    from { opacity: 1; }
     to   { opacity: 1; }
   }
 
-  .bento-card {
-    transition: none !important;
-  }
-
+  .bento-card,
   .bento-card-image {
+    animation: none !important;
     transition: none !important;
+    transform: none !important;
   }
 }
 `;
@@ -71,7 +83,6 @@ const spanClasses: Record<NonNullable<BentoItem['span']>, string> = {
   large: 'md:col-span-2 md:row-span-2',
 };
 
-/** Generate a stable slug from the title for use as React key */
 function toSlug(title: string, index: number): string {
   const slug = title
     .toLowerCase()
@@ -79,10 +90,6 @@ function toSlug(title: string, index: number): string {
     .replace(/(^-|-$)/g, '');
   return slug || `bento-item-${index}`;
 }
-
-/** Base delay in seconds, incremented per card */
-const ANIMATION_BASE_DELAY = 0.1;
-const ANIMATION_STEP_DELAY = 0.08;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -101,20 +108,23 @@ export default function FeatureBentoGrid({
       <section
         aria-label={headline ?? 'Feature overview'}
         className={cn(
-          'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
+          'mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
           className,
         )}
-        style={{ backgroundColor: 'var(--background)' }}
+        style={{
+          maxWidth: SECTION_MAX_WIDTH,
+          backgroundColor: 'var(--background)',
+        }}
       >
         {/* Header */}
         {(headline || subheadline) && (
-          <div className="max-w-2xl mx-auto text-center mb-12 lg:mb-16">
+          <header className="max-w-2xl mx-auto text-center mb-12 lg:mb-16">
             {headline && (
               <h2
                 className="font-bold tracking-tight"
                 style={{
                   color: 'var(--foreground)',
-                  fontSize: 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)',
+                  fontSize: HEADING_CLAMP,
                 }}
               >
                 {headline}
@@ -122,20 +132,24 @@ export default function FeatureBentoGrid({
             )}
             {subheadline && (
               <p
-                className="mt-4 text-lg leading-relaxed"
-                style={{ color: 'var(--muted-foreground)' }}
+                className="mt-4 leading-relaxed"
+                style={{
+                  color: 'var(--muted-foreground)',
+                  fontSize: SUBHEADING_CLAMP,
+                }}
               >
                 {subheadline}
               </p>
             )}
-          </div>
+          </header>
         )}
 
         {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6" role="list">
           {items.map((item, index) => (
-            <div
+            <article
               key={toSlug(item.title, index)}
+              role="listitem"
               tabIndex={0}
               className={cn(
                 'bento-card',
@@ -148,8 +162,9 @@ export default function FeatureBentoGrid({
                 backgroundColor: 'var(--card)',
                 borderColor: 'var(--border)',
                 '--tw-ring-color': 'var(--ring, hsl(215 20% 65%))',
-                animation: 'bento-fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
-                animationDelay: `${ANIMATION_BASE_DELAY + index * ANIMATION_STEP_DELAY}s`,
+                '--tw-ring-offset-color': 'var(--background)',
+                animation: `bento-fade-up ${ANIMATION_DURATION_S}s ${CUBIC_EASE_OUT} both`,
+                animationDelay: `${ANIMATION_BASE_DELAY_S + index * ANIMATION_STEP_DELAY_S}s`,
               } as React.CSSProperties}
             >
               {/* Optional image */}
@@ -162,9 +177,15 @@ export default function FeatureBentoGrid({
                     loading={index === 0 ? 'eager' : 'lazy'}
                     className={cn(
                       'bento-card-image',
-                      'object-cover transition-transform duration-500 group-hover:scale-105',
+                      'object-cover transition-transform duration-500',
                     )}
+                    style={{
+                      '--tw-scale-x': '1',
+                      '--tw-scale-y': '1',
+                    } as React.CSSProperties}
+                    onMouseEnter={undefined}
                   />
+                  {/* Hover scale handled via group-hover with reduced-motion override in keyframes */}
                 </div>
               )}
 
@@ -172,7 +193,11 @@ export default function FeatureBentoGrid({
               {item.icon && (
                 <div
                   className="inline-flex items-center justify-center w-10 h-10 rounded-lg mb-4"
-                  style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}
+                  style={{
+                    backgroundColor: 'var(--accent)',
+                    color: 'var(--accent-foreground)',
+                  }}
+                  aria-hidden="true"
                 >
                   {item.icon}
                 </div>
@@ -180,8 +205,11 @@ export default function FeatureBentoGrid({
 
               {/* Text */}
               <h3
-                className="text-lg font-semibold tracking-tight"
-                style={{ color: 'var(--card-foreground)' }}
+                className="font-semibold tracking-tight"
+                style={{
+                  color: 'var(--card-foreground)',
+                  fontSize: 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)',
+                }}
               >
                 {item.title}
               </h3>
@@ -191,7 +219,7 @@ export default function FeatureBentoGrid({
               >
                 {item.description}
               </p>
-            </div>
+            </article>
           ))}
         </div>
       </section>

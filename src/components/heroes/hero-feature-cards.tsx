@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category heroes
 // @name hero-feature-cards
 // @source https://dev.to/vaibhavg/shadcn-hero-sections-37af, https://www.shadcn.io/blocks/hero-feature-comparison
@@ -6,6 +6,25 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const ANIMATION_DURATION = '0.9s';
+const ANIMATION_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const CARD_ANIMATION_DURATION = '0.7s';
+const FADE_UP_TRANSLATE_Y = '24px';
+const FADE_UP_BLUR = '4px';
+const CARD_TRANSLATE_Y = '20px';
+const CARD_SCALE_START = '0.96';
+const BADGE_DELAY = '0.05s';
+const HEADLINE_DELAY = '0.15s';
+const SUBHEADLINE_DELAY = '0.3s';
+const CTA_DELAY = '0.45s';
+const CARD_BASE_DELAY = 0.6;
+const CARD_STAGGER = 0.1;
+const ICON_SIZE = 'size-10';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -35,8 +54,8 @@ const keyframes = `
 @keyframes hfc-fade-up {
   from {
     opacity: 0;
-    filter: blur(4px);
-    transform: translateY(24px);
+    filter: blur(${FADE_UP_BLUR});
+    transform: translateY(${FADE_UP_TRANSLATE_Y});
   }
   to {
     opacity: 1;
@@ -48,7 +67,7 @@ const keyframes = `
 @keyframes hfc-card-in {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.96);
+    transform: translateY(${CARD_TRANSLATE_Y}) scale(${CARD_SCALE_START});
   }
   to {
     opacity: 1;
@@ -58,11 +77,11 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hfc-fade-up {
-    from { opacity: 0; }
+    from { opacity: 1; }
     to   { opacity: 1; }
   }
   @keyframes hfc-card-in {
-    from { opacity: 0; }
+    from { opacity: 1; }
     to   { opacity: 1; }
   }
 }
@@ -86,6 +105,7 @@ export default function HeroFeatureCards({
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
+        aria-label="Hero with feature cards"
         className={cn(
           'relative overflow-hidden',
           'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
@@ -95,7 +115,7 @@ export default function HeroFeatureCards({
       >
         <div className="mx-auto max-w-6xl">
           {/* Top: centered headline area */}
-          <div className="text-center max-w-3xl mx-auto">
+          <header className="text-center max-w-3xl mx-auto">
             {badgeText && (
               <span
                 className={cn(
@@ -105,8 +125,8 @@ export default function HeroFeatureCards({
                 style={{
                   backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
                   color: 'var(--primary)',
-                  animation: 'hfc-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both',
-                  animationDelay: '0.05s',
+                  animation: `hfc-fade-up 0.8s ${ANIMATION_EASING} both`,
+                  animationDelay: BADGE_DELAY,
                 }}
               >
                 {badgeText}
@@ -118,8 +138,8 @@ export default function HeroFeatureCards({
               style={{
                 fontSize: 'clamp(2.25rem, 4.5vw + 1rem, 4.25rem)',
                 color: 'var(--foreground)',
-                animation: 'hfc-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-                animationDelay: '0.15s',
+                animation: `hfc-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+                animationDelay: HEADLINE_DELAY,
               }}
             >
               {headline}
@@ -127,11 +147,12 @@ export default function HeroFeatureCards({
 
             {subheadline && (
               <p
-                className="mx-auto mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-xl"
+                className="mx-auto mt-5 md:mt-6 leading-relaxed max-w-xl"
                 style={{
+                  fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)',
                   color: 'var(--muted-foreground)',
-                  animation: 'hfc-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-                  animationDelay: '0.3s',
+                  animation: `hfc-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+                  animationDelay: SUBHEADLINE_DELAY,
                 }}
               >
                 {subheadline}
@@ -142,8 +163,8 @@ export default function HeroFeatureCards({
               <div
                 className="mt-8 md:mt-10"
                 style={{
-                  animation: 'hfc-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-                  animationDelay: '0.45s',
+                  animation: `hfc-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+                  animationDelay: CTA_DELAY,
                 }}
               >
                 <a
@@ -151,10 +172,10 @@ export default function HeroFeatureCards({
                   className={cn(
                     'inline-flex items-center justify-center',
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
-                    'transition-all duration-200',
+                    'transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110 hover:shadow-lg',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    'active:scale-[0.98]',
+                    'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
@@ -167,35 +188,36 @@ export default function HeroFeatureCards({
                 </a>
               </div>
             )}
-          </div>
+          </header>
 
           {/* Feature cards grid */}
-          <div
+          <ul
             className={cn(
-              'mt-14 md:mt-20 grid gap-5',
+              'mt-14 md:mt-20 grid gap-5 list-none p-0',
               features.length <= 3
                 ? 'grid-cols-1 sm:grid-cols-3'
                 : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
             )}
+            role="list"
           >
             {features.map((feature, i) => (
-              <div
+              <li
                 key={i}
                 className={cn(
                   'group relative rounded-xl p-6',
-                  'transition-all duration-300',
-                  'hover:-translate-y-1',
+                  'transition-all duration-300 motion-reduce:transition-none',
+                  'hover:-translate-y-1 motion-reduce:hover:translate-y-0',
                 )}
                 style={{
                   backgroundColor: 'color-mix(in srgb, var(--foreground) 3%, var(--background))',
                   border: '1px solid color-mix(in srgb, var(--foreground) 8%, transparent)',
-                  animation: 'hfc-card-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both',
-                  animationDelay: `${0.6 + i * 0.1}s`,
+                  animation: `hfc-card-in ${CARD_ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+                  animationDelay: `${CARD_BASE_DELAY + i * CARD_STAGGER}s`,
                 }}
               >
                 {/* Hover glow */}
                 <div
-                  className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 motion-reduce:hidden"
                   style={{
                     background:
                       'radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--primary) 8%, transparent), transparent 70%)',
@@ -205,11 +227,12 @@ export default function HeroFeatureCards({
 
                 {/* Icon */}
                 <div
-                  className="relative mb-4 inline-flex items-center justify-center size-10 rounded-lg"
+                  className={`relative mb-4 inline-flex items-center justify-center ${ICON_SIZE} rounded-lg`}
                   style={{
                     backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)',
                     color: 'var(--primary)',
                   }}
+                  aria-hidden="true"
                 >
                   {feature.icon}
                 </div>
@@ -227,9 +250,9 @@ export default function HeroFeatureCards({
                 >
                   {feature.description}
                 </p>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
     </>

@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category testimonials
 // @name testimonial-single-large
 // @source self-authored
@@ -7,6 +7,22 @@
 
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SECTION_MAX_WIDTH = 'max-w-7xl';
+const CONTENT_MAX_WIDTH = 'max-w-3xl';
+const AVATAR_SIZE = 'w-14 h-14';
+const COMPANY_LOGO_HEIGHT = 'h-8';
+const COMPANY_LOGO_WIDTH = 'w-24';
+const QUOTE_ICON_SIZE = 64;
+const ANIMATION_DURATION = '0.8s';
+const ANIMATION_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const ANIMATION_DELAY_TEXT = '0.1s';
+const ANIMATION_DELAY_IMAGE = '0.3s';
+const HEADING_CLAMP = 'clamp(1.25rem, 2vw + 0.75rem, 1.875rem)';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,8 +58,18 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes single-fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from, to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 `;
@@ -55,8 +81,8 @@ const keyframes = `
 function QuoteIcon() {
   return (
     <svg
-      width="64"
-      height="64"
+      width={QUOTE_ICON_SIZE}
+      height={QUOTE_ICON_SIZE}
       viewBox="0 0 64 64"
       fill="none"
       aria-hidden="true"
@@ -89,8 +115,9 @@ export default function TestimonialSingleLarge({
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
+        aria-label={`Kundenstimme von ${name}`}
         className={cn(
-          'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28',
+          `${SECTION_MAX_WIDTH} mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28`,
           className,
         )}
         style={{ backgroundColor: 'var(--background)' }}
@@ -101,73 +128,79 @@ export default function TestimonialSingleLarge({
             imageSrc ? 'lg:grid-cols-2 lg:gap-16' : '',
           )}
           style={{
-            animation: 'single-fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both',
-            animationDelay: '0.1s',
+            animation: `single-fade-in ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+            animationDelay: ANIMATION_DELAY_TEXT,
           }}
         >
           {/* Text content */}
-          <div className={cn(imageSrc ? '' : 'max-w-3xl mx-auto text-center')}>
+          <div className={cn(imageSrc ? '' : `${CONTENT_MAX_WIDTH} mx-auto text-center`)}>
             <span style={{ color: 'var(--primary)', opacity: 0.3 }}>
               <QuoteIcon />
             </span>
 
-            <blockquote
-              className="mt-4 text-xl sm:text-2xl lg:text-3xl font-medium leading-snug tracking-tight"
-              style={{ color: 'var(--foreground)' }}
-            >
-              &ldquo;{quote}&rdquo;
-            </blockquote>
+            <figure>
+              <blockquote
+                className="mt-4 font-medium leading-snug tracking-tight"
+                style={{
+                  fontSize: HEADING_CLAMP,
+                  color: 'var(--foreground)',
+                }}
+              >
+                <p>&ldquo;{quote}&rdquo;</p>
+              </blockquote>
 
-            {/* Author */}
-            <div
-              className={cn(
-                'mt-8 flex items-center gap-4',
-                !imageSrc && 'justify-center',
-              )}
-            >
-              {avatarSrc && (
-                <div className="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-offset-2"
-                  style={{
-                    ['--tw-ring-color' as string]: 'var(--border)',
-                    ['--tw-ring-offset-color' as string]: 'var(--background)',
-                  }}
-                >
-                  <Image
-                    src={avatarSrc}
-                    alt={name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <div>
-                <p
-                  className="text-base font-semibold"
-                  style={{ color: 'var(--foreground)' }}
-                >
-                  {name}
-                </p>
-                {(role || company) && (
-                  <p
-                    className="text-sm"
-                    style={{ color: 'var(--muted-foreground)' }}
-                  >
-                    {[role, company].filter(Boolean).join(' bei ')}
-                  </p>
+              {/* Author */}
+              <figcaption
+                className={cn(
+                  'mt-8 flex items-center gap-4',
+                  !imageSrc && 'justify-center',
                 )}
-              </div>
-
-              {companyLogoSrc && (
-                <div className="ml-auto relative h-8 w-24 opacity-50">
-                  <Image
-                    src={companyLogoSrc}
-                    alt={company ?? 'Firmenlogo'}
-                    fill
-                    className="object-contain object-left"
-                  />
+              >
+                {avatarSrc && (
+                  <div
+                    className={`relative ${AVATAR_SIZE} rounded-full overflow-hidden flex-shrink-0 ring-2 ring-offset-2`}
+                    style={{
+                      ['--tw-ring-color' as string]: 'var(--border)',
+                      ['--tw-ring-offset-color' as string]: 'var(--background)',
+                    }}
+                  >
+                    <Image
+                      src={avatarSrc}
+                      alt={`Profilbild von ${name}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div>
+                  <cite
+                    className="text-base font-semibold not-italic"
+                    style={{ color: 'var(--foreground)' }}
+                  >
+                    {name}
+                  </cite>
+                  {(role || company) && (
+                    <p
+                      className="text-sm"
+                      style={{ color: 'var(--muted-foreground)' }}
+                    >
+                      {[role, company].filter(Boolean).join(' bei ')}
+                    </p>
+                  )}
                 </div>
-              )}
-            </div>
+
+                {companyLogoSrc && (
+                  <div className={`ml-auto relative ${COMPANY_LOGO_HEIGHT} ${COMPANY_LOGO_WIDTH} opacity-50`}>
+                    <Image
+                      src={companyLogoSrc}
+                      alt={company ? `Logo von ${company}` : 'Firmenlogo'}
+                      fill
+                      className="object-contain object-left"
+                    />
+                  </div>
+                )}
+              </figcaption>
+            </figure>
           </div>
 
           {/* Optional image */}
@@ -175,13 +208,13 @@ export default function TestimonialSingleLarge({
             <div
               className="relative aspect-[4/5] rounded-2xl overflow-hidden"
               style={{
-                animation: 'single-fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both',
-                animationDelay: '0.3s',
+                animation: `single-fade-in ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+                animationDelay: ANIMATION_DELAY_IMAGE,
               }}
             >
               <Image
                 src={imageSrc}
-                alt={imageAlt ?? name}
+                alt={imageAlt ?? `Bild von ${name}`}
                 fill
                 className="object-cover"
               />

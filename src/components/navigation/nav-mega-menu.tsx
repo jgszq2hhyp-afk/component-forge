@@ -1,4 +1,4 @@
-// @version 1.1.0
+// @version 2.0.0
 // @category navigation
 // @name Nav Mega Menu
 // @source custom-implementation
@@ -7,6 +7,17 @@
 
 import { useState, useRef, useEffect, useCallback, useId } from "react";
 import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HOVER_CLOSE_DELAY = 150;
+const DROPDOWN_MIN_WIDTH = "min-w-[480px]";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface MegaMenuItem {
   icon?: React.ReactNode;
@@ -40,6 +51,17 @@ interface NavMegaMenuProps {
   className?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Shared styles
+// ---------------------------------------------------------------------------
+
+const focusRing =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
+// ---------------------------------------------------------------------------
+// Default data
+// ---------------------------------------------------------------------------
+
 const defaultMegaMenus: MegaMenuGroup[] = [
   {
     label: "Products",
@@ -64,6 +86,10 @@ const defaultMegaMenus: MegaMenuGroup[] = [
     ],
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function NavMegaMenu({
   logo = "Brand",
@@ -92,7 +118,7 @@ export default function NavMegaMenu({
   };
 
   const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => setOpenMenu(null), 150);
+    timeoutRef.current = setTimeout(() => setOpenMenu(null), HOVER_CLOSE_DELAY);
   };
 
   const closeMenu = useCallback(() => {
@@ -110,7 +136,6 @@ export default function NavMegaMenu({
         closeMenu();
       } else {
         setOpenMenu(label);
-        // Focus first link in dropdown after render
         requestAnimationFrame(() => {
           const dropdown = dropdownRefs.current.get(label);
           const firstLink = dropdown?.querySelector<HTMLAnchorElement>("a[href]");
@@ -121,7 +146,6 @@ export default function NavMegaMenu({
     [openMenu, closeMenu]
   );
 
-  // Keyboard navigation for dropdown triggers
   const handleTriggerKeyDown = useCallback(
     (e: React.KeyboardEvent, label: string, index: number) => {
       const menuLabels = megaMenus.map((m) => m.label);
@@ -136,7 +160,6 @@ export default function NavMegaMenu({
         case "ArrowDown": {
           e.preventDefault();
           if (openMenu === label) {
-            // Focus first item in open dropdown
             const dropdown = dropdownRefs.current.get(label);
             const firstLink = dropdown?.querySelector<HTMLAnchorElement>("a[href]");
             firstLink?.focus();
@@ -169,7 +192,6 @@ export default function NavMegaMenu({
     [megaMenus, openMenu, toggleMenu, closeMenu]
   );
 
-  // Keyboard navigation inside dropdown
   const handleDropdownKeyDown = useCallback(
     (e: React.KeyboardEvent, label: string) => {
       const dropdown = dropdownRefs.current.get(label);
@@ -192,7 +214,6 @@ export default function NavMegaMenu({
         case "ArrowUp": {
           e.preventDefault();
           if (currentIndex <= 0) {
-            // Return focus to trigger
             const trigger = triggerRefs.current.get(label);
             trigger?.focus();
           } else {
@@ -206,7 +227,6 @@ export default function NavMegaMenu({
           break;
         }
         case "Tab": {
-          // Close on tab out
           closeMenu();
           break;
         }
@@ -215,7 +235,6 @@ export default function NavMegaMenu({
     [closeMenu]
   );
 
-  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (!openMenu) return;
@@ -236,7 +255,6 @@ export default function NavMegaMenu({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openMenu]);
 
-  // Global Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -276,7 +294,7 @@ export default function NavMegaMenu({
           href="/"
           className={cn(
             "text-xl font-bold text-foreground",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+            focusRing,
             "rounded-sm"
           )}
         >
@@ -293,6 +311,7 @@ export default function NavMegaMenu({
               onMouseLeave={handleMouseLeave}
             >
               <button
+                type="button"
                 ref={(el) => {
                   if (el) triggerRefs.current.set(menu.label, el);
                 }}
@@ -302,7 +321,7 @@ export default function NavMegaMenu({
                   "text-muted-foreground",
                   "hover:text-foreground",
                   "hover:bg-muted",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  focusRing,
                   openMenu === menu.label && "text-foreground bg-muted"
                 )}
                 role="menuitem"
@@ -341,7 +360,7 @@ export default function NavMegaMenu({
                     "absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-xl p-6 shadow-xl",
                     "bg-card text-card-foreground",
                     "border border-border",
-                    "min-w-[480px] animate-in fade-in slide-in-from-top-2 duration-200",
+                    `${DROPDOWN_MIN_WIDTH} animate-in fade-in slide-in-from-top-2 duration-200`,
                     "motion-reduce:animate-none motion-reduce:transition-none"
                   )}
                   onMouseEnter={() => handleMouseEnter(menu.label)}
@@ -359,7 +378,7 @@ export default function NavMegaMenu({
                             "flex items-start gap-3 rounded-lg p-3",
                             "transition-colors motion-reduce:transition-none",
                             "hover:bg-muted",
-                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                            focusRing
                           )}
                         >
                           {item.icon && (
@@ -368,12 +387,12 @@ export default function NavMegaMenu({
                             </div>
                           )}
                           <div>
-                            <div className="text-sm font-medium text-foreground">
+                            <span className="text-sm font-medium text-foreground">
                               {item.title}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
+                            </span>
+                            <p className="text-xs text-muted-foreground">
                               {item.description}
-                            </div>
+                            </p>
                           </div>
                         </a>
                       ))}
@@ -387,15 +406,15 @@ export default function NavMegaMenu({
                           "transition-colors motion-reduce:transition-none",
                           "bg-muted",
                           "hover:bg-muted/80",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                          focusRing
                         )}
                       >
-                        <div className="text-sm font-semibold text-foreground">
+                        <span className="text-sm font-semibold text-foreground">
                           {menu.featured.title}
-                        </div>
-                        <div className="mt-1 text-xs text-muted-foreground">
+                        </span>
+                        <p className="mt-1 text-xs text-muted-foreground">
                           {menu.featured.description}
-                        </div>
+                        </p>
                       </a>
                     )}
                   </div>
@@ -415,7 +434,7 @@ export default function NavMegaMenu({
                 "text-muted-foreground",
                 "hover:text-foreground",
                 "hover:bg-muted",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                focusRing
               )}
             >
               {link.label}
@@ -431,7 +450,7 @@ export default function NavMegaMenu({
             "transition-colors motion-reduce:transition-none",
             "bg-primary text-primary-foreground",
             "hover:bg-primary/90",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            focusRing
           )}
         >
           {ctaLabel}
@@ -439,10 +458,11 @@ export default function NavMegaMenu({
 
         {/* Mobile Toggle */}
         <button
+          type="button"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           className={cn(
             "lg:hidden p-2 rounded-lg text-muted-foreground",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            focusRing
           )}
           aria-label={isMobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={isMobileOpen}
@@ -485,7 +505,7 @@ export default function NavMegaMenu({
                     "block rounded-lg px-3 py-2 text-sm text-muted-foreground",
                     "transition-colors motion-reduce:transition-none",
                     "hover:bg-muted hover:text-foreground",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    focusRing
                   )}
                 >
                   {item.title}
@@ -503,7 +523,7 @@ export default function NavMegaMenu({
                 "block rounded-lg px-3 py-2 text-sm text-muted-foreground",
                 "transition-colors motion-reduce:transition-none",
                 "hover:bg-muted hover:text-foreground",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                focusRing
               )}
             >
               {link.label}
@@ -518,7 +538,7 @@ export default function NavMegaMenu({
               "transition-colors motion-reduce:transition-none",
               "bg-primary text-primary-foreground",
               "hover:bg-primary/90",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              focusRing
             )}
           >
             {ctaLabel}

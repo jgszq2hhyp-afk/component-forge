@@ -1,6 +1,23 @@
-// @version 1.0.0 // @category pricing // @name pricing-cards-gradient // @source custom
+// @version 2.0.0
+// @category pricing
+// @name pricing-cards-gradient
+// @source custom
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HEADING_CLAMP = 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)';
+const SUBHEADING_CLAMP = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
+const PRICE_CLAMP = 'clamp(2rem, 1.5rem + 2vw, 2.5rem)';
+const SECTION_MAX_WIDTH = '72rem';
+const GRADIENT_ANGLE_DEG = 145;
+const GRADIENT_MIX_PERCENT = 80;
+const HIGHLIGHTED_MUTED_MIX_PERCENT = 75;
+const BADGE_OFFSET_TOP = '-top-3';
+const BADGE_OFFSET_LEFT = 'left-6';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,16 +76,17 @@ export default function PricingCardsGradient({
 }: PricingCardsGradientProps) {
   return (
     <section
+      aria-label={headline}
       className={cn('px-6 py-20 md:px-12 md:py-28 lg:px-20', className)}
       style={{ backgroundColor: 'var(--background)' }}
     >
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto" style={{ maxWidth: SECTION_MAX_WIDTH }}>
         {/* Header */}
-        <div className="mx-auto mb-14 max-w-2xl text-center">
+        <header className="mx-auto mb-14 max-w-2xl text-center">
           <h2
             className="font-bold tracking-tight"
             style={{
-              fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)',
+              fontSize: HEADING_CLAMP,
               color: 'var(--foreground)',
             }}
           >
@@ -76,24 +94,25 @@ export default function PricingCardsGradient({
           </h2>
           {description && (
             <p
-              className="mt-4 text-base leading-relaxed md:text-lg"
-              style={{ color: 'var(--muted-foreground)' }}
+              className="mt-4 leading-relaxed"
+              style={{
+                color: 'var(--muted-foreground)',
+                fontSize: SUBHEADING_CLAMP,
+              }}
             >
               {description}
             </p>
           )}
-        </div>
+        </header>
 
         {/* Plans */}
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-3" role="list">
           {plans.map((plan) => {
             const isHighlighted = plan.highlighted;
 
-            // Highlighted card gets gradient background
             const cardBg: React.CSSProperties = isHighlighted
               ? {
-                  background:
-                    'linear-gradient(145deg, var(--primary), color-mix(in oklch, var(--primary) 80%, var(--secondary)))',
+                  background: `linear-gradient(${GRADIENT_ANGLE_DEG}deg, var(--primary), color-mix(in oklch, var(--primary) ${GRADIENT_MIX_PERCENT}%, var(--secondary)))`,
                   color: 'var(--primary-foreground)',
                 }
               : {
@@ -102,15 +121,20 @@ export default function PricingCardsGradient({
                   color: 'var(--foreground)',
                 };
 
-            const textColor = isHighlighted ? 'var(--primary-foreground)' : 'var(--foreground)';
+            const textColor = isHighlighted
+              ? 'var(--primary-foreground)'
+              : 'var(--foreground)';
             const mutedColor = isHighlighted
-              ? 'color-mix(in oklch, var(--primary-foreground) 75%, transparent)'
+              ? `color-mix(in oklch, var(--primary-foreground) ${HIGHLIGHTED_MUTED_MIX_PERCENT}%, transparent)`
               : 'var(--muted-foreground)';
-            const checkColor = isHighlighted ? 'var(--primary-foreground)' : 'var(--primary)';
+            const checkColor = isHighlighted
+              ? 'var(--primary-foreground)'
+              : 'var(--primary)';
 
             return (
-              <div
+              <article
                 key={plan.name}
+                role="listitem"
                 className={cn(
                   'relative flex flex-col rounded-2xl p-8',
                   isHighlighted && 'shadow-xl',
@@ -120,7 +144,11 @@ export default function PricingCardsGradient({
                 {/* Badge */}
                 {plan.badge && (
                   <span
-                    className="absolute -top-3 left-6 rounded-full px-3 py-0.5 text-xs font-semibold"
+                    className={cn(
+                      'absolute rounded-full px-3 py-0.5 text-xs font-semibold',
+                      BADGE_OFFSET_TOP,
+                      BADGE_OFFSET_LEFT,
+                    )}
                     style={
                       isHighlighted
                         ? {
@@ -152,8 +180,11 @@ export default function PricingCardsGradient({
                 {/* Price */}
                 <div className="mt-6 flex items-baseline gap-1">
                   <span
-                    className="text-4xl font-bold tracking-tight"
-                    style={{ color: textColor }}
+                    className="font-bold tracking-tight"
+                    style={{
+                      color: textColor,
+                      fontSize: PRICE_CLAMP,
+                    }}
                   >
                     {plan.price}
                   </span>
@@ -165,10 +196,10 @@ export default function PricingCardsGradient({
                 </div>
 
                 {/* Features */}
-                <ul className="mt-8 flex-1 space-y-3">
+                <ul className="mt-8 flex-1 space-y-3" aria-label={`${plan.name} features`}>
                   {plan.features.map((feature) => (
                     <li key={feature.text} className="flex items-start gap-2.5">
-                      <span className="mt-0.5 shrink-0" style={{ color: checkColor }}>
+                      <span className="mt-0.5 shrink-0" style={{ color: checkColor }} aria-hidden="true">
                         <CheckIcon />
                       </span>
                       <span className="text-sm" style={{ color: textColor }}>
@@ -184,26 +215,29 @@ export default function PricingCardsGradient({
                   className={cn(
                     'mt-8 inline-flex items-center justify-center',
                     'rounded-lg px-6 py-3 text-sm font-semibold',
-                    'transition-all duration-200',
-                    'hover:brightness-110 hover:shadow-lg',
+                    'transition-all duration-200 motion-reduce:transition-none',
+                    'hover:brightness-110 hover:shadow-lg motion-reduce:hover:shadow-none',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    'active:scale-[0.98]',
                   )}
                   style={
                     isHighlighted
                       ? {
                           backgroundColor: 'var(--primary-foreground)',
                           color: 'var(--primary)',
+                          ['--tw-ring-color' as string]: 'var(--primary-foreground)',
+                          ['--tw-ring-offset-color' as string]: 'var(--primary)',
                         }
                       : {
                           backgroundColor: 'var(--primary)',
                           color: 'var(--primary-foreground)',
+                          ['--tw-ring-color' as string]: 'var(--primary)',
+                          ['--tw-ring-offset-color' as string]: 'var(--background)',
                         }
                   }
                 >
                   {plan.ctaText}
                 </a>
-              </div>
+              </article>
             );
           })}
         </div>

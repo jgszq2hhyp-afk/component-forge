@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category heroes
 // @name hero-video-background
 // @source https://www.shadcnblocks.com/blocks/hero, https://bundui.io/blocks/marketing/hero-sections
@@ -7,6 +7,22 @@
 
 import { cn } from '@/lib/utils';
 import { useRef, useState } from 'react';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const ANIMATION_DURATION = '0.9s';
+const ANIMATION_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const FADE_UP_TRANSLATE_Y = '28px';
+const FADE_UP_BLUR = '6px';
+const PULSE_RING_SCALE = '1.5';
+const PULSE_RING_DURATION = '2s';
+const HEADLINE_DELAY = '0.1s';
+const SUBHEADLINE_DELAY = '0.25s';
+const CTA_DELAY = '0.4s';
+const DEFAULT_OVERLAY_OPACITY = 0.55;
+const BUTTON_SIZE = 'size-10';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -33,8 +49,8 @@ const keyframes = `
 @keyframes hvb-fade-up {
   from {
     opacity: 0;
-    filter: blur(6px);
-    transform: translateY(28px);
+    filter: blur(${FADE_UP_BLUR});
+    transform: translateY(${FADE_UP_TRANSLATE_Y});
   }
   to {
     opacity: 1;
@@ -49,18 +65,18 @@ const keyframes = `
     opacity: 0.6;
   }
   100% {
-    transform: scale(1.5);
+    transform: scale(${PULSE_RING_SCALE});
     opacity: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hvb-fade-up {
-    from { opacity: 0; }
+    from { opacity: 1; }
     to   { opacity: 1; }
   }
   @keyframes hvb-pulse-ring {
-    0%, 100% { opacity: 0; }
+    0%, 100% { transform: scale(1); opacity: 0; }
   }
 }
 `;
@@ -78,7 +94,7 @@ export default function HeroVideoBackground({
   secondaryCtaHref = '#',
   videoSrc,
   posterSrc,
-  overlayOpacity = 0.55,
+  overlayOpacity = DEFAULT_OVERLAY_OPACITY,
   className,
 }: HeroVideoBackgroundProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -101,6 +117,7 @@ export default function HeroVideoBackground({
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
+        aria-label="Hero with video background"
         className={cn(
           'relative min-h-[90vh] flex items-center justify-center overflow-hidden',
           'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
@@ -137,8 +154,8 @@ export default function HeroVideoBackground({
             style={{
               fontSize: 'clamp(2.5rem, 5vw + 1rem, 5rem)',
               color: 'var(--foreground)',
-              animation: 'hvb-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-              animationDelay: '0.1s',
+              animation: `hvb-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+              animationDelay: HEADLINE_DELAY,
             }}
           >
             {headline}
@@ -146,11 +163,12 @@ export default function HeroVideoBackground({
 
           {subheadline && (
             <p
-              className="mx-auto mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-xl"
+              className="mx-auto mt-5 md:mt-6 leading-relaxed max-w-xl"
               style={{
+                fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)',
                 color: 'var(--muted-foreground)',
-                animation: 'hvb-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-                animationDelay: '0.25s',
+                animation: `hvb-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+                animationDelay: SUBHEADLINE_DELAY,
               }}
             >
               {subheadline}
@@ -161,8 +179,8 @@ export default function HeroVideoBackground({
             <div
               className="mt-8 md:mt-10 flex flex-wrap items-center justify-center gap-4"
               style={{
-                animation: 'hvb-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-                animationDelay: '0.4s',
+                animation: `hvb-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+                animationDelay: CTA_DELAY,
               }}
             >
               {ctaText && (
@@ -171,10 +189,10 @@ export default function HeroVideoBackground({
                   className={cn(
                     'inline-flex items-center justify-center',
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
-                    'transition-all duration-200',
+                    'transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110 hover:shadow-lg',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    'active:scale-[0.98]',
+                    'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
@@ -193,10 +211,10 @@ export default function HeroVideoBackground({
                   className={cn(
                     'inline-flex items-center justify-center',
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
-                    'border backdrop-blur-sm transition-all duration-200',
+                    'border backdrop-blur-sm transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    'active:scale-[0.98]',
+                    'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     color: 'var(--foreground)',
@@ -216,17 +234,19 @@ export default function HeroVideoBackground({
         {/* Pause/play toggle */}
         <button
           onClick={toggleVideo}
+          type="button"
           className={cn(
             'absolute bottom-6 right-6 z-10',
-            'flex items-center justify-center size-10 rounded-full',
-            'backdrop-blur-md transition-all duration-200',
-            'hover:scale-110',
-            'focus-visible:outline-none focus-visible:ring-2',
+            `flex items-center justify-center ${BUTTON_SIZE} rounded-full`,
+            'backdrop-blur-md transition-all duration-200 motion-reduce:transition-none',
+            'hover:scale-110 motion-reduce:hover:scale-100',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           )}
           style={{
             backgroundColor: 'color-mix(in srgb, var(--background) 40%, transparent)',
             color: 'var(--foreground)',
             ['--tw-ring-color' as string]: 'var(--primary)',
+            ['--tw-ring-offset-color' as string]: 'var(--background)',
           }}
           aria-label={isPaused ? 'Play background video' : 'Pause background video'}
         >
@@ -247,7 +267,7 @@ export default function HeroVideoBackground({
           className="absolute bottom-6 right-6 size-10 rounded-full pointer-events-none"
           style={{
             border: '2px solid var(--primary)',
-            animation: 'hvb-pulse-ring 2s ease-out infinite',
+            animation: `hvb-pulse-ring ${PULSE_RING_DURATION} ease-out infinite`,
           }}
           aria-hidden="true"
         />

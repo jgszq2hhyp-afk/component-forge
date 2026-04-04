@@ -1,9 +1,27 @@
-// @version 1.0.0 // @category pricing // @name pricing-toggle-monthly // @source custom
+// @version 2.0.0
+// @category pricing
+// @name pricing-toggle-monthly
+// @source custom
 
 'use client';
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HEADING_CLAMP = 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)';
+const SUBHEADING_CLAMP = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
+const PRICE_CLAMP = 'clamp(2rem, 1.5rem + 2vw, 2.5rem)';
+const SECTION_MAX_WIDTH = '72rem';
+const SWITCH_WIDTH = 'w-12';
+const SWITCH_HEIGHT = 'h-7';
+const SWITCH_THUMB_SIZE = 'h-5 w-5';
+const SWITCH_THUMB_OFF_PX = '4px';
+const SWITCH_THUMB_ON_PX = '22px';
+const CTA_ACTIVE_SCALE = '0.98';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -71,16 +89,17 @@ export default function PricingToggleMonthly({
 
   return (
     <section
+      aria-label={headline}
       className={cn('px-6 py-20 md:px-12 md:py-28 lg:px-20', className)}
       style={{ backgroundColor: 'var(--background)' }}
     >
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto" style={{ maxWidth: SECTION_MAX_WIDTH }}>
         {/* Header */}
-        <div className="mx-auto mb-10 max-w-2xl text-center">
+        <header className="mx-auto mb-10 max-w-2xl text-center">
           <h2
             className="font-bold tracking-tight"
             style={{
-              fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)',
+              fontSize: HEADING_CLAMP,
               color: 'var(--foreground)',
             }}
           >
@@ -88,18 +107,23 @@ export default function PricingToggleMonthly({
           </h2>
           {description && (
             <p
-              className="mt-4 text-base leading-relaxed md:text-lg"
-              style={{ color: 'var(--muted-foreground)' }}
+              className="mt-4 leading-relaxed"
+              style={{
+                color: 'var(--muted-foreground)',
+                fontSize: SUBHEADING_CLAMP,
+              }}
             >
               {description}
             </p>
           )}
-        </div>
+        </header>
 
         {/* Toggle */}
-        <div className="mb-12 flex items-center justify-center gap-3">
+        <fieldset className="mb-12 flex items-center justify-center gap-3 border-none p-0">
+          <legend className="sr-only">Billing period</legend>
           <span
             className="text-sm font-medium"
+            id="toggle-monthly-label"
             style={{
               color: !isYearly ? 'var(--foreground)' : 'var(--muted-foreground)',
             }}
@@ -113,8 +137,10 @@ export default function PricingToggleMonthly({
             aria-label={`Switch to ${isYearly ? 'monthly' : 'yearly'} billing`}
             onClick={() => setIsYearly((prev) => !prev)}
             className={cn(
-              'relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full',
-              'transition-colors duration-200',
+              'relative inline-flex shrink-0 cursor-pointer items-center rounded-full',
+              SWITCH_WIDTH,
+              SWITCH_HEIGHT,
+              'transition-colors duration-200 motion-reduce:transition-none',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
             )}
             style={{
@@ -126,22 +152,29 @@ export default function PricingToggleMonthly({
             }}
           >
             <span
-              className="pointer-events-none block h-5 w-5 rounded-full shadow-sm transition-transform duration-200"
+              className={cn(
+                'pointer-events-none block rounded-full shadow-sm',
+                SWITCH_THUMB_SIZE,
+                'transition-transform duration-200 motion-reduce:transition-none',
+              )}
               style={{
                 backgroundColor: 'var(--background)',
-                transform: isYearly ? 'translateX(22px)' : 'translateX(4px)',
+                transform: isYearly
+                  ? `translateX(${SWITCH_THUMB_ON_PX})`
+                  : `translateX(${SWITCH_THUMB_OFF_PX})`,
               }}
             />
           </button>
           <span
             className="flex items-center gap-1.5 text-sm font-medium"
+            id="toggle-yearly-label"
             style={{
               color: isYearly ? 'var(--foreground)' : 'var(--muted-foreground)',
             }}
           >
             {yearlyLabel}
             {yearlySavingsBadge && (
-              <span
+              <mark
                 className="rounded-full px-2 py-0.5 text-xs font-semibold"
                 style={{
                   backgroundColor: 'color-mix(in oklch, var(--primary) 15%, transparent)',
@@ -149,16 +182,17 @@ export default function PricingToggleMonthly({
                 }}
               >
                 {yearlySavingsBadge}
-              </span>
+              </mark>
             )}
           </span>
-        </div>
+        </fieldset>
 
         {/* Plans */}
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-3" role="list">
           {plans.map((plan) => (
-            <div
+            <article
               key={plan.name}
+              role="listitem"
               className={cn(
                 'relative flex flex-col rounded-2xl border p-8',
                 plan.highlighted && 'shadow-lg',
@@ -195,8 +229,11 @@ export default function PricingToggleMonthly({
               {/* Price with toggle */}
               <div className="mt-6 flex items-baseline gap-1">
                 <span
-                  className="text-4xl font-bold tracking-tight"
-                  style={{ color: 'var(--foreground)' }}
+                  className="font-bold tracking-tight"
+                  style={{
+                    color: 'var(--foreground)',
+                    fontSize: PRICE_CLAMP,
+                  }}
                 >
                   {isYearly ? plan.yearlyPrice : plan.monthlyPrice}
                 </span>
@@ -206,11 +243,12 @@ export default function PricingToggleMonthly({
               </div>
 
               {/* Features */}
-              <ul className="mt-8 flex-1 space-y-3">
+              <ul className="mt-8 flex-1 space-y-3" aria-label={`${plan.name} features`}>
                 {plan.features.map((feature) => (
                   <li key={feature.text} className="flex items-start gap-2.5">
                     <span
                       className="mt-0.5 shrink-0"
+                      aria-hidden="true"
                       style={{
                         color: feature.included ? 'var(--primary)' : 'var(--muted-foreground)',
                         opacity: feature.included ? 1 : 0.4,
@@ -236,10 +274,9 @@ export default function PricingToggleMonthly({
                 className={cn(
                   'mt-8 inline-flex items-center justify-center',
                   'rounded-lg px-6 py-3 text-sm font-semibold',
-                  'transition-all duration-200',
+                  'transition-all duration-200 motion-reduce:transition-none',
                   'hover:brightness-110',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                  'active:scale-[0.98]',
                 )}
                 style={
                   plan.highlighted
@@ -247,18 +284,20 @@ export default function PricingToggleMonthly({
                         backgroundColor: 'var(--primary)',
                         color: 'var(--primary-foreground)',
                         ['--tw-ring-color' as string]: 'var(--primary)',
+                        ['--tw-ring-offset-color' as string]: 'var(--background)',
                       }
                     : {
                         backgroundColor: 'transparent',
                         color: 'var(--foreground)',
                         border: '1px solid var(--border)',
                         ['--tw-ring-color' as string]: 'var(--foreground)',
+                        ['--tw-ring-offset-color' as string]: 'var(--background)',
                       }
                 }
               >
                 {plan.ctaText}
               </a>
-            </div>
+            </article>
           ))}
         </div>
       </div>
