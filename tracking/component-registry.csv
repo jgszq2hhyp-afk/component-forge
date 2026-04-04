@@ -88,3 +88,17 @@ id,category,name,version,score,accessibility,performance,visual,code,responsive,
 87,cta,cta-card-centered,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
 88,cta,cta-with-testimonial,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
 89,cta,cta-newsletter,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+90,faq,faq-alternating-cards,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+91,faq,faq-timeline,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+92,faq,faq-tabs-grouped,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+93,faq,faq-expandable-grid,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+94,animations,parallax-layer,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+95,animations,scroll-progress-bar,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+96,animations,counter-animate,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+97,animations,fade-in-up,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+98,animations,blur-fade,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+99,animations,stagger-children,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+100,animations,magnetic-button,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+101,animations,card-lift,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+102,animations,ripple-effect,1.0.0,,,,,,,,production,2026-04-05,2026-04-05
+103,animations,text-reveal,1.0.0,,,,,,,,production,2026-04-05,2026-04-05

@@ -22,6 +22,6 @@ priority,category,name,action,reason,status,notes
 22,team,bulk-import,import,fill-library,completed,5 team variants imported
 23,blog,bulk-import,import,fill-library,completed,4 blog variants imported
 24,error,bulk-import,import,fill-library,completed,4 error page variants imported
-25,animations,bulk-import,import,fill-library,not-started,Import 10-15 animation utilities
+25,animations,bulk-import,import,fill-library,completed,10 animation utilities imported
 26,cta,bulk-import-extra,import,fill-library,completed,5 extra CTA variants imported (total 7)
-27,faq,bulk-import-extra,import,fill-library,not-started,Import 4 more FAQ variants to reach target
+27,faq,bulk-import-extra,import,fill-library,completed,4 extra FAQ variants imported (total 8)
