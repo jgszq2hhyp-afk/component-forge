@@ -1,9 +1,17 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category features
 // @name feature-comparison
 // @source self-authored
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const ICON_SIZE = 20;
+const MAX_CONTENT_WIDTH = "56rem"; // max-w-4xl
+const MAX_HEADER_WIDTH = "42rem"; // max-w-2xl
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,6 +28,7 @@ interface FeatureComparisonProps {
   subheadline?: string;
   ourLabel?: string;
   theirLabel?: string;
+  featureColumnLabel?: string;
   features: ComparisonFeature[];
   className?: string;
 }
@@ -31,11 +40,12 @@ interface FeatureComparisonProps {
 function CheckCircle() {
   return (
     <svg
-      width="20"
-      height="20"
+      width={ICON_SIZE}
+      height={ICON_SIZE}
       viewBox="0 0 20 20"
       fill="none"
-      aria-label="Ja"
+      role="img"
+      aria-label="Yes"
     >
       <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5" />
       <path
@@ -52,11 +62,12 @@ function CheckCircle() {
 function XCircle() {
   return (
     <svg
-      width="20"
-      height="20"
+      width={ICON_SIZE}
+      height={ICON_SIZE}
       viewBox="0 0 20 20"
       fill="none"
-      aria-label="Nein"
+      role="img"
+      aria-label="No"
     >
       <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5" />
       <path
@@ -80,15 +91,15 @@ function CellValue({
   value: string | boolean;
   isOurs: boolean;
 }) {
-  if (typeof value === 'boolean') {
+  if (typeof value === "boolean") {
     return (
       <span
         style={{
           color: value
             ? isOurs
-              ? 'var(--primary)'
-              : 'var(--muted-foreground)'
-            : 'var(--muted-foreground)',
+              ? "var(--primary)"
+              : "var(--muted-foreground)"
+            : "var(--muted-foreground)",
           opacity: value ? 1 : 0.4,
         }}
       >
@@ -101,7 +112,7 @@ function CellValue({
     <span
       className="text-sm font-medium"
       style={{
-        color: isOurs ? 'var(--foreground)' : 'var(--muted-foreground)',
+        color: isOurs ? "var(--foreground)" : "var(--muted-foreground)",
       }}
     >
       {value}
@@ -110,32 +121,43 @@ function CellValue({
 }
 
 // ---------------------------------------------------------------------------
-// Component
+// Component (Server Component)
 // ---------------------------------------------------------------------------
 
 export default function FeatureComparison({
   headline,
   subheadline,
-  ourLabel = 'Wir',
-  theirLabel = 'Andere',
+  ourLabel = "Us",
+  theirLabel = "Others",
+  featureColumnLabel = "Feature",
   features,
   className,
 }: FeatureComparisonProps) {
   return (
     <section
+      aria-label={headline ?? "Feature comparison"}
       className={cn(
-        'max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
+        "mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24",
         className,
       )}
-      style={{ backgroundColor: 'var(--background)' }}
+      style={{
+        maxWidth: MAX_CONTENT_WIDTH,
+        backgroundColor: "var(--background)",
+      }}
     >
       {/* Header */}
       {(headline || subheadline) && (
-        <div className="max-w-2xl mx-auto text-center mb-12 lg:mb-16">
+        <div
+          className="mx-auto text-center mb-12 lg:mb-16"
+          style={{ maxWidth: MAX_HEADER_WIDTH }}
+        >
           {headline && (
             <h2
-              className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight"
-              style={{ color: 'var(--foreground)' }}
+              className="font-bold tracking-tight"
+              style={{
+                fontSize: "clamp(1.875rem, 2.5vw + 0.5rem, 3rem)",
+                color: "var(--foreground)",
+              }}
             >
               {headline}
             </h2>
@@ -143,7 +165,7 @@ export default function FeatureComparison({
           {subheadline && (
             <p
               className="mt-4 text-lg leading-relaxed"
-              style={{ color: 'var(--muted-foreground)' }}
+              style={{ color: "var(--muted-foreground)" }}
             >
               {subheadline}
             </p>
@@ -151,71 +173,83 @@ export default function FeatureComparison({
         </div>
       )}
 
-      {/* Table */}
-      <div
-        className="rounded-2xl border overflow-hidden"
-        style={{
-          backgroundColor: 'var(--card)',
-          borderColor: 'var(--border)',
-        }}
-      >
-        {/* Header row */}
+      {/* Responsive table wrapper: horizontal scroll on small screens */}
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
         <div
-          className="grid grid-cols-3 gap-4 px-6 py-4 border-b"
-          style={{ borderColor: 'var(--border)' }}
+          className="rounded-2xl border overflow-hidden"
+          style={{
+            backgroundColor: "var(--card)",
+            borderColor: "var(--border)",
+            minWidth: "28rem",
+          }}
+          role="table"
+          aria-label={headline ?? "Feature comparison table"}
         >
-          <div className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>
-            Feature
-          </div>
-          <div className="text-center">
-            <span
-              className="inline-block text-sm font-bold px-3 py-1 rounded-full"
-              style={{
-                backgroundColor: 'var(--primary)',
-                color: 'var(--primary-foreground)',
-              }}
-            >
-              {ourLabel}
-            </span>
-          </div>
-          <div className="text-center">
-            <span
-              className="text-sm font-medium"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              {theirLabel}
-            </span>
-          </div>
-        </div>
-
-        {/* Feature rows */}
-        {features.map((feature, index) => (
+          {/* Header row */}
           <div
-            key={index}
-            className={cn(
-              'grid grid-cols-3 gap-4 px-6 py-4',
-              index < features.length - 1 && 'border-b',
-            )}
-            style={{
-              borderColor: 'var(--border)',
-              backgroundColor:
-                index % 2 === 0 ? 'transparent' : 'var(--accent)',
-            }}
+            className="grid grid-cols-3 gap-4 px-4 sm:px-6 py-4 border-b"
+            style={{ borderColor: "var(--border)" }}
+            role="row"
           >
             <div
               className="text-sm font-medium"
-              style={{ color: 'var(--foreground)' }}
+              style={{ color: "var(--muted-foreground)" }}
+              role="columnheader"
             >
-              {feature.label}
+              {featureColumnLabel}
             </div>
-            <div className="flex justify-center">
-              <CellValue value={feature.ours} isOurs />
+            <div className="text-center" role="columnheader">
+              <span
+                className="inline-block text-sm font-bold px-3 py-1 rounded-full"
+                style={{
+                  backgroundColor: "var(--primary)",
+                  color: "var(--primary-foreground)",
+                }}
+              >
+                {ourLabel}
+              </span>
             </div>
-            <div className="flex justify-center">
-              <CellValue value={feature.theirs} isOurs={false} />
+            <div className="text-center" role="columnheader">
+              <span
+                className="text-sm font-medium"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                {theirLabel}
+              </span>
             </div>
           </div>
-        ))}
+
+          {/* Feature rows */}
+          {features.map((feature, index) => (
+            <div
+              key={feature.label}
+              className={cn(
+                "grid grid-cols-3 gap-4 px-4 sm:px-6 py-4",
+                index < features.length - 1 && "border-b",
+              )}
+              style={{
+                borderColor: "var(--border)",
+                backgroundColor:
+                  index % 2 === 0 ? "transparent" : "var(--accent)",
+              }}
+              role="row"
+            >
+              <div
+                className="text-sm font-medium"
+                style={{ color: "var(--foreground)" }}
+                role="cell"
+              >
+                {feature.label}
+              </div>
+              <div className="flex justify-center" role="cell">
+                <CellValue value={feature.ours} isOurs />
+              </div>
+              <div className="flex justify-center" role="cell">
+                <CellValue value={feature.theirs} isOurs={false} />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

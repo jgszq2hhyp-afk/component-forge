@@ -1,6 +1,15 @@
-// @version 1.0.0 // @category footers // @name footer-mega-columns // @source custom
+// @version 2.0.0
+// @category footers
+// @name footer-mega-columns
+// @source custom
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const LINK_TRANSITION_DURATION = '200ms';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -41,6 +50,7 @@ export default function FooterMegaColumns({
 
   return (
     <footer
+      aria-label="Site footer"
       className={cn(
         'px-6 pt-16 pb-8 md:px-12 lg:px-20',
         className,
@@ -56,16 +66,22 @@ export default function FooterMegaColumns({
               <div className="mb-4">{logo}</div>
             ) : (
               <p
-                className="mb-4 text-lg font-bold tracking-tight"
-                style={{ color: 'var(--foreground)' }}
+                className="mb-4 font-bold tracking-tight"
+                style={{
+                  fontSize: 'clamp(1rem, 0.5vw + 0.875rem, 1.25rem)',
+                  color: 'var(--foreground)',
+                }}
               >
                 {companyName}
               </p>
             )}
             {description && (
               <p
-                className="text-sm leading-relaxed"
-                style={{ color: 'var(--muted-foreground)' }}
+                className="leading-relaxed"
+                style={{
+                  fontSize: 'clamp(0.8125rem, 0.25vw + 0.75rem, 0.9375rem)',
+                  color: 'var(--muted-foreground)',
+                }}
               >
                 {description}
               </p>
@@ -74,27 +90,40 @@ export default function FooterMegaColumns({
 
           {/* Link columns */}
           {columns.map((column) => (
-            <div key={column.title}>
+            <nav key={column.title} aria-label={`${column.title} links`}>
               <h3
-                className="mb-4 text-sm font-semibold uppercase tracking-wider"
-                style={{ color: 'var(--foreground)' }}
+                className="mb-4 font-semibold uppercase tracking-wider"
+                style={{
+                  fontSize: 'clamp(0.75rem, 0.2vw + 0.7rem, 0.875rem)',
+                  color: 'var(--foreground)',
+                }}
               >
                 {column.title}
               </h3>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2.5" role="list">
                 {column.links.map((link) => (
                   <li key={link.label}>
                     <a
                       href={link.href}
                       className={cn(
-                        'text-sm transition-colors duration-200',
-                        'hover:underline underline-offset-4',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-sm',
+                        'inline-block rounded-sm',
+                        'underline-offset-4',
+                        'transition-colors',
+                        'hover:underline',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                       )}
                       style={{
+                        fontSize: 'clamp(0.8125rem, 0.2vw + 0.75rem, 0.9375rem)',
                         color: 'var(--muted-foreground)',
-                        ['--tw-ring-color' as string]: 'var(--primary)',
+                        transitionDuration: LINK_TRANSITION_DURATION,
+                        ['--tw-ring-color' as string]: 'var(--ring, var(--primary))',
                         ['--tw-ring-offset-color' as string]: 'var(--background)',
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.color = 'var(--foreground)';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.color = 'var(--muted-foreground)';
                       }}
                     >
                       {link.label}
@@ -102,20 +131,25 @@ export default function FooterMegaColumns({
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
           ))}
         </div>
 
         {/* Divider */}
-        <div
-          className="mt-12 mb-6 h-px"
+        <hr
+          className="mt-12 mb-6 border-0 h-px"
           style={{ backgroundColor: 'var(--border)' }}
           aria-hidden="true"
         />
 
         {/* Bottom row */}
-        <div className="flex flex-col items-center justify-between gap-4 text-sm sm:flex-row">
-          <p style={{ color: 'var(--muted-foreground)' }}>
+        <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <p
+            style={{
+              fontSize: 'clamp(0.75rem, 0.2vw + 0.7rem, 0.875rem)',
+              color: 'var(--muted-foreground)',
+            }}
+          >
             &copy; {currentYear} {companyName}. All rights reserved.
           </p>
           {bottomLinks && bottomLinks.length > 0 && (
@@ -124,8 +158,26 @@ export default function FooterMegaColumns({
                 <a
                   key={link.label}
                   href={link.href}
-                  className="transition-colors duration-200 hover:underline underline-offset-4"
-                  style={{ color: 'var(--muted-foreground)' }}
+                  className={cn(
+                    'inline-block rounded-sm',
+                    'underline-offset-4',
+                    'transition-colors',
+                    'hover:underline',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                  )}
+                  style={{
+                    fontSize: 'clamp(0.75rem, 0.2vw + 0.7rem, 0.875rem)',
+                    color: 'var(--muted-foreground)',
+                    transitionDuration: LINK_TRANSITION_DURATION,
+                    ['--tw-ring-color' as string]: 'var(--ring, var(--primary))',
+                    ['--tw-ring-offset-color' as string]: 'var(--background)',
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLAnchorElement).style.color = 'var(--foreground)';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLAnchorElement).style.color = 'var(--muted-foreground)';
+                  }}
                 >
                   {link.label}
                 </a>

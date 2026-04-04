@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category heroes
 // @name hero-parallax
 // @source https://tw-elements.com/docs/standard/extended/parallax/, https://www.hover.dev/components/heros
@@ -7,7 +7,16 @@
 
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const PARALLAX_DAMPING = 0.3;
+const FADE_IN_DURATION = '0.9s';
+const FADE_IN_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const MOBILE_BREAKPOINT = 768;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,6 +35,8 @@ interface HeroParallaxProps {
   ctaHref?: string;
   layers: ParallaxLayer[];
   overlayOpacity?: number;
+  /** Disable parallax effect on mobile viewports (default: true) */
+  disableOnMobile?: boolean;
   className?: string;
 }
 
@@ -52,6 +63,10 @@ const keyframes = `
     from { opacity: 0; }
     to   { opacity: 1; }
   }
+
+  .hp-parallax-layer {
+    transform: none !important;
+  }
 }
 `;
 
@@ -66,26 +81,38 @@ export default function HeroParallax({
   ctaHref = '#',
   layers,
   overlayOpacity = 0.45,
+  disableOnMobile = true,
   className,
 }: HeroParallaxProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  const [scrollY, setScrollY] = useState(0);
+  const scrollYRef = useRef(0);
   const rafRef = useRef<number>(0);
+  const layerRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const updateParallax = useCallback(() => {
+    if (!sectionRef.current) return;
+    const rect = sectionRef.current.getBoundingClientRect();
+    if (rect.bottom > 0 && rect.top < window.innerHeight) {
+      scrollYRef.current = -rect.top;
+      layerRefs.current.forEach((el, i) => {
+        if (el && layers[i]) {
+          const offset = scrollYRef.current * (layers[i].speed - 1) * PARALLAX_DAMPING;
+          el.style.transform = `translate3d(0, ${offset}px, 0)`;
+        }
+      });
+    }
+  }, [layers]);
 
   useEffect(() => {
     // Respect prefers-reduced-motion
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (mq.matches) return;
 
+    // Disable parallax on mobile if configured
+    if (disableOnMobile && window.innerWidth < MOBILE_BREAKPOINT) return;
+
     function onScroll() {
-      rafRef.current = requestAnimationFrame(() => {
-        if (!sectionRef.current) return;
-        const rect = sectionRef.current.getBoundingClientRect();
-        // Only calculate when section is visible
-        if (rect.bottom > 0 && rect.top < window.innerHeight) {
-          setScrollY(-rect.top);
-        }
-      });
+      rafRef.current = requestAnimationFrame(updateParallax);
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -93,7 +120,7 @@ export default function HeroParallax({
       window.removeEventListener('scroll', onScroll);
       cancelAnimationFrame(rafRef.current);
     };
-  }, []);
+  }, [disableOnMobile, updateParallax]);
 
   return (
     <>
@@ -101,6 +128,8 @@ export default function HeroParallax({
 
       <section
         ref={sectionRef}
+        aria-label={headline}
+        role="banner"
         className={cn(
           'relative min-h-[90vh] flex items-center justify-center overflow-hidden',
           'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
@@ -110,11 +139,9 @@ export default function HeroParallax({
         {/* Parallax layers */}
         {layers.map((layer, i) => (
           <div
-            key={i}
-            className="absolute inset-0 will-change-transform"
-            style={{
-              transform: `translate3d(0, ${scrollY * (layer.speed - 1) * 0.3}px, 0)`,
-            }}
+            key={`${layer.imageSrc}-${i}`}
+            ref={(el) => { layerRefs.current[i] = el; }}
+            className="hp-parallax-layer absolute inset-0 will-change-transform"
             aria-hidden="true"
           >
             <Image
@@ -124,6 +151,7 @@ export default function HeroParallax({
               sizes="100vw"
               className="object-cover"
               priority={i === 0}
+              loading={i === 0 ? 'eager' : 'lazy'}
             />
           </div>
         ))}
@@ -142,9 +170,9 @@ export default function HeroParallax({
           <h1
             className="font-bold tracking-tight leading-[1.08]"
             style={{
-              fontSize: 'clamp(2.5rem, 5vw + 1rem, 5rem)',
+              fontSize: 'clamp(2.25rem, 5vw + 1rem, 5rem)',
               color: 'var(--foreground)',
-              animation: 'hp-fade-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: `hp-fade-in ${FADE_IN_DURATION} ${FADE_IN_EASING} both`,
               animationDelay: '0.15s',
             }}
           >
@@ -153,10 +181,11 @@ export default function HeroParallax({
 
           {subheadline && (
             <p
-              className="mx-auto mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-xl"
+              className="mx-auto mt-5 md:mt-6 leading-relaxed max-w-xl"
               style={{
+                fontSize: 'clamp(1rem, 1vw + 0.75rem, 1.25rem)',
                 color: 'var(--muted-foreground)',
-                animation: 'hp-fade-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+                animation: `hp-fade-in ${FADE_IN_DURATION} ${FADE_IN_EASING} both`,
                 animationDelay: '0.3s',
               }}
             >
@@ -168,24 +197,26 @@ export default function HeroParallax({
             <div
               className="mt-8 md:mt-10"
               style={{
-                animation: 'hp-fade-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+                animation: `hp-fade-in ${FADE_IN_DURATION} ${FADE_IN_EASING} both`,
                 animationDelay: '0.45s',
               }}
             >
               <a
                 href={ctaHref}
+                aria-label={ctaText}
                 className={cn(
                   'inline-flex items-center justify-center',
-                  'rounded-lg px-8 py-4 text-base font-semibold',
+                  'rounded-lg px-8 py-4 font-semibold',
                   'transition-all duration-200',
                   'hover:brightness-110 hover:shadow-xl',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                   'active:scale-[0.98]',
                 )}
                 style={{
+                  fontSize: 'clamp(0.875rem, 0.5vw + 0.75rem, 1.125rem)',
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',
-                  ['--tw-ring-color' as string]: 'var(--primary)',
+                  ['--tw-ring-color' as string]: 'var(--ring, var(--primary))',
                   ['--tw-ring-offset-color' as string]: 'var(--background)',
                 }}
               >

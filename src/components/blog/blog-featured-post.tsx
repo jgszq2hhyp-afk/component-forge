@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category blog
 // @name blog-featured-post
 // @source custom
@@ -6,6 +6,18 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const FEATURED_ASPECT_RATIO = '21 / 9';
+const FEATURED_ASPECT_RATIO_MD = '2.5 / 1';
+const FEATURED_SHADOW = '0 16px 48px color-mix(in srgb, var(--foreground) 12%, transparent)';
+const FEATURED_IMAGE_ZOOM = '1.03';
+const SECONDARY_LIFT = '-3px';
+const SECONDARY_SHADOW = '0 8px 24px color-mix(in srgb, var(--foreground) 8%, transparent)';
+const SECONDARY_IMAGE_ZOOM = '1.04';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,6 +51,7 @@ export default function BlogFeaturedPost({
 }: BlogFeaturedPostProps) {
   return (
     <section
+      aria-label="Featured blog posts"
       className={cn('px-6 py-16 md:px-12 md:py-24 lg:px-20', className)}
       style={{ backgroundColor: 'var(--background)' }}
     >
@@ -46,11 +59,22 @@ export default function BlogFeaturedPost({
         {/* Featured hero post */}
         <Link
           href={`/blog/${featured.slug}`}
-          className="group relative block overflow-hidden rounded-2xl featured-post-hover"
-          style={{ backgroundColor: 'var(--card)' }}
+          aria-label={`Featured post: ${featured.title}`}
+          className={cn(
+            'group relative block overflow-hidden rounded-2xl featured-post-hover',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          )}
+          style={{
+            backgroundColor: 'var(--card)',
+            ['--tw-ring-color' as string]: 'var(--ring, var(--primary))',
+            ['--tw-ring-offset-color' as string]: 'var(--background)',
+          }}
         >
           {featured.imageSrc && (
-            <div className="relative aspect-[21/9] md:aspect-[2.5/1]">
+            <figure
+              className="relative"
+              style={{ aspectRatio: FEATURED_ASPECT_RATIO }}
+            >
               <Image
                 src={featured.imageSrc}
                 alt={featured.imageAlt ?? featured.title}
@@ -68,7 +92,7 @@ export default function BlogFeaturedPost({
                 }}
                 aria-hidden="true"
               />
-            </div>
+            </figure>
           )}
 
           {/* Overlay text */}
@@ -94,8 +118,11 @@ export default function BlogFeaturedPost({
               {featured.title}
             </h2>
             <p
-              className="mt-2 line-clamp-2 max-w-2xl text-sm md:text-base leading-relaxed"
-              style={{ color: 'color-mix(in srgb, var(--background) 80%, transparent)' }}
+              className="mt-2 line-clamp-2 max-w-2xl leading-relaxed"
+              style={{
+                fontSize: 'clamp(0.875rem, 0.25vw + 0.8rem, 1rem)',
+                color: 'color-mix(in srgb, var(--background) 80%, transparent)',
+              }}
             >
               {featured.excerpt}
             </p>
@@ -103,7 +130,7 @@ export default function BlogFeaturedPost({
               {featured.author?.avatarSrc && (
                 <Image
                   src={featured.author.avatarSrc}
-                  alt={featured.author.name}
+                  alt={`Photo of ${featured.author.name}`}
                   width={28}
                   height={28}
                   sizes="28px"
@@ -119,6 +146,7 @@ export default function BlogFeaturedPost({
               <span
                 className="text-sm"
                 style={{ color: 'color-mix(in srgb, var(--background) 60%, transparent)' }}
+                aria-hidden="true"
               >
                 &middot;
               </span>
@@ -134,23 +162,39 @@ export default function BlogFeaturedPost({
         </Link>
 
         {/* Secondary posts row */}
-        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div
+          className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+          role="list"
+        >
           {secondary.slice(0, 3).map((post) => (
             <article
               key={post.slug}
-              className="group flex flex-col overflow-hidden rounded-xl secondary-card-hover"
+              role="listitem"
+              className={cn(
+                'group flex flex-col overflow-hidden rounded-xl secondary-card-hover',
+                'focus-within:ring-2 focus-within:ring-offset-2',
+              )}
               style={{
                 backgroundColor: 'var(--card)',
                 borderWidth: '1px',
                 borderColor: 'var(--border)',
+                ['--tw-ring-color' as string]: 'var(--ring, var(--primary))',
+                ['--tw-ring-offset-color' as string]: 'var(--background)',
               }}
             >
               {post.imageSrc && (
-                <Link href={`/blog/${post.slug}`} className="relative block aspect-[16/9] overflow-hidden">
+                <Link
+                  href={`/blog/${post.slug}`}
+                  className="relative block overflow-hidden focus-visible:outline-none"
+                  style={{ aspectRatio: '16 / 9' }}
+                  tabIndex={-1}
+                  aria-hidden="true"
+                >
                   <Image
                     src={post.imageSrc}
                     alt={post.imageAlt ?? post.title}
                     fill
+                    loading="lazy"
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover secondary-image-zoom"
                   />
@@ -165,10 +209,24 @@ export default function BlogFeaturedPost({
                     {post.category}
                   </span>
                 )}
-                <Link href={`/blog/${post.slug}`}>
+                <Link
+                  href={`/blog/${post.slug}`}
+                  aria-label={`Read: ${post.title}`}
+                  className={cn(
+                    'rounded-sm',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                  )}
+                  style={{
+                    ['--tw-ring-color' as string]: 'var(--ring, var(--primary))',
+                    ['--tw-ring-offset-color' as string]: 'var(--background)',
+                  }}
+                >
                   <h3
-                    className="text-base font-semibold leading-snug md:text-lg"
-                    style={{ color: 'var(--card-foreground)' }}
+                    className="font-semibold leading-snug"
+                    style={{
+                      fontSize: 'clamp(0.95rem, 0.3vw + 0.85rem, 1.125rem)',
+                      color: 'var(--card-foreground)',
+                    }}
                   >
                     {post.title}
                   </h3>
@@ -185,7 +243,7 @@ export default function BlogFeaturedPost({
                       {post.author.name}
                     </span>
                   )}
-                  <span style={{ color: 'var(--muted-foreground)' }}>&middot;</span>
+                  <span style={{ color: 'var(--muted-foreground)' }} aria-hidden="true">&middot;</span>
                   <time dateTime={post.publishedAt} style={{ color: 'var(--muted-foreground)' }}>
                     {post.publishedAt}
                   </time>
@@ -202,26 +260,26 @@ export default function BlogFeaturedPost({
           transition: box-shadow 0.3s ease;
         }
         .featured-post-hover:hover {
-          box-shadow: 0 16px 48px color-mix(in srgb, var(--foreground) 12%, transparent);
+          box-shadow: ${FEATURED_SHADOW};
         }
         .featured-image-zoom {
           transition: transform 0.5s ease;
         }
         .featured-post-hover:hover .featured-image-zoom {
-          transform: scale(1.03);
+          transform: scale(${FEATURED_IMAGE_ZOOM});
         }
         .secondary-card-hover {
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         .secondary-card-hover:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 24px color-mix(in srgb, var(--foreground) 8%, transparent);
+          transform: translateY(${SECONDARY_LIFT});
+          box-shadow: ${SECONDARY_SHADOW};
         }
         .secondary-image-zoom {
           transition: transform 0.3s ease;
         }
         .secondary-card-hover:hover .secondary-image-zoom {
-          transform: scale(1.04);
+          transform: scale(${SECONDARY_IMAGE_ZOOM});
         }
         @media (prefers-reduced-motion: reduce) {
           .featured-post-hover,
@@ -233,6 +291,7 @@ export default function BlogFeaturedPost({
           .featured-post-hover:hover,
           .secondary-card-hover:hover {
             transform: none;
+            box-shadow: none;
           }
           .featured-post-hover:hover .featured-image-zoom,
           .secondary-card-hover:hover .secondary-image-zoom {

@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category testimonials
 // @name testimonial-carousel
 // @source self-authored
@@ -10,10 +10,22 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SLIDE_ANIMATION_DURATION = '0.4s';
+const SLIDE_ANIMATION_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const DOT_ACTIVE_WIDTH = '1.5rem';
+const DOT_INACTIVE_SIZE = '0.5rem';
+const NAV_BUTTON_SIZE = '2.5rem';
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface Testimonial {
+  /** Unique identifier for stable rendering */
+  id?: string;
   quote: string;
   name: string;
   role?: string;
@@ -48,8 +60,16 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes carousel-slide-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from { opacity: 0; transform: none; }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .tc-carousel-card {
+    animation-duration: 0.01ms !important;
+  }
+
+  .tc-dot-indicator {
+    transition: none !important;
   }
 }
 `;
@@ -110,6 +130,7 @@ export default function TestimonialCarousel({
 }: TestimonialCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   const goTo = useCallback(
     (index: number) => {
@@ -136,14 +157,47 @@ export default function TestimonialCarousel({
     };
   }, [autoPlay, autoPlayInterval, goNext]);
 
+  // Keyboard navigation
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+
+    function handleKeyDown(e: KeyboardEvent) {
+      switch (e.key) {
+        case 'ArrowLeft':
+          e.preventDefault();
+          goPrev();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          goNext();
+          break;
+        case 'Home':
+          e.preventDefault();
+          goTo(0);
+          break;
+        case 'End':
+          e.preventDefault();
+          goTo(testimonials.length - 1);
+          break;
+      }
+    }
+
+    el.addEventListener('keydown', handleKeyDown);
+    return () => el.removeEventListener('keydown', handleKeyDown);
+  }, [goNext, goPrev, goTo, testimonials.length]);
+
   const current = testimonials[activeIndex];
   if (!current) return null;
+
+  const stableKey = current.id ?? `${current.name}-${activeIndex}`;
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
+        aria-label="Customer testimonials"
         className={cn(
           'max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
           className,
@@ -152,39 +206,58 @@ export default function TestimonialCarousel({
       >
         {/* Header */}
         {(headline || subheadline) && (
-          <div className="text-center mb-12 lg:mb-16">
+          <header className="text-center mb-12 lg:mb-16">
             {headline && (
               <h2
-                className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight"
-                style={{ color: 'var(--foreground)' }}
+                className="font-bold tracking-tight"
+                style={{
+                  fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 3rem)',
+                  color: 'var(--foreground)',
+                }}
               >
                 {headline}
               </h2>
             )}
             {subheadline && (
               <p
-                className="mt-4 text-lg leading-relaxed"
-                style={{ color: 'var(--muted-foreground)' }}
+                className="mt-4 leading-relaxed"
+                style={{
+                  fontSize: 'clamp(1rem, 0.5vw + 0.875rem, 1.125rem)',
+                  color: 'var(--muted-foreground)',
+                }}
               >
                 {subheadline}
               </p>
             )}
-          </div>
+          </header>
         )}
 
         {/* Carousel card */}
         <div
-          className="relative rounded-2xl border p-8 lg:p-12"
+          ref={carouselRef}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label={`Testimonial ${activeIndex + 1} of ${testimonials.length}`}
+          tabIndex={0}
+          className={cn(
+            'relative rounded-2xl border p-8 lg:p-12',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          )}
           style={{
             backgroundColor: 'var(--card)',
             borderColor: 'var(--border)',
+            ['--tw-ring-color' as string]: 'var(--ring, var(--primary))',
+            ['--tw-ring-offset-color' as string]: 'var(--background)',
           }}
         >
           <div
-            key={activeIndex}
-            className="flex flex-col items-center text-center"
+            key={stableKey}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`Testimonial from ${current.name}`}
+            className="tc-carousel-card flex flex-col items-center text-center"
             style={{
-              animation: 'carousel-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: `carousel-slide-in ${SLIDE_ANIMATION_DURATION} ${SLIDE_ANIMATION_EASING} both`,
             }}
           >
             <span style={{ color: 'var(--primary)' }}>
@@ -192,24 +265,28 @@ export default function TestimonialCarousel({
             </span>
 
             <blockquote
-              className="mt-6 text-lg lg:text-xl leading-relaxed max-w-2xl"
-              style={{ color: 'var(--card-foreground)' }}
+              className="mt-6 leading-relaxed max-w-2xl"
+              style={{
+                fontSize: 'clamp(1rem, 0.5vw + 0.875rem, 1.25rem)',
+                color: 'var(--card-foreground)',
+              }}
             >
               &ldquo;{current.quote}&rdquo;
             </blockquote>
 
-            <div className="mt-8 flex items-center gap-4">
+            <figure className="mt-8 flex items-center gap-4">
               {current.avatarSrc && (
                 <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                   <Image
                     src={current.avatarSrc}
-                    alt={current.name}
+                    alt={`Photo of ${current.name}`}
                     fill
+                    loading="lazy"
                     className="object-cover"
                   />
                 </div>
               )}
-              <div className="text-left">
+              <figcaption className="text-left">
                 <p
                   className="text-sm font-semibold"
                   style={{ color: 'var(--card-foreground)' }}
@@ -224,27 +301,32 @@ export default function TestimonialCarousel({
                     {[current.role, current.company].filter(Boolean).join(' · ')}
                   </p>
                 )}
-              </div>
-            </div>
+              </figcaption>
+            </figure>
           </div>
         </div>
 
         {/* Controls */}
-        <div className="mt-8 flex items-center justify-center gap-4">
+        <nav
+          aria-label="Testimonial navigation"
+          className="mt-8 flex items-center justify-center gap-4"
+        >
           <button
             onClick={goPrev}
-            aria-label="Vorherige Bewertung"
+            aria-label="Previous testimonial"
             className={cn(
-              'inline-flex items-center justify-center w-10 h-10 rounded-full border',
+              'inline-flex items-center justify-center rounded-full border',
               'transition-colors duration-200',
               'hover:opacity-80',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
             )}
             style={{
+              width: NAV_BUTTON_SIZE,
+              height: NAV_BUTTON_SIZE,
               borderColor: 'var(--border)',
               color: 'var(--foreground)',
               backgroundColor: 'var(--card)',
-              ['--tw-ring-color' as string]: 'var(--primary)',
+              ['--tw-ring-color' as string]: 'var(--ring, var(--primary))',
               ['--tw-ring-offset-color' as string]: 'var(--background)',
             }}
           >
@@ -252,21 +334,27 @@ export default function TestimonialCarousel({
           </button>
 
           {/* Dots */}
-          <div className="flex items-center gap-2">
-            {testimonials.map((_, index) => (
+          <div className="flex items-center gap-2" role="tablist" aria-label="Select testimonial">
+            {testimonials.map((t, index) => (
               <button
-                key={index}
+                key={t.id ?? `dot-${t.name}-${index}`}
+                role="tab"
+                aria-selected={index === activeIndex}
                 onClick={() => goTo(index)}
-                aria-label={`Bewertung ${index + 1}`}
+                aria-label={`Testimonial ${index + 1} of ${testimonials.length}`}
                 className={cn(
-                  'w-2 h-2 rounded-full transition-all duration-300',
-                  index === activeIndex ? 'w-6' : '',
+                  'tc-dot-indicator rounded-full transition-all duration-300',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                 )}
                 style={{
+                  width: index === activeIndex ? DOT_ACTIVE_WIDTH : DOT_INACTIVE_SIZE,
+                  height: DOT_INACTIVE_SIZE,
                   backgroundColor:
                     index === activeIndex
                       ? 'var(--primary)'
                       : 'var(--border)',
+                  ['--tw-ring-color' as string]: 'var(--ring, var(--primary))',
+                  ['--tw-ring-offset-color' as string]: 'var(--background)',
                 }}
               />
             ))}
@@ -274,24 +362,26 @@ export default function TestimonialCarousel({
 
           <button
             onClick={goNext}
-            aria-label="Nächste Bewertung"
+            aria-label="Next testimonial"
             className={cn(
-              'inline-flex items-center justify-center w-10 h-10 rounded-full border',
+              'inline-flex items-center justify-center rounded-full border',
               'transition-colors duration-200',
               'hover:opacity-80',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
             )}
             style={{
+              width: NAV_BUTTON_SIZE,
+              height: NAV_BUTTON_SIZE,
               borderColor: 'var(--border)',
               color: 'var(--foreground)',
               backgroundColor: 'var(--card)',
-              ['--tw-ring-color' as string]: 'var(--primary)',
+              ['--tw-ring-color' as string]: 'var(--ring, var(--primary))',
               ['--tw-ring-offset-color' as string]: 'var(--background)',
             }}
           >
             <ChevronRight />
           </button>
-        </div>
+        </nav>
       </section>
     </>
   );
