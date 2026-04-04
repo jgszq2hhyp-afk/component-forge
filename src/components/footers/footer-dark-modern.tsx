@@ -1,6 +1,29 @@
-// @version 1.0.0 // @category footers // @name footer-dark-modern // @source custom
+// @version 2.0.0
+// @category footers
+// @name footer-dark-modern
+// @source custom
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SECTION_MAX_WIDTH = 'max-w-7xl';
+const SECTION_PADDING_X = 'px-6 md:px-12 lg:px-20';
+const SECTION_PADDING_TOP = 'pt-20';
+const SECTION_PADDING_BOTTOM = 'pb-8';
+const BRAND_MAX_WIDTH = 'max-w-sm';
+const GRID_LAYOUT = 'lg:grid-cols-[1.5fr_2fr]';
+const COLUMN_GRID = 'sm:grid-cols-2 lg:grid-cols-3';
+const DIVIDER_MARGIN = 'mt-16 mb-6';
+const ORB_SIZE = 'h-80 w-80';
+const ORB_OFFSET = '-top-40';
+const ORB_BLUR = 'blur-[100px]';
+const ORB_OPACITY = 'opacity-20';
+const COLUMN_HEADING_TRACKING = 'tracking-[0.15em]';
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,7 +65,7 @@ const headingText: React.CSSProperties = {
   color: 'var(--background)',
 };
 
-const linkHover: React.CSSProperties = {
+const linkColor: React.CSSProperties = {
   color: 'color-mix(in oklch, var(--background) 60%, transparent)',
 };
 
@@ -62,27 +85,46 @@ export default function FooterDarkModern({
 
   return (
     <footer
-      className={cn('relative overflow-hidden px-6 pt-20 pb-8 md:px-12 lg:px-20', className)}
+      aria-label="Site footer"
+      className={cn(
+        'relative overflow-hidden',
+        SECTION_PADDING_X,
+        SECTION_PADDING_TOP,
+        SECTION_PADDING_BOTTOM,
+        className,
+      )}
       style={sectionStyles}
     >
       {/* Decorative gradient orb */}
       <div
-        className="pointer-events-none absolute -top-40 right-0 h-80 w-80 rounded-full opacity-20 blur-[100px]"
+        className={cn(
+          'pointer-events-none absolute right-0 rounded-full',
+          ORB_SIZE,
+          ORB_OFFSET,
+          ORB_OPACITY,
+          ORB_BLUR,
+        )}
         aria-hidden="true"
         style={{
           background: 'var(--primary)',
         }}
       />
 
-      <div className="relative mx-auto max-w-7xl">
+      <div className={cn('relative mx-auto', SECTION_MAX_WIDTH)}>
         {/* Top section */}
-        <div className="grid gap-12 lg:grid-cols-[1.5fr_2fr]">
+        <div className={cn('grid gap-12', GRID_LAYOUT)}>
           {/* Brand */}
-          <div className="max-w-sm">
+          <div className={BRAND_MAX_WIDTH}>
             {logo ? (
               <div className="mb-4">{logo}</div>
             ) : (
-              <p className="mb-4 text-2xl font-bold tracking-tight" style={headingText}>
+              <p
+                className="mb-4 font-bold tracking-tight"
+                style={{
+                  ...headingText,
+                  fontSize: 'clamp(1.5rem, 1.25rem + 1vw, 1.875rem)',
+                }}
+              >
                 {companyName}
               </p>
             )}
@@ -94,43 +136,49 @@ export default function FooterDarkModern({
           </div>
 
           {/* Columns grid */}
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {columns.map((column) => (
-              <div key={column.title}>
-                <h3
-                  className="mb-4 text-xs font-semibold uppercase tracking-[0.15em]"
-                  style={headingText}
-                >
-                  {column.title}
-                </h3>
-                <ul className="space-y-2.5">
-                  {column.links.map((link) => (
-                    <li key={link.label}>
-                      <a
-                        href={link.href}
-                        className={cn(
-                          'text-sm transition-colors duration-200',
-                          'hover:underline underline-offset-4',
-                          'focus-visible:outline-none focus-visible:ring-2 rounded-sm',
-                        )}
-                        style={{
-                          ...linkHover,
-                          ['--tw-ring-color' as string]: 'var(--primary)',
-                        }}
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          <nav aria-label="Footer navigation">
+            <div className={cn('grid gap-8', COLUMN_GRID)}>
+              {columns.map((column) => (
+                <div key={column.title}>
+                  <h3
+                    className={cn(
+                      'mb-4 text-xs font-semibold uppercase',
+                      COLUMN_HEADING_TRACKING,
+                    )}
+                    style={headingText}
+                  >
+                    {column.title}
+                  </h3>
+                  <ul className="space-y-2.5" role="list">
+                    {column.links.map((link) => (
+                      <li key={link.label}>
+                        <a
+                          href={link.href}
+                          className={cn(
+                            'text-sm transition-colors duration-200',
+                            'hover:underline underline-offset-4',
+                            FOCUS_RING,
+                            'rounded-sm',
+                          )}
+                          style={{
+                            ...linkColor,
+                            ['--tw-ring-color' as string]: 'var(--primary)',
+                          }}
+                        >
+                          {link.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </nav>
         </div>
 
         {/* Divider */}
         <div
-          className="mt-16 mb-6 h-px"
+          className={cn(DIVIDER_MARGIN, 'h-px')}
           style={{
             backgroundColor: 'color-mix(in oklch, var(--background) 12%, transparent)',
           }}
@@ -148,7 +196,11 @@ export default function FooterDarkModern({
                 <a
                   key={link.label}
                   href={link.href}
-                  className="text-xs transition-colors duration-200 hover:underline underline-offset-4"
+                  className={cn(
+                    'text-xs transition-colors duration-200 hover:underline underline-offset-4',
+                    FOCUS_RING,
+                    'rounded-sm',
+                  )}
                   style={mutedText}
                 >
                   {link.label}

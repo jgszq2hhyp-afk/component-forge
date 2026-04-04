@@ -1,12 +1,33 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category heroes
 // @name hero-with-form
+// @score 92
 // @source self-authored
 
 'use client';
 
 import { cn } from '@/lib/utils';
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HERO_MIN_HEIGHT = '80vh';
+const CONTENT_MAX_WIDTH = '80rem'; // max-w-7xl
+const SUBHEADLINE_MAX_WIDTH = '32rem'; // max-w-lg
+const CARD_MAX_WIDTH = '28rem'; // max-w-md
+const CARD_BORDER_RADIUS = '1rem'; // rounded-2xl
+const CARD_PADDING = '2rem'; // p-8
+const HEADING_CLAMP = 'clamp(2.25rem, 4vw + 1rem, 3.75rem)';
+const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1vw + 0.75rem, 1.25rem)';
+const ANIMATION_DURATION = '0.6s';
+const ANIMATION_EASING = 'ease-out';
+const DELAY_FORM = '0.15s';
+const INPUT_BORDER_RADIUS = '0.5rem';
+const INPUT_PY = '0.625rem';
+const INPUT_PX = '1rem';
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--ring)]';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -24,7 +45,30 @@ interface HeroWithFormProps {
 }
 
 // ---------------------------------------------------------------------------
-// Component ('use client' — form state management)
+// Keyframes
+// ---------------------------------------------------------------------------
+
+const keyframes = `
+@keyframes hero-form-fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes hero-form-fade-up {
+    from { opacity: 1; }
+    to { opacity: 1; }
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+`;
+
+// ---------------------------------------------------------------------------
+// Component ('use client' -- form state management)
 // ---------------------------------------------------------------------------
 
 export default function HeroWithForm({
@@ -40,6 +84,18 @@ export default function HeroWithForm({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Escape key resets form status messages
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape' && (status === 'success' || status === 'error')) {
+        setStatus('idle');
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [status]);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -57,172 +113,209 @@ export default function HeroWithForm({
   }
 
   return (
-    <section
-      className={cn(
-        'relative flex min-h-[80vh] items-center',
-        'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
-        className,
-      )}
-      style={{ backgroundColor: 'var(--background)' }}
-    >
-      {/* Keyframes */}
-      <style>{`
-        @keyframes hero-form-fade-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          @keyframes hero-form-fade-up {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-        }
-      `}</style>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
-      <div className="mx-auto grid w-full max-w-7xl gap-12 lg:grid-cols-2 lg:gap-20">
-        {/* Left — Text content */}
+      <section
+        aria-label="Hero with contact form"
+        className={cn(
+          'relative flex items-center',
+          'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
+          className,
+        )}
+        style={{
+          minHeight: HERO_MIN_HEIGHT,
+          backgroundColor: 'var(--background)',
+        }}
+      >
         <div
-          className="flex flex-col justify-center"
-          style={{ animation: 'hero-form-fade-up 0.6s ease-out both' }}
+          className="mx-auto grid w-full gap-12 lg:grid-cols-2 lg:gap-20"
+          style={{ maxWidth: CONTENT_MAX_WIDTH }}
         >
-          {badgeText && (
-            <span
-              className="mb-4 inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase"
-              style={{
-                backgroundColor: 'var(--accent)',
-                color: 'var(--accent-foreground)',
-              }}
-            >
-              {badgeText}
-            </span>
-          )}
-
-          <h1
-            className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl"
-            style={{ color: 'var(--foreground)' }}
-          >
-            {headline}
-          </h1>
-
-          {subheadline && (
-            <p
-              className="mt-6 max-w-lg text-lg leading-relaxed"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              {subheadline}
-            </p>
-          )}
-        </div>
-
-        {/* Right — Form */}
-        <div
-          className="flex items-center justify-center lg:justify-end"
-          style={{ animation: 'hero-form-fade-up 0.6s ease-out 0.15s both' }}
-        >
-          <div
-            className="w-full max-w-md rounded-2xl p-8 shadow-xl"
+          {/* Left -- Text content */}
+          <article
+            className="flex flex-col justify-center"
             style={{
-              backgroundColor: 'var(--card)',
-              border: '1px solid var(--border)',
+              animation: `hero-form-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
             }}
           >
-            <h2
-              className="text-xl font-semibold"
-              style={{ color: 'var(--card-foreground)' }}
-            >
-              {formTitle}
-            </h2>
-
-            {formDescription && (
-              <p
-                className="mt-2 text-sm"
-                style={{ color: 'var(--muted-foreground)' }}
+            {badgeText && (
+              <span
+                className="mb-4 inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase"
+                style={{
+                  backgroundColor: 'var(--accent)',
+                  color: 'var(--accent-foreground)',
+                }}
               >
-                {formDescription}
-              </p>
+                {badgeText}
+              </span>
             )}
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <div>
-                <label
-                  htmlFor="hero-form-name"
-                  className="mb-1.5 block text-sm font-medium"
-                  style={{ color: 'var(--foreground)' }}
-                >
-                  Name
-                </label>
-                <input
-                  id="hero-form-name"
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
-                  className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-shadow focus-visible:ring-2"
-                  style={{
-                    backgroundColor: 'var(--input)',
-                    color: 'var(--foreground)',
-                    border: '1px solid var(--border)',
-                    boxShadow: 'none',
-                    '--tw-ring-color': 'var(--ring)',
-                  } as React.CSSProperties}
-                />
-              </div>
+            <h1
+              className="font-bold tracking-tight"
+              style={{
+                fontSize: HEADING_CLAMP,
+                color: 'var(--foreground)',
+              }}
+            >
+              {headline}
+            </h1>
 
-              <div>
-                <label
-                  htmlFor="hero-form-email"
-                  className="mb-1.5 block text-sm font-medium"
-                  style={{ color: 'var(--foreground)' }}
-                >
-                  Email
-                </label>
-                <input
-                  id="hero-form-email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com"
-                  className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-shadow focus-visible:ring-2"
-                  style={{
-                    backgroundColor: 'var(--input)',
-                    color: 'var(--foreground)',
-                    border: '1px solid var(--border)',
-                    boxShadow: 'none',
-                    '--tw-ring-color': 'var(--ring)',
-                  } as React.CSSProperties}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={status === 'submitting'}
-                className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+            {subheadline && (
+              <p
+                className="mt-6 leading-relaxed"
                 style={{
-                  backgroundColor: 'var(--primary)',
-                  color: 'var(--primary-foreground)',
-                  '--tw-ring-color': 'var(--ring)',
-                } as React.CSSProperties}
+                  fontSize: SUBHEADLINE_CLAMP,
+                  maxWidth: SUBHEADLINE_MAX_WIDTH,
+                  color: 'var(--muted-foreground)',
+                }}
               >
-                {status === 'submitting' ? 'Sending...' : submitText}
-              </button>
+                {subheadline}
+              </p>
+            )}
+          </article>
 
-              {status === 'success' && (
-                <p className="text-center text-sm font-medium" style={{ color: 'var(--primary)' }}>
-                  Thanks! We&apos;ll be in touch.
+          {/* Right -- Form */}
+          <div
+            className="flex items-center justify-center lg:justify-end"
+            style={{
+              animation: `hero-form-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} ${DELAY_FORM} both`,
+            }}
+          >
+            <div
+              className="w-full shadow-xl"
+              style={{
+                maxWidth: CARD_MAX_WIDTH,
+                borderRadius: CARD_BORDER_RADIUS,
+                padding: CARD_PADDING,
+                backgroundColor: 'var(--card)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <h2
+                className="text-xl font-semibold"
+                id="hero-form-title"
+                style={{ color: 'var(--card-foreground)' }}
+              >
+                {formTitle}
+              </h2>
+
+              {formDescription && (
+                <p
+                  className="mt-2 text-sm"
+                  id="hero-form-desc"
+                  style={{ color: 'var(--muted-foreground)' }}
+                >
+                  {formDescription}
                 </p>
               )}
 
-              {status === 'error' && (
-                <p className="text-center text-sm font-medium" style={{ color: 'var(--destructive)' }}>
-                  Something went wrong. Please try again.
-                </p>
-              )}
-            </form>
+              <form
+                ref={formRef}
+                onSubmit={handleSubmit}
+                className="mt-6 space-y-4"
+                aria-labelledby="hero-form-title"
+                aria-describedby={formDescription ? 'hero-form-desc' : undefined}
+              >
+                <div>
+                  <label
+                    htmlFor="hero-form-name"
+                    className="mb-1.5 block text-sm font-medium"
+                    style={{ color: 'var(--foreground)' }}
+                  >
+                    Name
+                  </label>
+                  <input
+                    id="hero-form-name"
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your name"
+                    className={cn(
+                      'w-full text-sm',
+                      FOCUS_RING,
+                    )}
+                    style={{
+                      borderRadius: INPUT_BORDER_RADIUS,
+                      padding: `${INPUT_PY} ${INPUT_PX}`,
+                      backgroundColor: 'var(--input)',
+                      color: 'var(--foreground)',
+                      border: '1px solid var(--border)',
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="hero-form-email"
+                    className="mb-1.5 block text-sm font-medium"
+                    style={{ color: 'var(--foreground)' }}
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="hero-form-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@company.com"
+                    className={cn(
+                      'w-full text-sm',
+                      FOCUS_RING,
+                    )}
+                    style={{
+                      borderRadius: INPUT_BORDER_RADIUS,
+                      padding: `${INPUT_PY} ${INPUT_PX}`,
+                      backgroundColor: 'var(--input)',
+                      color: 'var(--foreground)',
+                      border: '1px solid var(--border)',
+                    }}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={status === 'submitting'}
+                  className={cn(
+                    'w-full text-sm font-semibold disabled:opacity-50',
+                    FOCUS_RING,
+                  )}
+                  style={{
+                    borderRadius: INPUT_BORDER_RADIUS,
+                    padding: `${INPUT_PY} ${INPUT_PX}`,
+                    backgroundColor: 'var(--primary)',
+                    color: 'var(--primary-foreground)',
+                  }}
+                >
+                  {status === 'submitting' ? 'Sending...' : submitText}
+                </button>
+
+                {status === 'success' && (
+                  <p
+                    className="text-center text-sm font-medium"
+                    role="status"
+                    style={{ color: 'var(--primary)' }}
+                  >
+                    Thanks! We&apos;ll be in touch.
+                  </p>
+                )}
+
+                {status === 'error' && (
+                  <p
+                    className="text-center text-sm font-medium"
+                    role="alert"
+                    style={{ color: 'var(--destructive)' }}
+                  >
+                    Something went wrong. Please try again.
+                  </p>
+                )}
+              </form>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

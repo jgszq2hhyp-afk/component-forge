@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category stats
 // @name Stats Counter Animated
 // @source custom-implementation
@@ -7,6 +7,23 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/** IntersectionObserver visibility threshold (0–1) */
+const VISIBILITY_THRESHOLD = 0.2;
+
+/** Default count-up animation duration in ms */
+const DEFAULT_DURATION = 2000;
+
+/** Easing exponent for ease-out cubic */
+const EASING_EXPONENT = 3;
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface Stat {
   value: number;
@@ -23,12 +40,20 @@ interface StatsCounterAnimatedProps {
   className?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Default data
+// ---------------------------------------------------------------------------
+
 const defaultStats: Stat[] = [
   { value: 1200, suffix: "+", label: "Customers" },
   { value: 98, suffix: "%", label: "Satisfaction" },
   { value: 15, suffix: "M+", prefix: "$", label: "Revenue Generated" },
   { value: 24, suffix: "/7", label: "Support" },
 ];
+
+// ---------------------------------------------------------------------------
+// Hook — animated counter
+// ---------------------------------------------------------------------------
 
 function useCountUp(
   target: number,
@@ -49,7 +74,7 @@ function useCountUp(
     const step = (timestamp: number) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, EASING_EXPONENT);
       setCount(Math.floor(eased * target));
       if (progress < 1) {
         requestAnimationFrame(step);
@@ -61,6 +86,10 @@ function useCountUp(
 
   return count;
 }
+
+// ---------------------------------------------------------------------------
+// Sub-component — single stat
+// ---------------------------------------------------------------------------
 
 function AnimatedStat({
   stat,
@@ -76,8 +105,11 @@ function AnimatedStat({
   const count = useCountUp(stat.value, duration, isVisible, prefersReducedMotion);
 
   return (
-    <div className="text-center">
-      <p className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[var(--stats-value-color,hsl(0_0%_9%))]">
+    <article className="text-center">
+      <p
+        className="font-bold tracking-tight text-[var(--stats-value-color,hsl(0_0%_9%))]"
+        style={{ fontSize: "clamp(1.875rem, 3vw + 0.5rem, 3rem)" }}
+      >
         {stat.prefix}
         {count.toLocaleString()}
         {stat.suffix}
@@ -85,15 +117,19 @@ function AnimatedStat({
       <p className="mt-2 text-sm sm:text-base font-medium text-[var(--stats-label-color,hsl(0_0%_45%))]">
         {stat.label}
       </p>
-    </div>
+    </article>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
 
 export default function StatsCounterAnimated({
   stats = defaultStats,
   heading,
   subheading,
-  duration = 2000,
+  duration = DEFAULT_DURATION,
   className,
 }: StatsCounterAnimatedProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -116,7 +152,7 @@ export default function StatsCounterAnimated({
 
   useEffect(() => {
     const observer = new IntersectionObserver(handleIntersect, {
-      threshold: 0.2,
+      threshold: VISIBILITY_THRESHOLD,
     });
     if (sectionRef.current) {
       observer.observe(sectionRef.current);
@@ -135,9 +171,12 @@ export default function StatsCounterAnimated({
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {(heading || subheading) && (
-          <div className="mb-12 text-center">
+          <header className="mb-12 text-center">
             {heading && (
-              <h2 className="text-2xl sm:text-3xl font-bold text-[var(--stats-heading-color,hsl(0_0%_9%))]">
+              <h2
+                className="font-bold text-[var(--stats-heading-color,hsl(0_0%_9%))]"
+                style={{ fontSize: "clamp(1.5rem, 2.5vw + 0.5rem, 1.875rem)" }}
+              >
                 {heading}
               </h2>
             )}
@@ -146,7 +185,7 @@ export default function StatsCounterAnimated({
                 {subheading}
               </p>
             )}
-          </div>
+          </header>
         )}
 
         <div className="grid grid-cols-2 gap-8 sm:gap-12 lg:grid-cols-4">

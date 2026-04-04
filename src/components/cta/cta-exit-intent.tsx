@@ -1,9 +1,40 @@
-// @version 1.0.0 // @category cta // @name cta-exit-intent // @source custom
+// @version 2.0.0
+// @category cta
+// @name CTA Exit Intent
+// @source custom-implementation
 
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/** Default delay in ms before exit-intent detection activates */
+const DEFAULT_ACTIVATION_DELAY = 3000;
+
+/** Mouse leave threshold — triggers when clientY is at or below this */
+const MOUSE_LEAVE_THRESHOLD = 0;
+
+/** Modal animation duration in ms */
+const MODAL_ANIMATION_DURATION = '0.25s';
+
+/** Decorative accent bar height */
+const ACCENT_BAR_HEIGHT = 'h-1';
+
+/** Success icon size */
+const SUCCESS_ICON_SIZE = 'h-12 w-12';
+
+/** Close button size */
+const CLOSE_BUTTON_SIZE = 'h-8 w-8';
+
+/** Close icon size */
+const CLOSE_ICON_SIZE = 'h-4 w-4';
+
+/** Focus ring class for interactive elements */
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -32,7 +63,7 @@ export default function CtaExitIntent({
   ctaText = 'Claim My Offer',
   dismissText = 'No thanks, I\'ll pass',
   onSubmit,
-  activationDelay = 3000,
+  activationDelay = DEFAULT_ACTIVATION_DELAY,
   className,
 }: CtaExitIntentProps) {
   const [isVisible, setIsVisible] = useState(false);
@@ -53,7 +84,7 @@ export default function CtaExitIntent({
   useEffect(() => {
     const handleMouseLeave = (e: MouseEvent) => {
       if (
-        e.clientY <= 0 &&
+        e.clientY <= MOUSE_LEAVE_THRESHOLD &&
         isReady.current &&
         !hasTriggered.current
       ) {
@@ -117,7 +148,7 @@ export default function CtaExitIntent({
     >
       {/* Overlay */}
       <div
-        className="absolute inset-0 transition-opacity duration-300"
+        className="absolute inset-0 transition-opacity duration-300 motion-reduce:transition-none"
         style={{
           backgroundColor: 'color-mix(in oklch, var(--foreground) 50%, transparent)',
         }}
@@ -126,7 +157,7 @@ export default function CtaExitIntent({
       />
 
       {/* Modal */}
-      <div
+      <article
         className={cn(
           'relative w-full max-w-md overflow-hidden rounded-2xl',
           'px-8 py-10 text-center',
@@ -144,9 +175,9 @@ export default function CtaExitIntent({
           onClick={dismiss}
           aria-label="Close modal"
           className={cn(
-            'absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full',
-            'transition-colors duration-200',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+            `absolute right-4 top-4 flex ${CLOSE_BUTTON_SIZE} items-center justify-center rounded-full`,
+            'transition-colors duration-200 motion-reduce:transition-none',
+            FOCUS_RING,
           )}
           style={{
             color: 'var(--muted-foreground)',
@@ -155,7 +186,7 @@ export default function CtaExitIntent({
           }}
         >
           <svg
-            className="h-4 w-4"
+            className={CLOSE_ICON_SIZE}
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={2}
@@ -168,7 +199,7 @@ export default function CtaExitIntent({
 
         {/* Decorative top accent */}
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-1"
+          className={`pointer-events-none absolute inset-x-0 top-0 ${ACCENT_BAR_HEIGHT}`}
           aria-hidden="true"
           style={{
             background:
@@ -180,7 +211,7 @@ export default function CtaExitIntent({
           /* Success state */
           <div className="py-4">
             <svg
-              className="mx-auto mb-4 h-12 w-12"
+              className={`mx-auto mb-4 ${SUCCESS_ICON_SIZE}`}
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={1.5}
@@ -245,9 +276,9 @@ export default function CtaExitIntent({
                 placeholder={inputPlaceholder}
                 className={cn(
                   'flex-1 rounded-lg px-4 py-3 text-sm',
-                  'transition-colors duration-200',
+                  'transition-colors duration-200 motion-reduce:transition-none',
                   'placeholder:opacity-60',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                  FOCUS_RING,
                 )}
                 style={{
                   backgroundColor: 'var(--muted)',
@@ -262,10 +293,10 @@ export default function CtaExitIntent({
                 className={cn(
                   'inline-flex items-center justify-center whitespace-nowrap',
                   'rounded-lg px-6 py-3 text-sm font-semibold',
-                  'transition-all duration-200',
+                  'transition-all duration-200 motion-reduce:transition-none',
                   'hover:brightness-110 hover:shadow-md',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                  'active:scale-[0.98]',
+                  FOCUS_RING,
+                  'active:scale-[0.98] motion-reduce:active:scale-100',
                 )}
                 style={{
                   backgroundColor: 'var(--primary)',
@@ -284,9 +315,10 @@ export default function CtaExitIntent({
               onClick={dismiss}
               className={cn(
                 'mt-4 inline-block text-xs',
-                'transition-colors duration-200',
+                'transition-colors duration-200 motion-reduce:transition-none',
                 'hover:underline underline-offset-4',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-sm',
+                FOCUS_RING,
+                'rounded-sm',
               )}
               style={{
                 color: 'var(--muted-foreground)',
@@ -298,7 +330,7 @@ export default function CtaExitIntent({
             </button>
           </>
         )}
-      </div>
+      </article>
 
       {/* Animation + reduced-motion */}
       <style
@@ -315,14 +347,15 @@ export default function CtaExitIntent({
   }
 }
 .animate-exit-intent-in {
-  animation: exit-intent-in 0.25s ease-out;
+  animation: exit-intent-in ${MODAL_ANIMATION_DURATION} ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-exit-intent-in {
     animation: none !important;
   }
-  div, button, input {
+  * {
     transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }`,
         }}

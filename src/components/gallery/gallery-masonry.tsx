@@ -1,4 +1,4 @@
-// @version 1.1.0
+// @version 2.0.0
 // @category gallery
 // @name Gallery Masonry
 // @source custom-implementation
@@ -8,6 +8,23 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/** Tailwind spacing multiplier for gap (gap value * this = px) */
+const SPACING_UNIT_PX = 4;
+
+/** Responsive image sizes for srcset */
+const IMAGE_SIZES = "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw";
+
+/** Scale factor on hover */
+const HOVER_SCALE_CLASS = "motion-safe:group-hover:scale-105";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface GalleryImage {
   src: string;
@@ -24,6 +41,10 @@ interface GalleryMasonryProps {
   className?: string;
   onImageClick?: (image: GalleryImage, index: number) => void;
 }
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 /**
  * Distributes images across columns by shortest-column-first.
@@ -58,6 +79,10 @@ const responsiveGridClasses: Record<number, string> = {
   4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
 };
 
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
 export default function GalleryMasonry({
   images,
   columns = 3,
@@ -80,7 +105,7 @@ export default function GalleryMasonry({
     return null;
   }
 
-  const gapPx = `${gap * 4}px`;
+  const gapPx = `${gap * SPACING_UNIT_PX}px`;
 
   return (
     <section
@@ -89,11 +114,13 @@ export default function GalleryMasonry({
         "bg-[var(--gallery-bg,hsl(0_0%_100%))]",
         className,
       )}
+      aria-label="Masonry image gallery"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div
           className={cn("grid", responsiveGridClasses[columns])}
           style={{ gap: gapPx }}
+          role="list"
         >
           {cols.map((colImages, colIndex) => (
             <div
@@ -106,68 +133,76 @@ export default function GalleryMasonry({
                 const isLoaded = loadedImages.has(globalIndex);
 
                 return (
-                  <button
+                  <figure
                     key={`${colIndex}-${imgIndex}`}
-                    type="button"
-                    onClick={() => onImageClick?.(image, globalIndex)}
-                    className={cn(
-                      "group relative overflow-hidden rounded-xl",
-                      "transition-shadow duration-300",
-                      "motion-safe:hover:shadow-xl",
-                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gallery-ring,hsl(220_90%_56%))] focus-visible:ring-offset-2",
-                      "motion-reduce:transition-none",
-                    )}
-                    style={{ aspectRatio: `${image.width}/${image.height}` }}
+                    role="listitem"
+                    className="m-0"
                   >
-                    {/* Skeleton placeholder */}
-                    <div
+                    <button
+                      type="button"
+                      onClick={() => onImageClick?.(image, globalIndex)}
                       className={cn(
-                        "absolute inset-0 bg-[var(--gallery-placeholder,hsl(0_0%_92%))]",
-                        "transition-opacity duration-500",
-                        "motion-reduce:transition-none",
-                        isLoaded ? "opacity-0" : "opacity-100",
+                        "group relative w-full overflow-hidden rounded-xl",
+                        "transition-shadow duration-300",
+                        "motion-safe:hover:shadow-xl",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gallery-ring,hsl(220_90%_56%))] focus-visible:ring-offset-2",
+                        "motion-reduce:transition-none motion-reduce:shadow-none",
                       )}
-                    />
-
-                    {/* Image */}
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      width={image.width}
-                      height={image.height}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      onLoad={() => handleImageLoad(globalIndex)}
-                      className={cn(
-                        "h-full w-full object-cover",
-                        "motion-safe:transition-transform motion-safe:duration-500",
-                        "motion-safe:group-hover:scale-105",
-                        "motion-reduce:transform-none motion-reduce:transition-none",
-                      )}
-                    />
-
-                    {/* Hover overlay */}
-                    <div
-                      className={cn(
-                        "absolute inset-0 flex items-end p-4",
-                        "bg-gradient-to-t from-[var(--gallery-overlay,hsl(0_0%_0%/0.6))] to-transparent",
-                        "opacity-0",
-                        "motion-safe:transition-opacity motion-safe:duration-300",
-                        "motion-safe:group-hover:opacity-100",
-                        "motion-reduce:transition-none motion-reduce:group-hover:opacity-100",
-                      )}
+                      style={{ aspectRatio: `${image.width}/${image.height}` }}
+                      aria-label={`View ${image.alt}${image.category ? ` — ${image.category}` : ""}`}
                     >
-                      <div>
-                        <p className="text-sm font-medium text-[var(--gallery-overlay-text,hsl(0_0%_100%))]">
-                          {image.alt}
-                        </p>
-                        {image.category && (
-                          <p className="mt-0.5 text-xs text-[var(--gallery-overlay-muted,hsl(0_0%_100%/0.7))]">
-                            {image.category}
-                          </p>
+                      {/* Skeleton placeholder */}
+                      <div
+                        className={cn(
+                          "absolute inset-0 bg-[var(--gallery-placeholder,hsl(0_0%_92%))]",
+                          "transition-opacity duration-500",
+                          "motion-reduce:transition-none",
+                          isLoaded ? "opacity-0" : "opacity-100",
                         )}
+                        aria-hidden="true"
+                      />
+
+                      {/* Image */}
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        width={image.width}
+                        height={image.height}
+                        sizes={IMAGE_SIZES}
+                        onLoad={() => handleImageLoad(globalIndex)}
+                        className={cn(
+                          "h-full w-full object-cover",
+                          "motion-safe:transition-transform motion-safe:duration-500",
+                          HOVER_SCALE_CLASS,
+                          "motion-reduce:transform-none motion-reduce:transition-none",
+                        )}
+                      />
+
+                      {/* Hover overlay */}
+                      <div
+                        className={cn(
+                          "absolute inset-0 flex items-end p-4",
+                          "bg-gradient-to-t from-[var(--gallery-overlay,hsl(0_0%_0%/0.6))] to-transparent",
+                          "opacity-0",
+                          "motion-safe:transition-opacity motion-safe:duration-300",
+                          "motion-safe:group-hover:opacity-100",
+                          "motion-reduce:transition-none motion-reduce:group-hover:opacity-100",
+                        )}
+                        aria-hidden="true"
+                      >
+                        <figcaption>
+                          <p className="text-sm font-medium text-[var(--gallery-overlay-text,hsl(0_0%_100%))]">
+                            {image.alt}
+                          </p>
+                          {image.category && (
+                            <p className="mt-0.5 text-xs text-[var(--gallery-overlay-muted,hsl(0_0%_100%/0.7))]">
+                              {image.category}
+                            </p>
+                          )}
+                        </figcaption>
                       </div>
-                    </div>
-                  </button>
+                    </button>
+                  </figure>
                 );
               })}
             </div>

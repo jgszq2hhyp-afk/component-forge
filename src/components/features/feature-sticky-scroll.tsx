@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category features
 // @name feature-sticky-scroll
 // @source custom
@@ -8,6 +8,32 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SECTION_MAX_WIDTH = 'max-w-7xl';
+const HEADER_MAX_WIDTH = 'max-w-2xl';
+const SECTION_PADDING_Y = 'py-16 sm:py-20 lg:py-24';
+const SECTION_PADDING_X = 'px-4 sm:px-6 lg:px-8';
+const HEADER_MARGIN_BOTTOM = 'mb-14 lg:mb-20';
+const GRID_COLUMNS = 'grid-cols-1 lg:grid-cols-12';
+const NAV_COLUMN_SPAN = 'lg:col-span-4';
+const CONTENT_COLUMN_SPAN = 'lg:col-span-8';
+const NAV_STICKY_TOP = 'lg:top-24';
+const ICON_SIZE_SM = 'w-9 h-9';
+const ICON_SIZE_LG = 'w-12 h-12';
+const ICON_RADIUS = 'rounded-xl';
+const ICON_RADIUS_SM = 'rounded-lg';
+const CONTENT_SPACING = 'space-y-16 lg:space-y-32';
+const INTERSECTION_ROOT_MARGIN = '-40% 0px -40% 0px';
+const IMAGE_ASPECT_RATIO = 'aspect-[16/9]';
+const EAGER_LOAD_THRESHOLD = 2;
+const INACTIVE_OPACITY = 'lg:opacity-40';
+const ACTIVE_OPACITY = 'opacity-100';
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -47,11 +73,26 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes sticky-fade-in {
-    from { opacity: 0; }
+    from { opacity: 1; }
     to   { opacity: 1; }
   }
 
   .sticky-content-panel {
+    transition: none !important;
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .sticky-nav-button {
+    transition: none !important;
+  }
+
+  .sticky-indicator-bar {
+    transition: none !important;
+  }
+
+  .sticky-icon-box {
     transition: none !important;
   }
 }
@@ -68,7 +109,7 @@ export default function FeatureStickyScroll({
   className,
 }: FeatureStickyScrollProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const sectionRefs = useRef<(HTMLElement | null)[]>([]);
 
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
@@ -85,7 +126,7 @@ export default function FeatureStickyScroll({
           });
         },
         {
-          rootMargin: '-40% 0px -40% 0px',
+          rootMargin: INTERSECTION_ROOT_MARGIN,
           threshold: 0,
         },
       );
@@ -99,7 +140,35 @@ export default function FeatureStickyScroll({
     };
   }, [items.length]);
 
-  const activeItem = items[activeIndex];
+  const handleNavKeyDown = (e: React.KeyboardEvent, index: number) => {
+    let nextIndex: number | null = null;
+
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      nextIndex = (index + 1) % items.length;
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      nextIndex = (index - 1 + items.length) % items.length;
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      nextIndex = items.length - 1;
+    }
+
+    if (nextIndex !== null) {
+      const target = sectionRefs.current[nextIndex];
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      // Focus the button at that index
+      const buttons = (e.currentTarget as HTMLElement)
+        .closest('nav')
+        ?.querySelectorAll<HTMLButtonElement>('button');
+      buttons?.[nextIndex]?.focus();
+    }
+  };
 
   return (
     <>
@@ -108,14 +177,17 @@ export default function FeatureStickyScroll({
       <section
         aria-label={headline ?? 'Features'}
         className={cn(
-          'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
+          SECTION_MAX_WIDTH,
+          'mx-auto',
+          SECTION_PADDING_X,
+          SECTION_PADDING_Y,
           className,
         )}
         style={{ backgroundColor: 'var(--background)' }}
       >
         {/* Header */}
         {(headline || subheadline) && (
-          <div className="max-w-2xl mx-auto text-center mb-14 lg:mb-20">
+          <header className={cn(HEADER_MAX_WIDTH, 'mx-auto text-center', HEADER_MARGIN_BOTTOM)}>
             {headline && (
               <h2
                 className="font-bold tracking-tight"
@@ -135,15 +207,15 @@ export default function FeatureStickyScroll({
                 {subheadline}
               </p>
             )}
-          </div>
+          </header>
         )}
 
         {/* Two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        <div className={cn('grid', GRID_COLUMNS, 'gap-8 lg:gap-12')}>
           {/* Left: Sticky nav (desktop) / stacked list (mobile) */}
-          <div className="lg:col-span-4">
+          <div className={NAV_COLUMN_SPAN}>
             <nav
-              className="lg:sticky lg:top-24 space-y-2"
+              className={cn('lg:sticky', NAV_STICKY_TOP, 'space-y-2')}
               aria-label="Feature navigation"
             >
               {items.map((item, index) => (
@@ -155,9 +227,10 @@ export default function FeatureStickyScroll({
                       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                   }}
+                  onKeyDown={(e) => handleNavKeyDown(e, index)}
                   className={cn(
-                    'w-full text-left p-4 rounded-xl border transition-all duration-300',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    'sticky-nav-button w-full text-left p-4 rounded-xl border transition-all duration-300',
+                    FOCUS_RING,
                     index === activeIndex
                       ? 'shadow-md'
                       : 'hover:shadow-sm',
@@ -172,7 +245,11 @@ export default function FeatureStickyScroll({
                   <div className="flex items-center gap-3">
                     {item.icon && (
                       <div
-                        className="inline-flex items-center justify-center w-9 h-9 rounded-lg flex-shrink-0 transition-colors duration-300"
+                        className={cn(
+                          'sticky-icon-box inline-flex items-center justify-center flex-shrink-0 transition-colors duration-300',
+                          ICON_SIZE_SM,
+                          ICON_RADIUS_SM,
+                        )}
                         style={{
                           backgroundColor: index === activeIndex
                             ? 'var(--primary)'
@@ -181,6 +258,7 @@ export default function FeatureStickyScroll({
                             ? 'var(--primary-foreground)'
                             : 'var(--accent-foreground)',
                         }}
+                        aria-hidden="true"
                       >
                         {item.icon}
                       </div>
@@ -202,7 +280,7 @@ export default function FeatureStickyScroll({
                   {/* Active indicator bar */}
                   <div
                     className={cn(
-                      'mt-3 h-0.5 rounded-full transition-all duration-300',
+                      'sticky-indicator-bar mt-3 h-0.5 rounded-full transition-all duration-300',
                       index === activeIndex ? 'w-full' : 'w-0',
                     )}
                     style={{ backgroundColor: 'var(--primary)' }}
@@ -214,15 +292,15 @@ export default function FeatureStickyScroll({
           </div>
 
           {/* Right: Scrolling content sections */}
-          <div className="lg:col-span-8 space-y-16 lg:space-y-32">
+          <div className={cn(CONTENT_COLUMN_SPAN, CONTENT_SPACING)}>
             {items.map((item, index) => (
-              <div
+              <article
                 key={index}
                 ref={(el) => { sectionRefs.current[index] = el; }}
                 className={cn(
                   'sticky-content-panel',
                   'rounded-2xl border p-6 lg:p-10 transition-opacity duration-500',
-                  index === activeIndex ? 'opacity-100' : 'lg:opacity-40',
+                  index === activeIndex ? ACTIVE_OPACITY : INACTIVE_OPACITY,
                 )}
                 style={{
                   backgroundColor: 'var(--card)',
@@ -233,18 +311,26 @@ export default function FeatureStickyScroll({
                 <div className="flex items-center gap-4 mb-4">
                   {item.icon && (
                     <div
-                      className="inline-flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0"
+                      className={cn(
+                        'inline-flex items-center justify-center flex-shrink-0',
+                        ICON_SIZE_LG,
+                        ICON_RADIUS,
+                      )}
                       style={{
                         backgroundColor: 'var(--primary)',
                         color: 'var(--primary-foreground)',
                       }}
+                      aria-hidden="true"
                     >
                       {item.icon}
                     </div>
                   )}
                   <h3
-                    className="text-2xl lg:text-3xl font-bold tracking-tight"
-                    style={{ color: 'var(--card-foreground)' }}
+                    className="font-bold tracking-tight"
+                    style={{
+                      color: 'var(--card-foreground)',
+                      fontSize: 'clamp(1.5rem, 1.25rem + 1vw, 1.875rem)',
+                    }}
                   >
                     {item.title}
                   </h3>
@@ -252,8 +338,11 @@ export default function FeatureStickyScroll({
 
                 {item.stat && (
                   <p
-                    className="text-4xl lg:text-5xl font-extrabold tracking-tight mb-3"
-                    style={{ color: 'var(--primary)' }}
+                    className="font-extrabold tracking-tight mb-3"
+                    style={{
+                      color: 'var(--primary)',
+                      fontSize: 'clamp(2.25rem, 2rem + 1.5vw, 3rem)',
+                    }}
                   >
                     {item.stat}
                   </p>
@@ -269,7 +358,10 @@ export default function FeatureStickyScroll({
                 {/* Optional screenshot */}
                 {item.imageSrc && (
                   <div
-                    className="relative mt-6 aspect-[16/9] rounded-xl overflow-hidden border"
+                    className={cn(
+                      'relative mt-6 rounded-xl overflow-hidden border',
+                      IMAGE_ASPECT_RATIO,
+                    )}
                     style={{ borderColor: 'var(--border)' }}
                   >
                     <Image
@@ -277,11 +369,11 @@ export default function FeatureStickyScroll({
                       alt={item.imageAlt ?? item.title}
                       fill
                       className="object-cover"
-                      loading={index < 2 ? 'eager' : 'lazy'}
+                      loading={index < EAGER_LOAD_THRESHOLD ? 'eager' : 'lazy'}
                     />
                   </div>
                 )}
-              </div>
+              </article>
             ))}
           </div>
         </div>

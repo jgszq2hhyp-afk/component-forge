@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category features
 // @name feature-showcase-carousel
 // @source custom
@@ -8,6 +8,28 @@
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SECTION_MAX_WIDTH = 'max-w-7xl';
+const SECTION_PADDING_Y = 'py-16 sm:py-20 lg:py-24';
+const SECTION_PADDING_X = 'px-4 sm:px-6 lg:px-8';
+const HEADER_MAX_WIDTH = 'max-w-2xl';
+const HEADER_MARGIN_BOTTOM = 'mb-12 lg:mb-16';
+const DEFAULT_AUTO_ADVANCE_MS = 5000;
+const ICON_SIZE = 'w-12 h-12';
+const ICON_RADIUS = 'rounded-xl';
+const ICON_PLACEHOLDER_SIZE = 'w-16 h-16';
+const NAV_BUTTON_SIZE = 'w-10 h-10';
+const DOT_HEIGHT = 'h-2';
+const DOT_ACTIVE_WIDTH = 'w-8';
+const DOT_INACTIVE_WIDTH = 'w-2';
+const IMAGE_ASPECT_RATIO = 'aspect-[4/3]';
+const PROGRESS_BAR_HEIGHT = 'h-0.5';
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -53,12 +75,22 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes showcase-slide-in {
-    from { opacity: 0; }
+    from { opacity: 1; }
     to   { opacity: 1; }
   }
 
-  .showcase-image {
+  @keyframes showcase-fade-in {
+    from { opacity: 1; }
+    to   { opacity: 1; }
+  }
+
+  .showcase-image,
+  .showcase-detail,
+  .showcase-progress-fill {
     transition: none !important;
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 `;
@@ -71,7 +103,7 @@ export default function FeatureShowcaseCarousel({
   headline,
   subheadline,
   items,
-  autoAdvanceMs = 5000,
+  autoAdvanceMs = DEFAULT_AUTO_ADVANCE_MS,
   className,
 }: FeatureShowcaseCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -99,6 +131,22 @@ export default function FeatureShowcaseCarousel({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goTo((activeIndex - 1 + items.length) % items.length);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      goTo((activeIndex + 1) % items.length);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      goTo(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      goTo(items.length - 1);
+    }
+  };
+
   const current = items[activeIndex];
   if (!current) return null;
 
@@ -108,17 +156,27 @@ export default function FeatureShowcaseCarousel({
 
       <section
         aria-label={headline ?? 'Feature showcase'}
+        aria-roledescription="carousel"
         className={cn(
-          'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
+          SECTION_MAX_WIDTH,
+          'mx-auto',
+          SECTION_PADDING_X,
+          SECTION_PADDING_Y,
           className,
         )}
         style={{ backgroundColor: 'var(--background)' }}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
+        onFocus={() => setIsPaused(true)}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            setIsPaused(false);
+          }
+        }}
       >
         {/* Header */}
         {(headline || subheadline) && (
-          <div className="max-w-2xl mx-auto text-center mb-12 lg:mb-16">
+          <header className={cn(HEADER_MAX_WIDTH, 'mx-auto text-center', HEADER_MARGIN_BOTTOM)}>
             {headline && (
               <h2
                 className="font-bold tracking-tight"
@@ -138,15 +196,19 @@ export default function FeatureShowcaseCarousel({
                 {subheadline}
               </p>
             )}
-          </div>
+          </header>
         )}
 
         {/* Carousel Body */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Image Side */}
-          <div
-            className="relative aspect-[4/3] rounded-2xl overflow-hidden border"
+          <figure
+            className={cn(
+              'relative rounded-2xl overflow-hidden border',
+              IMAGE_ASPECT_RATIO,
+            )}
             style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)' }}
+            aria-label={`Image for ${current.title}`}
           >
             {current.imageSrc ? (
               <Image
@@ -164,23 +226,33 @@ export default function FeatureShowcaseCarousel({
                 style={{ color: 'var(--muted-foreground)' }}
               >
                 {current.icon && (
-                  <div className="w-16 h-16 opacity-40">{current.icon}</div>
+                  <div className={cn(ICON_PLACEHOLDER_SIZE, 'opacity-40')} aria-hidden="true">
+                    {current.icon}
+                  </div>
                 )}
               </div>
             )}
-          </div>
+          </figure>
 
           {/* Details Side */}
           <div className="flex flex-col">
             {/* Active Feature Detail */}
             <div
               key={activeIndex}
+              className="showcase-detail"
               style={{ animation: 'showcase-slide-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both' }}
+              aria-live="polite"
+              aria-atomic="true"
             >
               {current.icon && (
                 <div
-                  className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4"
+                  className={cn(
+                    'inline-flex items-center justify-center mb-4',
+                    ICON_SIZE,
+                    ICON_RADIUS,
+                  )}
                   style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}
+                  aria-hidden="true"
                 >
                   {current.icon}
                 </div>
@@ -188,16 +260,22 @@ export default function FeatureShowcaseCarousel({
 
               {current.stat && (
                 <p
-                  className="text-4xl lg:text-5xl font-extrabold tracking-tight mb-2"
-                  style={{ color: 'var(--primary)' }}
+                  className="font-extrabold tracking-tight mb-2"
+                  style={{
+                    color: 'var(--primary)',
+                    fontSize: 'clamp(2.25rem, 2rem + 1.5vw, 3rem)',
+                  }}
                 >
                   {current.stat}
                 </p>
               )}
 
               <h3
-                className="text-2xl lg:text-3xl font-bold tracking-tight"
-                style={{ color: 'var(--foreground)' }}
+                className="font-bold tracking-tight"
+                style={{
+                  color: 'var(--foreground)',
+                  fontSize: 'clamp(1.5rem, 1.25rem + 1vw, 1.875rem)',
+                }}
               >
                 {current.title}
               </h3>
@@ -211,18 +289,25 @@ export default function FeatureShowcaseCarousel({
             </div>
 
             {/* Navigation Dots & Buttons */}
-            <div className="mt-8 flex items-center gap-3" role="tablist" aria-label="Feature slides">
+            <div
+              className="mt-8 flex items-center gap-3"
+              role="tablist"
+              aria-label="Feature slides"
+              onKeyDown={handleKeyDown}
+            >
               {items.map((item, index) => (
                 <button
                   key={index}
                   role="tab"
+                  tabIndex={index === activeIndex ? 0 : -1}
                   aria-selected={index === activeIndex}
                   aria-label={`Show feature: ${item.title}`}
                   onClick={() => goTo(index)}
                   className={cn(
-                    'relative h-2 rounded-full transition-all duration-300',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    index === activeIndex ? 'w-8' : 'w-2',
+                    'relative rounded-full transition-all duration-300',
+                    FOCUS_RING,
+                    DOT_HEIGHT,
+                    index === activeIndex ? DOT_ACTIVE_WIDTH : DOT_INACTIVE_WIDTH,
                   )}
                   style={{
                     backgroundColor: index === activeIndex
@@ -238,9 +323,10 @@ export default function FeatureShowcaseCarousel({
                   onClick={() => goTo((activeIndex - 1 + items.length) % items.length)}
                   aria-label="Previous feature"
                   className={cn(
-                    'inline-flex items-center justify-center w-10 h-10 rounded-full border',
+                    'inline-flex items-center justify-center rounded-full border',
                     'transition-colors duration-200',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    FOCUS_RING,
+                    NAV_BUTTON_SIZE,
                   )}
                   style={{
                     borderColor: 'var(--border)',
@@ -257,9 +343,10 @@ export default function FeatureShowcaseCarousel({
                   onClick={() => goTo((activeIndex + 1) % items.length)}
                   aria-label="Next feature"
                   className={cn(
-                    'inline-flex items-center justify-center w-10 h-10 rounded-full border',
+                    'inline-flex items-center justify-center rounded-full border',
                     'transition-colors duration-200',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    FOCUS_RING,
+                    NAV_BUTTON_SIZE,
                   )}
                   style={{
                     borderColor: 'var(--border)',
@@ -277,12 +364,16 @@ export default function FeatureShowcaseCarousel({
 
             {/* Progress bar */}
             <div
-              className="mt-4 h-0.5 rounded-full overflow-hidden"
+              className={cn('mt-4 rounded-full overflow-hidden', PROGRESS_BAR_HEIGHT)}
               style={{ backgroundColor: 'var(--border)' }}
-              aria-hidden="true"
+              role="progressbar"
+              aria-valuenow={activeIndex + 1}
+              aria-valuemin={1}
+              aria-valuemax={items.length}
+              aria-label={`Feature ${activeIndex + 1} of ${items.length}`}
             >
               <div
-                className="h-full rounded-full"
+                className={cn('showcase-progress-fill h-full rounded-full')}
                 style={{
                   backgroundColor: 'var(--primary)',
                   width: `${((activeIndex + 1) / items.length) * 100}%`,

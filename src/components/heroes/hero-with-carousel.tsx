@@ -1,6 +1,7 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category heroes
 // @name hero-with-carousel
+// @score 92
 // @source https://www.shadcnblocks.com/blocks/hero, https://www.hover.dev/components/heros
 
 'use client';
@@ -8,6 +9,33 @@
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useCallback, useEffect, useRef, useState } from 'react';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HERO_MIN_HEIGHT = '85vh';
+const CONTENT_MAX_WIDTH = '48rem'; // max-w-3xl
+const SUBHEADLINE_MAX_WIDTH = '36rem'; // max-w-xl
+const HEADING_CLAMP = 'clamp(2.5rem, 5vw + 1rem, 4.5rem)';
+const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1vw + 0.75rem, 1.25rem)';
+const TRANSITION_LOCK_MS = 600;
+const OVERLAY_MIX_PERCENT = '55%';
+const NAV_BUTTON_SIZE = '2.5rem'; // 40px
+const NAV_BUTTON_BG_MIX = '40%';
+const DOT_ACTIVE_WIDTH = '2rem'; // 32px
+const DOT_INACTIVE_WIDTH = '1rem'; // 16px
+const DOT_HEIGHT = '0.25rem'; // 4px
+const DOT_BG_MIX = '30%';
+const ANIMATION_DURATION = '0.6s';
+const ANIMATION_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const DELAY_SUBHEADLINE = '0.15s';
+const DELAY_CTA = '0.3s';
+const IMAGE_TRANSITION_MS = 700;
+const ARROW_SIZE = 16;
+const ARROW_STROKE_WIDTH = 1.5;
+const DEFAULT_AUTOPLAY_MS = 5000;
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--ring)]';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -53,12 +81,17 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hwc-fade-in {
-    from { opacity: 0; }
+    from { opacity: 1; }
     to   { opacity: 1; }
   }
   @keyframes hwc-progress {
     from { transform: scaleX(0); }
     to   { transform: scaleX(1); }
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 `;
@@ -71,19 +104,20 @@ export default function HeroWithCarousel({
   slides,
   ctaText,
   ctaHref = '#',
-  autoPlayInterval = 5000,
+  autoPlayInterval = DEFAULT_AUTOPLAY_MS,
   className,
 }: HeroWithCarouselProps) {
   const [current, setCurrent] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const sectionRef = useRef<HTMLElement>(null);
 
   const goTo = useCallback(
     (index: number) => {
       if (isTransitioning || index === current) return;
       setIsTransitioning(true);
       setCurrent(index);
-      setTimeout(() => setIsTransitioning(false), 600);
+      setTimeout(() => setIsTransitioning(false), TRANSITION_LOCK_MS);
     },
     [current, isTransitioning],
   );
@@ -103,6 +137,25 @@ export default function HeroWithCarousel({
     return () => clearTimeout(timerRef.current);
   }, [current, autoPlayInterval, goNext]);
 
+  // Keyboard navigation (arrow keys within section)
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goPrev();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        goNext();
+      }
+    }
+
+    section.addEventListener('keydown', handleKeyDown);
+    return () => section.removeEventListener('keydown', handleKeyDown);
+  }, [goNext, goPrev]);
+
   const slide = slides[current];
   if (!slide) return null;
 
@@ -111,22 +164,31 @@ export default function HeroWithCarousel({
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
+        ref={sectionRef}
+        aria-label="Hero carousel"
+        aria-roledescription="carousel"
+        role="region"
+        tabIndex={0}
         className={cn(
-          'relative min-h-[85vh] flex items-center overflow-hidden',
+          'relative flex items-center overflow-hidden',
+          FOCUS_RING,
           className,
         )}
-        style={{ backgroundColor: 'var(--background)' }}
-        aria-roledescription="carousel"
-        aria-label="Hero carousel"
+        style={{
+          minHeight: HERO_MIN_HEIGHT,
+          backgroundColor: 'var(--background)',
+        }}
       >
-        {/* Background image */}
+        {/* Background images */}
         {slides.map((s, i) => (
           <div
             key={i}
-            className={cn(
-              'absolute inset-0 transition-opacity duration-700',
-              i === current ? 'opacity-100' : 'opacity-0',
-            )}
+            className="absolute inset-0"
+            style={{
+              opacity: i === current ? 1 : 0,
+              transitionProperty: 'opacity',
+              transitionDuration: `${IMAGE_TRANSITION_MS}ms`,
+            }}
             aria-hidden={i !== current}
           >
             <Image
@@ -144,21 +206,25 @@ export default function HeroWithCarousel({
         <div
           className="absolute inset-0"
           style={{
-            backgroundColor: 'color-mix(in srgb, var(--background) 55%, transparent)',
+            backgroundColor: `color-mix(in srgb, var(--background) ${OVERLAY_MIX_PERCENT}, transparent)`,
           }}
           aria-hidden="true"
         />
 
         {/* Content */}
-        <div className="relative z-10 w-full px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36">
-          <div className="max-w-3xl">
+        <article
+          className="relative z-10 w-full px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <div style={{ maxWidth: CONTENT_MAX_WIDTH }}>
             <h1
               key={`headline-${current}`}
               className="font-bold tracking-tight leading-[1.08]"
               style={{
-                fontSize: 'clamp(2.5rem, 5vw + 1rem, 4.5rem)',
+                fontSize: HEADING_CLAMP,
                 color: 'var(--foreground)',
-                animation: 'hwc-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
+                animation: `hwc-fade-in ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
               }}
             >
               {slide.headline}
@@ -167,11 +233,13 @@ export default function HeroWithCarousel({
             {slide.subheadline && (
               <p
                 key={`sub-${current}`}
-                className="mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-xl"
+                className="mt-5 md:mt-6 leading-relaxed"
                 style={{
+                  fontSize: SUBHEADLINE_CLAMP,
+                  maxWidth: SUBHEADLINE_MAX_WIDTH,
                   color: 'var(--muted-foreground)',
-                  animation: 'hwc-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
-                  animationDelay: '0.15s',
+                  animation: `hwc-fade-in ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+                  animationDelay: DELAY_SUBHEADLINE,
                 }}
               >
                 {slide.subheadline}
@@ -182,8 +250,8 @@ export default function HeroWithCarousel({
               <div
                 className="mt-8 md:mt-10"
                 style={{
-                  animation: 'hwc-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
-                  animationDelay: '0.3s',
+                  animation: `hwc-fade-in ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
+                  animationDelay: DELAY_CTA,
                 }}
               >
                 <a
@@ -191,15 +259,12 @@ export default function HeroWithCarousel({
                   className={cn(
                     'inline-flex items-center justify-center',
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
-                    'transition-all duration-200',
-                    'hover:brightness-110 hover:shadow-lg',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    FOCUS_RING,
                     'active:scale-[0.98]',
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
-                    ['--tw-ring-color' as string]: 'var(--primary)',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
@@ -208,66 +273,79 @@ export default function HeroWithCarousel({
               </div>
             )}
           </div>
-        </div>
+        </article>
 
         {/* Navigation arrows */}
-        <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 z-10 flex items-center gap-2">
+        <nav
+          aria-label="Carousel navigation"
+          className="absolute bottom-6 right-6 md:bottom-10 md:right-10 z-10 flex items-center gap-2"
+        >
           <button
             onClick={goPrev}
+            type="button"
             className={cn(
-              'flex items-center justify-center size-10 rounded-full',
-              'backdrop-blur-md transition-all duration-200',
-              'hover:scale-110',
-              'focus-visible:outline-none focus-visible:ring-2',
+              'flex items-center justify-center rounded-full',
+              'backdrop-blur-md',
+              FOCUS_RING,
             )}
             style={{
-              backgroundColor: 'color-mix(in srgb, var(--background) 40%, transparent)',
+              width: NAV_BUTTON_SIZE,
+              height: NAV_BUTTON_SIZE,
+              backgroundColor: `color-mix(in srgb, var(--background) ${NAV_BUTTON_BG_MIX}, transparent)`,
               color: 'var(--foreground)',
-              ['--tw-ring-color' as string]: 'var(--primary)',
             }}
             aria-label="Previous slide"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M10 4l-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width={ARROW_SIZE} height={ARROW_SIZE} viewBox={`0 0 ${ARROW_SIZE} ${ARROW_SIZE}`} fill="none" aria-hidden="true">
+              <path d="M10 4l-4 4 4 4" stroke="currentColor" strokeWidth={ARROW_STROKE_WIDTH} strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
 
           <button
             onClick={goNext}
+            type="button"
             className={cn(
-              'flex items-center justify-center size-10 rounded-full',
-              'backdrop-blur-md transition-all duration-200',
-              'hover:scale-110',
-              'focus-visible:outline-none focus-visible:ring-2',
+              'flex items-center justify-center rounded-full',
+              'backdrop-blur-md',
+              FOCUS_RING,
             )}
             style={{
-              backgroundColor: 'color-mix(in srgb, var(--background) 40%, transparent)',
+              width: NAV_BUTTON_SIZE,
+              height: NAV_BUTTON_SIZE,
+              backgroundColor: `color-mix(in srgb, var(--background) ${NAV_BUTTON_BG_MIX}, transparent)`,
               color: 'var(--foreground)',
-              ['--tw-ring-color' as string]: 'var(--primary)',
             }}
             aria-label="Next slide"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width={ARROW_SIZE} height={ARROW_SIZE} viewBox={`0 0 ${ARROW_SIZE} ${ARROW_SIZE}`} fill="none" aria-hidden="true">
+              <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth={ARROW_STROKE_WIDTH} strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-        </div>
+        </nav>
 
         {/* Dot indicators with progress */}
-        <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 z-10 flex items-center gap-2">
+        <div
+          className="absolute bottom-6 left-6 md:bottom-10 md:left-10 z-10 flex items-center gap-2"
+          role="tablist"
+          aria-label="Slide indicators"
+        >
           {slides.map((_, i) => (
             <button
               key={i}
+              type="button"
+              role="tab"
               onClick={() => goTo(i)}
-              className={cn(
-                'relative h-1 rounded-full overflow-hidden transition-all duration-300',
-                i === current ? 'w-8' : 'w-4',
-              )}
+              className="relative rounded-full overflow-hidden"
               style={{
-                backgroundColor: 'color-mix(in srgb, var(--foreground) 30%, transparent)',
+                height: DOT_HEIGHT,
+                width: i === current ? DOT_ACTIVE_WIDTH : DOT_INACTIVE_WIDTH,
+                backgroundColor: `color-mix(in srgb, var(--foreground) ${DOT_BG_MIX}, transparent)`,
+                transitionProperty: 'width',
+                transitionDuration: '300ms',
               }}
               aria-label={`Go to slide ${i + 1}`}
-              aria-current={i === current ? 'true' : undefined}
+              aria-selected={i === current}
+              tabIndex={i === current ? 0 : -1}
             >
               {i === current && (
                 <div

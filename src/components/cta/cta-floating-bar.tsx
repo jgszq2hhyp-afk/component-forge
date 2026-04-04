@@ -1,9 +1,36 @@
-// @version 1.0.0 // @category cta // @name cta-floating-bar // @score pending
+// @version 2.0.0
+// @category cta
+// @name CTA Floating Bar
+// @source custom-implementation
 
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/** Default scroll distance in px before bar appears */
+const DEFAULT_SCROLL_THRESHOLD = 400;
+
+/** Exit animation duration in ms */
+const EXIT_ANIMATION_DURATION = 250;
+
+/** Slide-up animation timing */
+const SLIDE_UP_DURATION = '0.35s';
+const SLIDE_UP_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+/** Slide-down animation timing */
+const SLIDE_DOWN_DURATION = '0.25s';
+const SLIDE_DOWN_EASING = 'cubic-bezier(0.55, 0, 1, 0.45)';
+
+/** Focus ring class for interactive elements */
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+
+/** Close icon size */
+const CLOSE_ICON_SIZE = 16;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -56,12 +83,24 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes cta-bar-slide-up {
+    from { opacity: 0; transform: none; }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes cta-bar-slide-down {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0; transform: none; }
+  }
+  @keyframes cta-bar-fade-in {
     from { opacity: 0; }
     to   { opacity: 1; }
   }
-  @keyframes cta-bar-slide-down {
+  @keyframes cta-bar-fade-out {
     from { opacity: 1; }
     to   { opacity: 0; }
+  }
+  .cta-bar-animate-in,
+  .cta-bar-animate-out {
+    animation-duration: 0.01ms !important;
   }
 }
 `;
@@ -74,7 +113,7 @@ export default function CtaFloatingBar({
   text,
   ctaText,
   ctaHref,
-  showAfterScroll = 400,
+  showAfterScroll = DEFAULT_SCROLL_THRESHOLD,
   className,
 }: CtaFloatingBarProps) {
   const [visible, setVisible] = useState(false);
@@ -101,7 +140,7 @@ export default function CtaFloatingBar({
     const timeout = setTimeout(() => {
       setDismissed(true);
       setExiting(false);
-    }, 250);
+    }, EXIT_ANIMATION_DURATION);
     return () => clearTimeout(timeout);
   }, []);
 
@@ -117,9 +156,9 @@ export default function CtaFloatingBar({
     <>
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
-      <div
+      <aside
         role="complementary"
-        aria-label="Call to action"
+        aria-label="Promotional call to action"
         className={cn(
           'fixed bottom-4 inset-x-4 sm:bottom-6 sm:inset-x-6 z-40',
           'backdrop-blur-xl border rounded-2xl shadow-2xl',
@@ -130,8 +169,8 @@ export default function CtaFloatingBar({
           backgroundColor: 'color-mix(in oklch, var(--background) 90%, transparent)',
           borderColor: 'color-mix(in oklch, var(--border) 50%, transparent)',
           animation: isEntering
-            ? 'cta-bar-slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both'
-            : 'cta-bar-slide-down 0.25s cubic-bezier(0.55, 0, 1, 0.45) both',
+            ? `cta-bar-slide-up ${SLIDE_UP_DURATION} ${SLIDE_UP_EASING} both`
+            : `cta-bar-slide-down ${SLIDE_DOWN_DURATION} ${SLIDE_DOWN_EASING} both`,
         }}
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
@@ -151,10 +190,10 @@ export default function CtaFloatingBar({
               className={cn(
                 'inline-flex w-full items-center justify-center sm:w-auto',
                 'rounded-lg px-5 py-2.5 text-sm font-semibold',
-                'transition-all duration-200',
+                'transition-all duration-200 motion-reduce:transition-none',
                 'hover:brightness-110 hover:shadow-md',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                'active:scale-[0.98]',
+                FOCUS_RING,
+                'active:scale-[0.98] motion-reduce:active:scale-100',
               )}
               style={{
                 backgroundColor: 'var(--primary)',
@@ -170,12 +209,12 @@ export default function CtaFloatingBar({
             <button
               type="button"
               onClick={handleDismiss}
-              aria-label="Dismiss"
+              aria-label="Dismiss promotional bar"
               className={cn(
                 'inline-flex shrink-0 items-center justify-center',
-                'rounded-lg p-2 transition-colors duration-150',
+                'rounded-lg p-2 transition-colors duration-150 motion-reduce:transition-none',
                 'hover:bg-black/5 dark:hover:bg-white/10',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                FOCUS_RING,
               )}
               style={{
                 color: 'var(--muted-foreground)',
@@ -184,9 +223,9 @@ export default function CtaFloatingBar({
               }}
             >
               <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
+                width={CLOSE_ICON_SIZE}
+                height={CLOSE_ICON_SIZE}
+                viewBox={`0 0 ${CLOSE_ICON_SIZE} ${CLOSE_ICON_SIZE}`}
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
@@ -202,7 +241,7 @@ export default function CtaFloatingBar({
             </button>
           </div>
         </div>
-      </div>
+      </aside>
     </>
   );
 }

@@ -1,9 +1,32 @@
-// @version 1.0.0 // @category footers // @name footer-with-newsletter // @source custom
+// @version 2.0.0
+// @category footers
+// @name footer-with-newsletter
+// @source custom
 
 'use client';
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SECTION_MAX_WIDTH = 'max-w-7xl';
+const SECTION_PADDING_X = 'px-6 md:px-12 lg:px-20';
+const SECTION_PADDING_Y = 'pt-16 pb-8';
+const NEWSLETTER_MAX_WIDTH = 'max-w-4xl';
+const NEWSLETTER_DESCRIPTION_MAX_WIDTH = 'max-w-md';
+const FORM_MAX_WIDTH = 'max-w-sm';
+const BANNER_PADDING = 'px-6 py-10 md:px-12 md:py-14';
+const BANNER_RADIUS = 'rounded-2xl';
+const BANNER_MARGIN_BOTTOM = 'mb-12';
+const COLUMN_GRID = 'sm:grid-cols-2 lg:grid-cols-4';
+const DIVIDER_MARGIN = 'mt-12 mb-6';
+const INPUT_PADDING = 'px-4 py-2.5';
+const BUTTON_PADDING = 'px-5 py-2.5';
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -66,23 +89,28 @@ export default function FooterWithNewsletter({
 
   return (
     <footer
-      className={cn('px-6 pt-16 pb-8 md:px-12 lg:px-20', className)}
+      aria-label="Site footer"
+      className={cn(SECTION_PADDING_X, SECTION_PADDING_Y, className)}
       style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
     >
-      <div className="mx-auto max-w-7xl">
+      <div className={cn('mx-auto', SECTION_MAX_WIDTH)}>
         {/* Newsletter banner */}
-        <div
-          className="mb-12 rounded-2xl px-6 py-10 md:px-12 md:py-14"
+        <aside
+          aria-label="Newsletter signup"
+          className={cn(BANNER_MARGIN_BOTTOM, BANNER_RADIUS, BANNER_PADDING)}
           style={{
             backgroundColor: 'var(--primary)',
             color: 'var(--primary-foreground)',
           }}
         >
-          <div className="mx-auto flex max-w-4xl flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
-            <div className="max-w-md">
+          <div className={cn('mx-auto flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between', NEWSLETTER_MAX_WIDTH)}>
+            <div className={NEWSLETTER_DESCRIPTION_MAX_WIDTH}>
               <h3
-                className="text-xl font-bold tracking-tight md:text-2xl"
-                style={{ color: 'var(--primary-foreground)' }}
+                className="font-bold tracking-tight"
+                style={{
+                  color: 'var(--primary-foreground)',
+                  fontSize: 'clamp(1.25rem, 1rem + 1vw, 1.5rem)',
+                }}
               >
                 {newsletterHeadline}
               </h3>
@@ -95,7 +123,7 @@ export default function FooterWithNewsletter({
                 {newsletterDescription}
               </p>
             </div>
-            <form onSubmit={handleSubmit} className="flex w-full max-w-sm gap-2">
+            <form onSubmit={handleSubmit} className={cn('flex w-full gap-2', FORM_MAX_WIDTH)}>
               <label htmlFor="footer-newsletter-email" className="sr-only">
                 Email address
               </label>
@@ -107,9 +135,10 @@ export default function FooterWithNewsletter({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={cn(
-                  'flex-1 rounded-lg px-4 py-2.5 text-sm',
+                  'flex-1 rounded-lg text-sm',
+                  INPUT_PADDING,
                   'placeholder:opacity-60',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                  FOCUS_RING,
                 )}
                 style={{
                   backgroundColor: 'var(--primary-foreground)',
@@ -122,10 +151,11 @@ export default function FooterWithNewsletter({
                 type="submit"
                 disabled={status === 'loading'}
                 className={cn(
-                  'whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-semibold',
+                  'whitespace-nowrap rounded-lg text-sm font-semibold',
+                  BUTTON_PADDING,
                   'transition-all duration-200',
                   'hover:brightness-110 active:scale-[0.98]',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                  FOCUS_RING,
                   'disabled:opacity-60 disabled:pointer-events-none',
                 )}
                 style={{
@@ -140,49 +170,55 @@ export default function FooterWithNewsletter({
             </form>
           </div>
           {status === 'success' && (
-            <p className="mt-3 text-center text-sm font-medium" style={{ color: 'var(--primary-foreground)' }}>
+            <p className="mt-3 text-center text-sm font-medium" role="status" style={{ color: 'var(--primary-foreground)' }}>
               Thanks for subscribing!
             </p>
           )}
           {status === 'error' && (
-            <p className="mt-3 text-center text-sm font-medium" style={{ color: 'var(--primary-foreground)' }}>
+            <p className="mt-3 text-center text-sm font-medium" role="alert" style={{ color: 'var(--primary-foreground)' }}>
               Something went wrong. Please try again.
             </p>
           )}
-        </div>
+        </aside>
 
         {/* Columns */}
         {columns && columns.length > 0 && (
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {columns.map((column) => (
-              <div key={column.title}>
-                <h4
-                  className="mb-3 text-sm font-semibold uppercase tracking-wider"
-                  style={{ color: 'var(--foreground)' }}
-                >
-                  {column.title}
-                </h4>
-                <ul className="space-y-2">
-                  {column.links.map((link) => (
-                    <li key={link.label}>
-                      <a
-                        href={link.href}
-                        className="text-sm transition-colors duration-200 hover:underline underline-offset-4"
-                        style={{ color: 'var(--muted-foreground)' }}
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          <nav aria-label="Footer navigation">
+            <div className={cn('grid gap-8', COLUMN_GRID)}>
+              {columns.map((column) => (
+                <div key={column.title}>
+                  <h4
+                    className="mb-3 text-sm font-semibold uppercase tracking-wider"
+                    style={{ color: 'var(--foreground)' }}
+                  >
+                    {column.title}
+                  </h4>
+                  <ul className="space-y-2" role="list">
+                    {column.links.map((link) => (
+                      <li key={link.label}>
+                        <a
+                          href={link.href}
+                          className={cn(
+                            'text-sm transition-colors duration-200 hover:underline underline-offset-4',
+                            FOCUS_RING,
+                            'rounded-sm',
+                          )}
+                          style={{ color: 'var(--muted-foreground)' }}
+                        >
+                          {link.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </nav>
         )}
 
         {/* Divider + copyright */}
         <div
-          className="mt-12 mb-6 h-px"
+          className={cn(DIVIDER_MARGIN, 'h-px')}
           style={{ backgroundColor: 'var(--border)' }}
           aria-hidden="true"
         />
