@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 1.1.0
 // @category navigation
 // @name Nav Transparent Dark
 // @source custom-implementation
@@ -21,6 +21,9 @@ interface NavTransparentDarkProps {
   className?: string;
   scrollThreshold?: number;
 }
+
+const focusRing =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring,var(--primary))] focus-visible:ring-offset-2";
 
 export default function NavTransparentDark({
   logo = "Brand",
@@ -52,20 +55,24 @@ export default function NavTransparentDark({
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-500 motion-reduce:transition-none",
         isScrolled
-          ? "bg-[var(--nav-scrolled-bg,hsl(0_0%_100%))] shadow-sm border-b border-[var(--nav-scrolled-border,hsl(0_0%_0%/0.08))]"
+          ? "bg-[var(--background)] shadow-sm border-b border-[var(--border)]"
           : "bg-transparent",
         className
       )}
     >
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
+      <nav
+        aria-label="Main navigation"
+        className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-4"
+      >
         {/* Logo */}
         <a
           href="/"
           className={cn(
-            "text-xl font-bold transition-colors duration-500 motion-reduce:transition-none",
+            focusRing,
+            "rounded-lg text-xl font-bold transition-colors duration-500 motion-reduce:transition-none",
             isScrolled
-              ? "text-[var(--nav-scrolled-logo,hsl(0_0%_9%))]"
-              : "text-[var(--nav-dark-logo,hsl(0_0%_100%))]"
+              ? "text-[var(--foreground)]"
+              : "text-[var(--nav-dark-logo,var(--background))]"
           )}
         >
           {logo}
@@ -78,10 +85,11 @@ export default function NavTransparentDark({
               <a
                 href={link.href}
                 className={cn(
+                  focusRing,
                   "rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-500 motion-reduce:transition-none",
                   isScrolled
-                    ? "text-[var(--nav-scrolled-link,hsl(0_0%_40%))] hover:text-[var(--nav-scrolled-link-hover,hsl(0_0%_9%))]"
-                    : "text-[var(--nav-dark-link,hsl(0_0%_100%/0.8))] hover:text-[var(--nav-dark-link-hover,hsl(0_0%_100%))]"
+                    ? "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                    : "text-[var(--nav-dark-link,var(--background)/0.8)] hover:text-[var(--nav-dark-link-hover,var(--background))]"
                 )}
               >
                 {link.label}
@@ -94,10 +102,11 @@ export default function NavTransparentDark({
         <a
           href={ctaHref}
           className={cn(
+            focusRing,
             "hidden md:inline-flex items-center rounded-lg px-5 py-2 text-sm font-medium transition-all duration-500 motion-reduce:transition-none",
             isScrolled
-              ? "bg-[var(--nav-cta-bg,hsl(0_0%_9%))] text-[var(--nav-cta-color,hsl(0_0%_100%))] hover:bg-[var(--nav-cta-hover-bg,hsl(0_0%_20%))]"
-              : "bg-[var(--nav-dark-cta-bg,hsl(0_0%_100%))] text-[var(--nav-dark-cta-color,hsl(0_0%_9%))] hover:bg-[var(--nav-dark-cta-hover,hsl(0_0%_100%/0.9))]"
+              ? "bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90"
+              : "bg-[var(--background)] text-[var(--foreground)] hover:bg-[var(--background)]/90"
           )}
         >
           {ctaLabel}
@@ -107,10 +116,11 @@ export default function NavTransparentDark({
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           className={cn(
-            "md:hidden p-2 transition-colors motion-reduce:transition-none",
+            focusRing,
+            "md:hidden rounded-lg p-2 transition-colors motion-reduce:transition-none",
             isScrolled
-              ? "text-[var(--nav-scrolled-link,hsl(0_0%_40%))]"
-              : "text-[var(--nav-dark-link,hsl(0_0%_100%/0.8))]"
+              ? "text-[var(--muted-foreground)]"
+              : "text-[var(--nav-dark-link,var(--background)/0.8)]"
           )}
           aria-label={isMobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={isMobileOpen}
@@ -131,7 +141,7 @@ export default function NavTransparentDark({
           className={cn(
             "md:hidden px-4 pb-4",
             isScrolled
-              ? "bg-[var(--nav-scrolled-bg,hsl(0_0%_100%))]"
+              ? "bg-[var(--background)]"
               : "bg-[var(--nav-dark-mobile-bg,hsl(0_0%_0%/0.9))] backdrop-blur-md"
           )}
         >
@@ -142,10 +152,11 @@ export default function NavTransparentDark({
                   href={link.href}
                   onClick={() => setIsMobileOpen(false)}
                   className={cn(
-                    "block rounded-lg px-4 py-2.5 text-sm font-medium",
+                    focusRing,
+                    "block rounded-lg px-4 py-2.5 text-sm font-medium transition-colors motion-reduce:transition-none",
                     isScrolled
-                      ? "text-[var(--nav-scrolled-link,hsl(0_0%_40%))] hover:bg-[var(--nav-link-hover-bg,hsl(0_0%_0%/0.05))]"
-                      : "text-[var(--nav-dark-link,hsl(0_0%_100%/0.8))] hover:bg-[var(--nav-dark-link-hover-bg,hsl(0_0%_100%/0.1))]"
+                      ? "text-[var(--muted-foreground)] hover:bg-[var(--muted)]/10"
+                      : "text-[var(--nav-dark-link,var(--background)/0.8)] hover:bg-[var(--background)]/10"
                   )}
                 >
                   {link.label}
@@ -157,10 +168,11 @@ export default function NavTransparentDark({
                 href={ctaHref}
                 onClick={() => setIsMobileOpen(false)}
                 className={cn(
-                  "block rounded-lg px-4 py-2.5 text-sm font-medium text-center mt-2",
+                  focusRing,
+                  "block rounded-lg px-4 py-2.5 text-sm font-medium text-center mt-2 transition-colors motion-reduce:transition-none",
                   isScrolled
-                    ? "bg-[var(--nav-cta-bg,hsl(0_0%_9%))] text-[var(--nav-cta-color,hsl(0_0%_100%))]"
-                    : "bg-[var(--nav-dark-cta-bg,hsl(0_0%_100%))] text-[var(--nav-dark-cta-color,hsl(0_0%_9%))]"
+                    ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
+                    : "bg-[var(--background)] text-[var(--foreground)]"
                 )}
               >
                 {ctaLabel}

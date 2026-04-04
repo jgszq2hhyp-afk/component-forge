@@ -1,18 +1,40 @@
-// @version 1.0.0
+// @version 1.1.0
 // @category contact
 // @name Contact Simple Centered
 // @source custom-implementation
 
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+
+interface FormData {
+  name: string;
+  email: string;
+  message: string;
+}
+
+type FormErrors = Partial<Record<keyof FormData, string>>;
 
 interface ContactSimpleCenteredProps {
   title?: string;
   subtitle?: string;
-  onSubmit?: (data: { name: string; email: string; message: string }) => void;
+  onSubmit?: (data: FormData) => void | Promise<void>;
   className?: string;
+}
+
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+function validate(data: FormData): FormErrors {
+  const errors: FormErrors = {};
+  if (!data.name.trim()) errors.name = "Name is required.";
+  if (!data.email.trim()) {
+    errors.email = "Email is required.";
+  } else if (!EMAIL_REGEX.test(data.email)) {
+    errors.email = "Please enter a valid email address.";
+  }
+  if (!data.message.trim()) errors.message = "Message is required.";
+  return errors;
 }
 
 export default function ContactSimpleCentered({
@@ -21,50 +43,99 @@ export default function ContactSimpleCentered({
   onSubmit,
   className,
 }: ContactSimpleCenteredProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     message: "",
   });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof FormData, boolean>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    onSubmit?.(formData);
-    await new Promise((r) => setTimeout(r, 1000));
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-  };
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      const validationErrors = validate(formData);
+      setErrors(validationErrors);
+      setTouched({ name: true, email: true, message: true });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+      if (Object.keys(validationErrors).length > 0) return;
 
-  const inputClasses = cn(
-    "w-full rounded-lg border px-4 py-3 text-sm transition-colors",
-    "bg-[var(--contact-input-bg,hsl(0_0%_100%))]",
-    "border-[var(--contact-input-border,hsl(0_0%_0%/0.12))]",
-    "text-[var(--contact-input-text,hsl(0_0%_9%))]",
-    "placeholder:text-[var(--contact-input-placeholder,hsl(0_0%_50%))]",
-    "focus:outline-none focus:ring-2 focus:ring-[var(--contact-ring,hsl(220_90%_56%/0.3))]",
-    "focus:border-[var(--contact-ring-border,hsl(220_90%_56%))]"
+      setIsSubmitting(true);
+      try {
+        await onSubmit?.(formData);
+      } finally {
+        setIsSubmitting(false);
+      }
+      setIsSubmitted(true);
+    },
+    [formData, onSubmit]
   );
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { name, value } = e.target;
+      const key = name as keyof FormData;
+      setFormData((prev) => ({ ...prev, [key]: value }));
+      if (touched[key]) {
+        const next = { ...formData, [key]: value };
+        const fieldError = validate(next)[key];
+        setErrors((prev) => {
+          const copy = { ...prev };
+          if (fieldError) {
+            copy[key] = fieldError;
+          } else {
+            delete copy[key];
+          }
+          return copy;
+        });
+      }
+    },
+    [formData, touched]
+  );
+
+  const handleBlur = useCallback(
+    (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const key = e.target.name as keyof FormData;
+      setTouched((prev) => ({ ...prev, [key]: true }));
+      const fieldError = validate(formData)[key];
+      setErrors((prev) => {
+        const copy = { ...prev };
+        if (fieldError) {
+          copy[key] = fieldError;
+        } else {
+          delete copy[key];
+        }
+        return copy;
+      });
+    },
+    [formData]
+  );
+
+  const inputClasses = (field: keyof FormData) =>
+    cn(
+      "w-full rounded-lg border px-4 py-3 text-sm transition-colors",
+      "bg-[var(--background)] text-[var(--foreground)]",
+      "placeholder:text-[var(--muted-foreground)]",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]",
+      errors[field] && touched[field]
+        ? "border-[var(--destructive)]"
+        : "border-[var(--border)]"
+    );
+
+  const errorId = (field: keyof FormData) => `simple-${field}-error`;
 
   return (
     <section
-      className={cn(
-        "py-16 sm:py-24 bg-[var(--contact-bg,hsl(0_0%_100%))]",
-        className
-      )}
+      className={cn("py-16 sm:py-24 bg-[var(--background)]", className)}
     >
       <div className="mx-auto max-w-xl px-4 sm:px-6">
         <div className="text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[var(--contact-title,hsl(0_0%_9%))]">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[var(--foreground)]">
             {title}
           </h2>
-          <p className="mt-3 text-base text-[var(--contact-subtitle,hsl(0_0%_40%))]">
+          <p className="mt-3 text-base text-[var(--muted-foreground)]">
             {subtitle}
           </p>
         </div>
@@ -72,32 +143,34 @@ export default function ContactSimpleCentered({
         <div className="mt-10">
           {isSubmitted ? (
             <div className="flex flex-col items-center py-12 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--contact-success-bg,hsl(142_76%_36%/0.1))]">
-                <svg className="h-7 w-7 text-[var(--contact-success-icon,hsl(142_76%_36%))]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-500/10">
+                <svg className="h-7 w-7 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-[var(--contact-title,hsl(0_0%_9%))]">
+              <h3 className="text-xl font-semibold text-[var(--foreground)]">
                 Thank you!
               </h3>
-              <p className="mt-2 text-sm text-[var(--contact-subtitle,hsl(0_0%_40%))]">
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">
                 Your message has been received. We'll be in touch soon.
               </p>
               <button
                 onClick={() => {
                   setIsSubmitted(false);
                   setFormData({ name: "", email: "", message: "" });
+                  setErrors({});
+                  setTouched({});
                 }}
-                className="mt-6 text-sm font-medium text-[var(--contact-link,hsl(220_90%_56%))] hover:underline"
+                className="mt-6 text-sm font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] rounded-sm"
               >
                 Send another message
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <div>
-                <label htmlFor="simple-name" className="block text-sm font-medium mb-1.5 text-[var(--contact-label,hsl(0_0%_30%))]">
-                  Name
+                <label htmlFor="simple-name" className="block text-sm font-medium mb-1.5 text-[var(--foreground)]">
+                  Name <span aria-hidden="true">*</span>
                 </label>
                 <input
                   id="simple-name"
@@ -106,13 +179,21 @@ export default function ContactSimpleCentered({
                   required
                   value={formData.name}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="Your name"
-                  className={inputClasses}
+                  aria-describedby={errors.name && touched.name ? errorId("name") : undefined}
+                  aria-invalid={!!(errors.name && touched.name)}
+                  className={inputClasses("name")}
                 />
+                {errors.name && touched.name && (
+                  <p id={errorId("name")} className="mt-1 text-xs text-[var(--destructive)]" role="alert">
+                    {errors.name}
+                  </p>
+                )}
               </div>
               <div>
-                <label htmlFor="simple-email" className="block text-sm font-medium mb-1.5 text-[var(--contact-label,hsl(0_0%_30%))]">
-                  Email
+                <label htmlFor="simple-email" className="block text-sm font-medium mb-1.5 text-[var(--foreground)]">
+                  Email <span aria-hidden="true">*</span>
                 </label>
                 <input
                   id="simple-email"
@@ -121,13 +202,21 @@ export default function ContactSimpleCentered({
                   required
                   value={formData.email}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="you@example.com"
-                  className={inputClasses}
+                  aria-describedby={errors.email && touched.email ? errorId("email") : undefined}
+                  aria-invalid={!!(errors.email && touched.email)}
+                  className={inputClasses("email")}
                 />
+                {errors.email && touched.email && (
+                  <p id={errorId("email")} className="mt-1 text-xs text-[var(--destructive)]" role="alert">
+                    {errors.email}
+                  </p>
+                )}
               </div>
               <div>
-                <label htmlFor="simple-message" className="block text-sm font-medium mb-1.5 text-[var(--contact-label,hsl(0_0%_30%))]">
-                  Message
+                <label htmlFor="simple-message" className="block text-sm font-medium mb-1.5 text-[var(--foreground)]">
+                  Message <span aria-hidden="true">*</span>
                 </label>
                 <textarea
                   id="simple-message"
@@ -136,21 +225,40 @@ export default function ContactSimpleCentered({
                   rows={6}
                   value={formData.message}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="What's on your mind?"
-                  className={cn(inputClasses, "resize-none")}
+                  aria-describedby={errors.message && touched.message ? errorId("message") : undefined}
+                  aria-invalid={!!(errors.message && touched.message)}
+                  className={cn(inputClasses("message"), "resize-none")}
                 />
+                {errors.message && touched.message && (
+                  <p id={errorId("message")} className="mt-1 text-xs text-[var(--destructive)]" role="alert">
+                    {errors.message}
+                  </p>
+                )}
               </div>
               <button
                 type="submit"
                 disabled={isSubmitting}
                 className={cn(
                   "w-full rounded-lg px-5 py-3 text-sm font-medium transition-colors",
-                  "bg-[var(--contact-btn-bg,hsl(0_0%_9%))] text-[var(--contact-btn-text,hsl(0_0%_100%))]",
-                  "hover:bg-[var(--contact-btn-hover,hsl(0_0%_20%))]",
+                  "bg-[var(--primary)] text-[var(--primary-foreground,var(--background))]",
+                  "hover:bg-[var(--primary)]/90",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]",
                   "disabled:opacity-50 disabled:cursor-not-allowed"
                 )}
               >
-                {isSubmitting ? "Sending..." : "Send Message"}
+                {isSubmitting ? (
+                  <span className="inline-flex items-center gap-2">
+                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Sending...
+                  </span>
+                ) : (
+                  "Send Message"
+                )}
               </button>
             </form>
           )}
