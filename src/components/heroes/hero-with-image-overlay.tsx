@@ -1,0 +1,233 @@
+// @version 1.0.0
+// @category heroes
+// @name hero-with-image-overlay
+// @source https://tailwindcss.com/plus/ui-blocks/marketing/sections/heroes
+
+'use client';
+
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface HeroWithImageOverlayProps {
+  headline: string;
+  subheadline?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  secondaryCtaText?: string;
+  secondaryCtaHref?: string;
+  imageSrc: string;
+  imageAlt: string;
+  overlayOpacity?: number;
+  contentPosition?: 'center' | 'left' | 'bottom-left';
+  className?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Keyframe styles
+// ---------------------------------------------------------------------------
+
+const keyframes = `
+@keyframes hio-fade-up {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0);
+  }
+}
+
+@keyframes hio-scale-in {
+  from {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes hio-fade-up {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes hio-scale-in {
+    from { transform: scale(1); }
+    to   { transform: scale(1); }
+  }
+}
+`;
+
+// ---------------------------------------------------------------------------
+// Position mapping
+// ---------------------------------------------------------------------------
+
+const positionClasses: Record<string, string> = {
+  center: 'items-center justify-center text-center',
+  left: 'items-start justify-center text-left',
+  'bottom-left': 'items-end justify-end text-left pb-8 md:pb-16',
+};
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+export default function HeroWithImageOverlay({
+  headline,
+  subheadline,
+  ctaText,
+  ctaHref = '#',
+  secondaryCtaText,
+  secondaryCtaHref = '#',
+  imageSrc,
+  imageAlt,
+  overlayOpacity = 0.5,
+  contentPosition = 'center',
+  className,
+}: HeroWithImageOverlayProps) {
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: keyframes }} />
+
+      <section
+        className={cn(
+          'relative flex min-h-[85vh] overflow-hidden',
+          'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
+          positionClasses[contentPosition],
+          className,
+        )}
+      >
+        {/* Background image with slow zoom */}
+        <div
+          className="absolute inset-0"
+          style={{
+            animation: 'hio-scale-in 1.5s cubic-bezier(0.16, 1, 0.3, 1) both',
+          }}
+        >
+          <Image
+            src={imageSrc}
+            alt={imageAlt}
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+          />
+        </div>
+
+        {/* Gradient overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: contentPosition === 'bottom-left'
+              ? `linear-gradient(to top, color-mix(in srgb, var(--background) ${overlayOpacity * 100}%, transparent), transparent 60%)`
+              : `color-mix(in srgb, var(--background) ${overlayOpacity * 100}%, transparent)`,
+          }}
+          aria-hidden="true"
+        />
+
+        {/* Content */}
+        <div
+          className={cn(
+            'relative z-10',
+            contentPosition === 'center' ? 'max-w-3xl' : 'max-w-2xl',
+          )}
+        >
+          <h1
+            className="font-bold tracking-tight leading-[1.08]"
+            style={{
+              fontSize: 'clamp(2.25rem, 5vw + 1rem, 4.5rem)',
+              color: 'var(--foreground)',
+              animation: 'hio-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animationDelay: '0.2s',
+            }}
+          >
+            {headline}
+          </h1>
+
+          {subheadline && (
+            <p
+              className={cn(
+                'mt-5 md:mt-6 text-lg md:text-xl leading-relaxed',
+                contentPosition === 'center' ? 'mx-auto max-w-xl' : 'max-w-lg',
+              )}
+              style={{
+                color: 'var(--muted-foreground)',
+                animation: 'hio-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+                animationDelay: '0.35s',
+              }}
+            >
+              {subheadline}
+            </p>
+          )}
+
+          {(ctaText || secondaryCtaText) && (
+            <div
+              className={cn(
+                'mt-8 md:mt-10 flex flex-wrap gap-4',
+                contentPosition === 'center'
+                  ? 'items-center justify-center'
+                  : 'items-center',
+              )}
+              style={{
+                animation: 'hio-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+                animationDelay: '0.5s',
+              }}
+            >
+              {ctaText && (
+                <a
+                  href={ctaHref}
+                  className={cn(
+                    'inline-flex items-center justify-center',
+                    'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
+                    'transition-all duration-200',
+                    'hover:brightness-110 hover:shadow-lg',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    'active:scale-[0.98]',
+                  )}
+                  style={{
+                    backgroundColor: 'var(--primary)',
+                    color: 'var(--primary-foreground)',
+                    ['--tw-ring-color' as string]: 'var(--primary)',
+                    ['--tw-ring-offset-color' as string]: 'var(--background)',
+                  }}
+                >
+                  {ctaText}
+                </a>
+              )}
+
+              {secondaryCtaText && (
+                <a
+                  href={secondaryCtaHref}
+                  className={cn(
+                    'inline-flex items-center justify-center',
+                    'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
+                    'border backdrop-blur-sm transition-all duration-200',
+                    'hover:brightness-110',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    'active:scale-[0.98]',
+                  )}
+                  style={{
+                    color: 'var(--foreground)',
+                    borderColor: 'color-mix(in srgb, var(--foreground) 40%, transparent)',
+                    backgroundColor: 'color-mix(in srgb, var(--background) 15%, transparent)',
+                    ['--tw-ring-color' as string]: 'var(--foreground)',
+                    ['--tw-ring-offset-color' as string]: 'var(--background)',
+                  }}
+                >
+                  {secondaryCtaText}
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+    </>
+  );
+}

@@ -1,0 +1,25 @@
+priority,category,name,action,reason,status,notes
+1,heroes,hero-typography-only,build,tier-1-initial,completed,Bold headline hero
+2,heroes,hero-split-image,build,tier-1-initial,completed,Grid split with image
+3,navigation,nav-sticky-blur,build,tier-1-initial,completed,Glasmorphism nav
+4,cta,cta-floating-bar,build,tier-1-initial,completed,Sticky bottom CTA
+5,cta,cta-inline-section,build,tier-1-initial,completed,Full-width CTA section
+6,layouts,section-wrapper,build,tier-1-initial,completed,Consistent padding
+7,layouts,split-layout,build,tier-1-initial,completed,Two-column split
+8,layouts,full-bleed,build,tier-1-initial,completed,Edge-to-edge wrapper
+10,heroes,bulk-import,import,fill-library,not-started,Import 15-20 hero variants from 21st.dev + aura.build
+11,navigation,bulk-import,import,fill-library,not-started,Import 8-10 nav variants
+12,features,bulk-import,import,fill-library,not-started,Import 15-20 feature/service variants
+13,testimonials,bulk-import,import,fill-library,not-started,Import 8-10 testimonial variants
+14,cta,bulk-import,import,fill-library,not-started,Import 6-8 more CTA variants
+15,footers,bulk-import,import,fill-library,not-started,Import 8-10 footer variants
+16,pricing,bulk-import,import,fill-library,not-started,Import 5-8 pricing table variants
+17,faq,bulk-import,import,fill-library,not-started,Import 5-8 FAQ/accordion variants
+18,contact,bulk-import,import,fill-library,not-started,Import 5-8 contact form variants
+19,gallery,bulk-import,import,fill-library,not-started,Import 5-8 gallery/portfolio variants
+20,social-proof,bulk-import,import,fill-library,not-started,Import 5-8 logo cloud + trust badges
+21,stats,bulk-import,import,fill-library,not-started,Import 5-8 animated stats/counters
+22,team,bulk-import,import,fill-library,not-started,Import 5-8 team/about sections
+23,blog,bulk-import,import,fill-library,not-started,Import 3-5 blog/news card layouts
+24,error,bulk-import,import,fill-library,not-started,Import 3-5 404/error pages
+25,animations,bulk-import,import,fill-library,not-started,Import 10-15 animation utilities

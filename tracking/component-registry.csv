@@ -1,0 +1,9 @@
+id,category,name,version,score,accessibility,performance,visual,code,responsive,docs,status,created,last_improved
+1,heroes,hero-typography-only,1.0.0,,,,,,,,production,2026-04-04,2026-04-04
+2,heroes,hero-split-image,1.0.0,,,,,,,,production,2026-04-04,2026-04-04
+3,navigation,nav-sticky-blur,1.0.0,,,,,,,,production,2026-04-04,2026-04-04
+4,cta,cta-floating-bar,1.0.0,,,,,,,,production,2026-04-04,2026-04-04
+5,cta,cta-inline-section,1.0.0,,,,,,,,production,2026-04-04,2026-04-04
+6,layouts,section-wrapper,1.0.0,,,,,,,,production,2026-04-04,2026-04-04
+7,layouts,split-layout,1.0.0,,,,,,,,production,2026-04-04,2026-04-04
+8,layouts,full-bleed,1.0.0,,,,,,,,production,2026-04-04,2026-04-04
