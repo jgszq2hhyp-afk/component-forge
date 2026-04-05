@@ -3,7 +3,7 @@
 Last updated: 2026-04-04
 
 ## Current Focus
-135 components across 18 categories. Cycle 5 added 6 new 2026-trend components. Massive optimization push: 90+ batches improving all components to award-worthy.
+155 components across 24 categories. Cycle 6 added 20 new components in 6 new categories (cookie-consent, portfolio, process, dividers, login, countdown) plus expanded backgrounds, banners, and animations.
 
 ## Recent Cycles
 
@@ -59,6 +59,20 @@ Last updated: 2026-04-04
 - **cta (1):** cta-sticky-bottom (scroll-triggered slide-up, backdrop blur glass, dismissible)
 - **Build:** Clean ✓ — zero TS errors
 - **All built to award-worthy standard (91+ score) from day one**
+
+### Cycle 6 — 2026-04-05: Neue Kategorien + Erweiterungen
+- **20 neue Komponenten** in 6 neuen + 3 erweiterten Kategorien
+- **cookie-consent (2, NEU):** cookie-banner-gdpr (DSGVO, localStorage, slide-up), cookie-preference-modal (Kategorie-Toggles, Focus Trap)
+- **portfolio (3, NEU):** case-study-cards (Grid, Hover-Overlay), project-showcase (Split-Layout, Stats), filterable-grid (Kategorie-Tabs, Arrow-Keys)
+- **process (2, NEU):** horizontal-steps (numbered circles, connecting lines), vertical-timeline (alternating cards)
+- **dividers (3, NEU):** wave (SVG), diagonal (clip-path), curved (SVG bezier)
+- **login (2, NEU):** split-image (Social Login, Show/Hide PW), register-multi-step (3-Step, Progress Bar)
+- **countdown (1, NEU):** countdown-launch (Flip-Animation, Email Signup, SSR-safe)
+- **banners (2):** notification-toast (4 types, auto-dismiss, progress bar), promotional (countdown, gradient, localStorage dismiss)
+- **backgrounds (2):** particles (CSS-only, SSR deterministic), dot-grid (SVG pattern, radial fade)
+- **animations (3):** typewriter-text (loop, cursor), scroll-snap-gallery (horizontal snap, arrows), number-ticker (IntersectionObserver, de-DE format)
+- **Build:** Clean ✓ — zero TS errors
+- **All 20 built to award-worthy (91+) from day one**
 
 ## Blockers
 - Remote scheduled trigger (RemoteTrigger API) returned 401 — scheduled automation not yet active
