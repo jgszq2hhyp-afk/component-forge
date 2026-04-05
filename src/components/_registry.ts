@@ -172,4 +172,82 @@ export const registry: Record<string, ComponentMeta> = {
     status: 'production',
     csvRefs: {},
   },
+
+  // -------------------------------------------------------------------------
+  // Newsletter
+  // -------------------------------------------------------------------------
+  'newsletter-inline-signup': {
+    name: 'newsletter-inline-signup',
+    description: 'Inline email signup section with headline, description, email input, submit button, and success/error states',
+    category: 'newsletter',
+    tags: ['newsletter', 'email', 'signup', 'form', 'cta'],
+    bestFor: ['content pages', 'blog sections', 'landing pages', 'email capture'],
+    version: '1.0.0',
+    score: null,
+    status: 'production',
+    csvRefs: {},
+  },
+  'newsletter-minimal-cta': {
+    name: 'newsletter-minimal-cta',
+    description: 'Compact one-line email signup with input and button side by side for footers or sidebars',
+    category: 'newsletter',
+    tags: ['newsletter', 'email', 'minimal', 'compact', 'footer'],
+    bestFor: ['footer signup', 'sidebar widget', 'embedded newsletter', 'compact spaces'],
+    version: '1.0.0',
+    score: null,
+    status: 'production',
+    csvRefs: {},
+  },
+
+  // -------------------------------------------------------------------------
+  // Careers
+  // -------------------------------------------------------------------------
+  'careers-job-listing': {
+    name: 'careers-job-listing',
+    description: 'Job listings grouped by department with type badges, location, and filter-ready structure',
+    category: 'careers',
+    tags: ['careers', 'jobs', 'hiring', 'listing', 'department'],
+    bestFor: ['careers page', 'job board', 'hiring section', 'open positions'],
+    version: '1.0.0',
+    score: null,
+    status: 'production',
+    csvRefs: {},
+  },
+  'careers-culture-section': {
+    name: 'careers-culture-section',
+    description: 'Company culture section with split layout: image left, perks/values grid right',
+    category: 'careers',
+    tags: ['careers', 'culture', 'values', 'perks', 'company'],
+    bestFor: ['careers page', 'about us', 'company culture', 'employer branding'],
+    version: '1.0.0',
+    score: null,
+    status: 'production',
+    csvRefs: {},
+  },
+
+  // -------------------------------------------------------------------------
+  // Content
+  // -------------------------------------------------------------------------
+  'content-text-with-image': {
+    name: 'content-text-with-image',
+    description: 'Classic text and image content block with configurable image position (left or right)',
+    category: 'content',
+    tags: ['content', 'text', 'image', 'alternating', 'split'],
+    bestFor: ['about sections', 'service details', 'story telling', 'product descriptions'],
+    version: '1.0.0',
+    score: null,
+    status: 'production',
+    csvRefs: {},
+  },
+  'content-two-column-text': {
+    name: 'content-two-column-text',
+    description: 'Two-column text layout for longer content, single column on mobile',
+    category: 'content',
+    tags: ['content', 'text', 'two-column', 'layout', 'article'],
+    bestFor: ['long-form content', 'about pages', 'editorial layout', 'rich text sections'],
+    version: '1.0.0',
+    score: null,
+    status: 'production',
+    csvRefs: {},
+  },
 };
