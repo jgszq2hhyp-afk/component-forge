@@ -58,6 +58,18 @@ export default async function PreviewPage({
   try {
     const mod = await import(`../../../../components/${category}/${name}`);
     const Component = mod.default;
+    if (!Component) {
+      return (
+        <div
+          className="flex min-h-screen items-center justify-center"
+          style={{ backgroundColor: "var(--background)" }}
+        >
+          <p className="text-sm" style={{ color: "var(--destructive, #ef4444)" }}>
+            No default export found
+          </p>
+        </div>
+      );
+    }
     return (
       <div style={{ backgroundColor: "var(--background)", minHeight: "100vh" }}>
         <Component {...props} />
