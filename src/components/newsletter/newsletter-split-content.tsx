@@ -1,3 +1,5 @@
+"use client"
+
 // @version 1.0.0
 // @category newsletter
 // @name newsletter-split-content

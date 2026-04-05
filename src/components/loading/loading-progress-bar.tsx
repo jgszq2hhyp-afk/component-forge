@@ -1,3 +1,5 @@
+"use client"
+
 // @version 1.0.0 // @category loading // @name loading-progress-bar // @source custom
 
 'use client';

@@ -1,3 +1,5 @@
+"use client"
+
 // @version 2.0.0
 // @category cta
 // @name CTA Floating Bar

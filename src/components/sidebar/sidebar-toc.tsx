@@ -1,3 +1,5 @@
+"use client"
+
 // @version 1.0.0 // @category sidebar // @name sidebar-toc // @source custom
 
 'use client';

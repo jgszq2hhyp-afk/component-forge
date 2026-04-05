@@ -1,3 +1,5 @@
+"use client"
+
 // @version 1.0.0
 // @category breadcrumbs
 // @name breadcrumb-animated
