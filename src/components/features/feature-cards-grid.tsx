@@ -3,18 +3,27 @@
 // @name feature-cards-grid
 // @source self-authored
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const HEADING_CLAMP = 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)';
-const SUBHEADING_CLAMP = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
-const CARD_TITLE_CLAMP = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
-const SECTION_MAX_WIDTH = '80rem';
-const ICON_SIZE = 'w-12 h-12';
-const ICON_BORDER_RADIUS = 'rounded-xl';
+const HEADING_CLAMP = "clamp(1.875rem, 1.5rem + 1.5vw, 3rem)";
+const SUBHEADING_CLAMP = "clamp(1rem, 0.9rem + 0.4vw, 1.125rem)";
+const CARD_TITLE_CLAMP = "clamp(1rem, 0.9rem + 0.4vw, 1.125rem)";
+const SECTION_MAX_WIDTH = "80rem";
+const ICON_SIZE = "w-12 h-12";
+const ICON_BORDER_RADIUS = "rounded-xl";
+const ARROW_ICON_SIZE = 16;
+const ARROW_STROKE_WIDTH = 1.5;
+const LINK_LABEL = "Learn more";
+const FOCUS_RING =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
+const RING_STYLE = {
+  "--tw-ring-color": "var(--ring, hsl(215 20% 65%))",
+  "--tw-ring-offset-color": "var(--background)",
+} as React.CSSProperties;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -40,9 +49,9 @@ interface FeatureCardsGridProps {
 // ---------------------------------------------------------------------------
 
 const columnClasses: Record<2 | 3 | 4, string> = {
-  2: 'sm:grid-cols-2',
-  3: 'sm:grid-cols-2 lg:grid-cols-3',
-  4: 'sm:grid-cols-2 lg:grid-cols-4',
+  2: "sm:grid-cols-2",
+  3: "sm:grid-cols-2 lg:grid-cols-3",
+  4: "sm:grid-cols-2 lg:grid-cols-4",
 };
 
 // ---------------------------------------------------------------------------
@@ -52,9 +61,9 @@ const columnClasses: Record<2 | 3 | 4, string> = {
 function ArrowIcon() {
   return (
     <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
+      width={ARROW_ICON_SIZE}
+      height={ARROW_ICON_SIZE}
+      viewBox={`0 0 ${ARROW_ICON_SIZE} ${ARROW_ICON_SIZE}`}
       fill="none"
       aria-hidden="true"
       className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:transform-none"
@@ -62,7 +71,7 @@ function ArrowIcon() {
       <path
         d="M3 8H13M13 8L9 4M13 8L9 12"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ARROW_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -83,14 +92,14 @@ export default function FeatureCardsGrid({
 }: FeatureCardsGridProps) {
   return (
     <section
-      aria-label={headline ?? 'Features'}
+      aria-label={headline ?? "Features"}
       className={cn(
-        'mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
+        "mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24",
         className,
       )}
       style={{
         maxWidth: SECTION_MAX_WIDTH,
-        backgroundColor: 'var(--background)',
+        backgroundColor: "var(--background)",
       }}
     >
       {/* Header */}
@@ -100,7 +109,7 @@ export default function FeatureCardsGrid({
             <h2
               className="font-bold tracking-tight"
               style={{
-                color: 'var(--foreground)',
+                color: "var(--foreground)",
                 fontSize: HEADING_CLAMP,
               }}
             >
@@ -111,7 +120,7 @@ export default function FeatureCardsGrid({
             <p
               className="mt-4 leading-relaxed"
               style={{
-                color: 'var(--muted-foreground)',
+                color: "var(--muted-foreground)",
                 fontSize: SUBHEADING_CLAMP,
               }}
             >
@@ -124,14 +133,14 @@ export default function FeatureCardsGrid({
       {/* Cards Grid */}
       <div
         className={cn(
-          'grid grid-cols-1 gap-6 lg:gap-8',
+          "grid grid-cols-1 gap-6 lg:gap-8",
           columnClasses[columns],
         )}
         role="list"
       >
         {cards.map((card, index) => {
           const isLink = Boolean(card.href);
-          const Wrapper = card.href ? 'a' : 'div';
+          const Wrapper = card.href ? "a" : "div";
           const linkProps = card.href ? { href: card.href } : {};
 
           return (
@@ -141,29 +150,28 @@ export default function FeatureCardsGrid({
               role="listitem"
               tabIndex={isLink ? undefined : 0}
               className={cn(
-                'group relative flex flex-col rounded-2xl border p-6 lg:p-8',
-                'transition-all duration-300 motion-reduce:transition-none',
-                'hover:shadow-lg hover:-translate-y-0.5 motion-reduce:hover:translate-y-0',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                "group relative flex flex-col rounded-2xl border p-6 lg:p-8",
+                "transition-all duration-300 motion-reduce:transition-none",
+                "hover:shadow-lg hover:-translate-y-0.5 motion-reduce:hover:translate-y-0",
+                FOCUS_RING,
               )}
               style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                '--tw-ring-color': 'var(--ring, hsl(215 20% 65%))',
-                '--tw-ring-offset-color': 'var(--background)',
+                backgroundColor: "var(--card)",
+                borderColor: "var(--border)",
+                ...RING_STYLE,
               } as React.CSSProperties}
             >
               {/* Icon */}
               {card.icon && (
                 <div
                   className={cn(
-                    'inline-flex items-center justify-center mb-5',
+                    "inline-flex items-center justify-center mb-5",
                     ICON_SIZE,
                     ICON_BORDER_RADIUS,
                   )}
                   style={{
-                    backgroundColor: 'var(--accent)',
-                    color: 'var(--accent-foreground)',
+                    backgroundColor: "var(--accent)",
+                    color: "var(--accent-foreground)",
                   }}
                   aria-hidden="true"
                 >
@@ -175,7 +183,7 @@ export default function FeatureCardsGrid({
               <h3
                 className="font-semibold tracking-tight"
                 style={{
-                  color: 'var(--card-foreground)',
+                  color: "var(--card-foreground)",
                   fontSize: CARD_TITLE_CLAMP,
                 }}
               >
@@ -185,7 +193,7 @@ export default function FeatureCardsGrid({
               {/* Description */}
               <p
                 className="mt-2 text-sm leading-relaxed flex-1"
-                style={{ color: 'var(--muted-foreground)' }}
+                style={{ color: "var(--muted-foreground)" }}
               >
                 {card.description}
               </p>
@@ -194,10 +202,10 @@ export default function FeatureCardsGrid({
               {card.href && (
                 <div
                   className="mt-4 inline-flex items-center gap-1 text-sm font-medium"
-                  style={{ color: 'var(--primary)' }}
+                  style={{ color: "var(--primary)" }}
                   aria-hidden="true"
                 >
-                  Mehr erfahren
+                  {LINK_LABEL}
                   <ArrowIcon />
                 </div>
               )}

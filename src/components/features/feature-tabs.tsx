@@ -3,23 +3,35 @@
 // @name feature-tabs
 // @source self-authored
 
-'use client';
+"use client";
 
-import { useState, useCallback, useRef } from 'react';
-import Image from 'next/image';
-import { cn } from '@/lib/utils';
+import { useState, useCallback, useRef } from "react";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const ANIMATION_DURATION_S = 0.4;
-const HEADING_CLAMP = 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)';
-const SUBHEADING_CLAMP = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
-const CONTENT_TITLE_CLAMP = 'clamp(1.5rem, 1.2rem + 1vw, 1.875rem)';
-const SECTION_MAX_WIDTH = '80rem';
-const CUBIC_EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
-const BULLET_DOT_SIZE = 'w-1.5 h-1.5';
+const HEADING_CLAMP = "clamp(1.875rem, 1.5rem + 1.5vw, 3rem)";
+const SUBHEADING_CLAMP = "clamp(1rem, 0.9rem + 0.4vw, 1.125rem)";
+const CONTENT_TITLE_CLAMP = "clamp(1.5rem, 1.2rem + 1vw, 1.875rem)";
+const SECTION_MAX_WIDTH = "80rem";
+const CUBIC_EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
+const BULLET_DOT_SIZE = "w-1.5 h-1.5";
+const TAB_ICON_SIZE = "w-4 h-4";
+const IMAGE_ASPECT_RATIO = "aspect-[4/3]";
+const FOCUS_RING =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
+const RING_STYLE = {
+  "--tw-ring-color": "var(--ring, hsl(215 20% 65%))",
+  "--tw-ring-offset-color": "var(--background)",
+} as React.CSSProperties;
+const PRIMARY_RING_STYLE = {
+  ["--tw-ring-color" as string]: "var(--primary)",
+  ["--tw-ring-offset-color" as string]: "var(--background)",
+} as React.CSSProperties;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,8 +72,8 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes tab-content-in {
-    from { opacity: 1; }
-    to   { opacity: 1; }
+    from { opacity: 1; transform: none; }
+    to   { opacity: 1; transform: none; }
   }
 
   [role="tabpanel"] {
@@ -92,22 +104,25 @@ export default function FeatureTabs({
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       let newIndex = activeIndex;
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
         e.preventDefault();
         newIndex = (activeIndex + 1) % tabs.length;
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
         e.preventDefault();
         newIndex = (activeIndex - 1 + tabs.length) % tabs.length;
-      } else if (e.key === 'Home') {
+      } else if (e.key === "Home") {
         e.preventDefault();
         newIndex = 0;
-      } else if (e.key === 'End') {
+      } else if (e.key === "End") {
         e.preventDefault();
         newIndex = tabs.length - 1;
       }
       if (newIndex !== activeIndex) {
         setActiveIndex(newIndex);
-        const buttons = tabListRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+        const buttons =
+          tabListRef.current?.querySelectorAll<HTMLButtonElement>(
+            '[role="tab"]',
+          );
         buttons?.[newIndex]?.focus();
       }
     },
@@ -125,14 +140,14 @@ export default function FeatureTabs({
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
-        aria-label={headline ?? 'Features'}
+        aria-label={headline ?? "Features"}
         className={cn(
-          'mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
+          "mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24",
           className,
         )}
         style={{
           maxWidth: SECTION_MAX_WIDTH,
-          backgroundColor: 'var(--background)',
+          backgroundColor: "var(--background)",
         }}
       >
         {/* Header */}
@@ -142,7 +157,7 @@ export default function FeatureTabs({
               <h2
                 className="font-bold tracking-tight"
                 style={{
-                  color: 'var(--foreground)',
+                  color: "var(--foreground)",
                   fontSize: HEADING_CLAMP,
                 }}
               >
@@ -153,7 +168,7 @@ export default function FeatureTabs({
               <p
                 className="mt-4 leading-relaxed"
                 style={{
-                  color: 'var(--muted-foreground)',
+                  color: "var(--muted-foreground)",
                   fontSize: SUBHEADING_CLAMP,
                 }}
               >
@@ -176,29 +191,29 @@ export default function FeatureTabs({
               <button
                 key={index}
                 id={tabId(index)}
+                type="button"
                 role="tab"
                 aria-selected={index === activeIndex}
                 aria-controls={tabPanelId}
                 tabIndex={index === activeIndex ? 0 : -1}
                 onClick={() => handleTabClick(index)}
                 className={cn(
-                  'inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium',
-                  'transition-all duration-200 motion-reduce:transition-none',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                  "inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium",
+                  "transition-all duration-200 motion-reduce:transition-none",
+                  FOCUS_RING,
                 )}
                 style={{
                   backgroundColor:
-                    index === activeIndex ? 'var(--primary)' : 'var(--accent)',
+                    index === activeIndex ? "var(--primary)" : "var(--accent)",
                   color:
                     index === activeIndex
-                      ? 'var(--primary-foreground)'
-                      : 'var(--accent-foreground)',
-                  ['--tw-ring-color' as string]: 'var(--primary)',
-                  ['--tw-ring-offset-color' as string]: 'var(--background)',
+                      ? "var(--primary-foreground)"
+                      : "var(--accent-foreground)",
+                  ...PRIMARY_RING_STYLE,
                 }}
               >
                 {tab.icon && (
-                  <span className="w-4 h-4" aria-hidden="true">
+                  <span className={TAB_ICON_SIZE} aria-hidden="true">
                     {tab.icon}
                   </span>
                 )}
@@ -216,13 +231,13 @@ export default function FeatureTabs({
           aria-labelledby={tabId(activeIndex)}
           tabIndex={0}
           className={cn(
-            'grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-2xl',
+            "grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center",
+            FOCUS_RING,
+            "rounded-2xl",
           )}
           style={{
             animation: `tab-content-in ${ANIMATION_DURATION_S}s ${CUBIC_EASE_OUT} both`,
-            '--tw-ring-color': 'var(--ring, hsl(215 20% 65%))',
-            '--tw-ring-offset-color': 'var(--background)',
+            ...RING_STYLE,
           } as React.CSSProperties}
         >
           {/* Text */}
@@ -230,7 +245,7 @@ export default function FeatureTabs({
             <h3
               className="font-bold tracking-tight"
               style={{
-                color: 'var(--foreground)',
+                color: "var(--foreground)",
                 fontSize: CONTENT_TITLE_CLAMP,
               }}
             >
@@ -238,21 +253,27 @@ export default function FeatureTabs({
             </h3>
             <p
               className="mt-4 text-base leading-relaxed"
-              style={{ color: 'var(--muted-foreground)' }}
+              style={{ color: "var(--muted-foreground)" }}
             >
               {activeTab.description}
             </p>
             {activeTab.bullets && activeTab.bullets.length > 0 && (
-              <ul className="mt-6 space-y-3" aria-label={`${activeTab.title} details`}>
+              <ul
+                className="mt-6 space-y-3"
+                aria-label={`${activeTab.title} details`}
+              >
                 {activeTab.bullets.map((bullet, bIdx) => (
                   <li
                     key={bIdx}
                     className="flex items-start gap-3 text-sm"
-                    style={{ color: 'var(--muted-foreground)' }}
+                    style={{ color: "var(--muted-foreground)" }}
                   >
                     <span
-                      className={cn('mt-1.5 rounded-full flex-shrink-0', BULLET_DOT_SIZE)}
-                      style={{ backgroundColor: 'var(--primary)' }}
+                      className={cn(
+                        "mt-1.5 rounded-full flex-shrink-0",
+                        BULLET_DOT_SIZE,
+                      )}
+                      style={{ backgroundColor: "var(--primary)" }}
                       aria-hidden="true"
                     />
                     {bullet}
@@ -264,7 +285,12 @@ export default function FeatureTabs({
 
           {/* Image */}
           {activeTab.imageSrc && (
-            <figure className="relative aspect-[4/3] rounded-2xl overflow-hidden">
+            <figure
+              className={cn(
+                "relative rounded-2xl overflow-hidden",
+                IMAGE_ASPECT_RATIO,
+              )}
+            >
               <Image
                 src={activeTab.imageSrc}
                 alt={activeTab.imageAlt ?? activeTab.title}

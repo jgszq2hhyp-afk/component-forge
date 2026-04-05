@@ -3,8 +3,6 @@
 // @name testimonial-with-stars
 // @source self-authored
 
-'use client';
-
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -117,7 +115,7 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 // ---------------------------------------------------------------------------
-// Component
+// Component (Server Component — no client interactivity needed)
 // ---------------------------------------------------------------------------
 
 export default function TestimonialWithStars({

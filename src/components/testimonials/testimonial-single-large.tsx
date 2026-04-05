@@ -3,8 +3,6 @@
 // @name testimonial-single-large
 // @source self-authored
 
-'use client';
-
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +21,7 @@ const ANIMATION_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
 const ANIMATION_DELAY_TEXT = '0.1s';
 const ANIMATION_DELAY_IMAGE = '0.3s';
 const HEADING_CLAMP = 'clamp(1.25rem, 2vw + 0.75rem, 1.875rem)';
+const IMAGE_ASPECT = 'aspect-[4/5]';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -96,7 +95,7 @@ function QuoteIcon() {
 }
 
 // ---------------------------------------------------------------------------
-// Component
+// Component (Server Component — no client interactivity needed)
 // ---------------------------------------------------------------------------
 
 export default function TestimonialSingleLarge({
@@ -134,7 +133,10 @@ export default function TestimonialSingleLarge({
         >
           {/* Text content */}
           <div className={cn(imageSrc ? '' : `${CONTENT_MAX_WIDTH} mx-auto text-center`)}>
-            <span style={{ color: 'var(--primary)', opacity: 0.3 }}>
+            <span
+              style={{ color: 'var(--primary)', opacity: 0.3 }}
+              aria-hidden="true"
+            >
               <QuoteIcon />
             </span>
 
@@ -205,8 +207,8 @@ export default function TestimonialSingleLarge({
 
           {/* Optional image */}
           {imageSrc && (
-            <div
-              className="relative aspect-[4/5] rounded-2xl overflow-hidden"
+            <figure
+              className={`relative ${IMAGE_ASPECT} rounded-2xl overflow-hidden`}
               style={{
                 animation: `single-fade-in ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
                 animationDelay: ANIMATION_DELAY_IMAGE,
@@ -218,7 +220,7 @@ export default function TestimonialSingleLarge({
                 fill
                 className="object-cover"
               />
-            </div>
+            </figure>
           )}
         </div>
       </section>

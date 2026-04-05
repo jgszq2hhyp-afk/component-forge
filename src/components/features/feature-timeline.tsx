@@ -3,8 +3,6 @@
 // @name feature-timeline
 // @source self-authored
 
-'use client';
-
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
@@ -25,8 +23,11 @@ const LINE_ANIMATION_DURATION_S = 1;
 const FADE_ANIMATION_DURATION_S = 0.6;
 const FADE_ANIMATION_BASE_DELAY_S = 0.2;
 const FADE_ANIMATION_STAGGER_S = 0.15;
-const FOCUS_RING =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+const HEADING_CLAMP = 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)';
+const SUBHEADING_FONT_SIZE = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
+const TITLE_FONT_SIZE = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
+const TRANSLATE_Y_PX = 20;
+const CUBIC_EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -54,7 +55,7 @@ const keyframes = `
 @keyframes timeline-fade-in {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(${TRANSLATE_Y_PX}px);
   }
   to {
     opacity: 1;
@@ -123,7 +124,7 @@ export default function FeatureTimeline({
                 className="font-bold tracking-tight"
                 style={{
                   color: 'var(--foreground)',
-                  fontSize: 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)',
+                  fontSize: HEADING_CLAMP,
                 }}
               >
                 {headline}
@@ -131,8 +132,11 @@ export default function FeatureTimeline({
             )}
             {subheadline && (
               <p
-                className="mt-4 text-lg leading-relaxed"
-                style={{ color: 'var(--muted-foreground)' }}
+                className="mt-4 leading-relaxed"
+                style={{
+                  color: 'var(--muted-foreground)',
+                  fontSize: SUBHEADING_FONT_SIZE,
+                }}
               >
                 {subheadline}
               </p>
@@ -141,13 +145,13 @@ export default function FeatureTimeline({
         )}
 
         {/* Timeline */}
-        <div className="relative" role="list" aria-label="Timeline steps">
+        <ol className="relative" aria-label="Timeline steps">
           {/* Vertical line */}
           <div
             className="timeline-line absolute left-6 md:left-1/2 top-0 bottom-0 w-px origin-top"
             style={{
               backgroundColor: 'var(--border)',
-              animation: `timeline-line-grow ${LINE_ANIMATION_DURATION_S}s cubic-bezier(0.16, 1, 0.3, 1) both`,
+              animation: `timeline-line-grow ${LINE_ANIMATION_DURATION_S}s ${CUBIC_EASE_OUT} both`,
             }}
             aria-hidden="true"
           />
@@ -157,15 +161,14 @@ export default function FeatureTimeline({
             {items.map((item, index) => {
               const isLeft = index % 2 === 0;
               return (
-                <article
+                <li
                   key={index}
-                  role="listitem"
                   className={cn(
                     'timeline-item relative flex items-start',
                     'md:items-center',
                   )}
                   style={{
-                    animation: `timeline-fade-in ${FADE_ANIMATION_DURATION_S}s cubic-bezier(0.16, 1, 0.3, 1) both`,
+                    animation: `timeline-fade-in ${FADE_ANIMATION_DURATION_S}s ${CUBIC_EASE_OUT} both`,
                     animationDelay: `${FADE_ANIMATION_BASE_DELAY_S + index * FADE_ANIMATION_STAGGER_S}s`,
                   }}
                 >
@@ -184,7 +187,7 @@ export default function FeatureTimeline({
                   />
 
                   {/* Content */}
-                  <div
+                  <article
                     className={cn(
                       'ml-14 md:ml-0 md:w-[calc(50%-2rem)]',
                       isLeft ? 'md:mr-auto md:pr-8 md:text-right' : 'md:ml-auto md:pl-8',
@@ -228,8 +231,11 @@ export default function FeatureTimeline({
                         </div>
                       )}
                       <h3
-                        className="text-lg font-semibold tracking-tight"
-                        style={{ color: 'var(--foreground)' }}
+                        className="font-semibold tracking-tight"
+                        style={{
+                          color: 'var(--foreground)',
+                          fontSize: TITLE_FONT_SIZE,
+                        }}
                       >
                         {item.title}
                       </h3>
@@ -241,12 +247,12 @@ export default function FeatureTimeline({
                     >
                       {item.description}
                     </p>
-                  </div>
-                </article>
+                  </article>
+                </li>
               );
             })}
           </div>
-        </div>
+        </ol>
       </section>
     </>
   );

@@ -21,6 +21,11 @@ const ICON_SIZE = 'w-9 h-9';
 const CHEVRON_SIZE = 20;
 const CUBIC_EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
 const CONTENT_PADDING_BOTTOM_PX = 16;
+const SECTION_PADDING = 'px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24';
+const HEADER_MARGIN_BOTTOM = 'mb-12 lg:mb-16';
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+const ICON_INDENT = 'pl-13';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -92,6 +97,7 @@ function ChevronIcon({ isOpen }: { isOpen: boolean }) {
       aria-hidden="true"
       className={cn(
         'accordion-chevron transition-transform duration-300 flex-shrink-0',
+        'motion-reduce:transition-none',
         isOpen && 'rotate-180',
       )}
     >
@@ -135,6 +141,32 @@ export default function FeatureAccordion({
     [allowMultiple],
   );
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, index: number) => {
+      let nextIndex: number | null = null;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        nextIndex = (index + 1) % items.length;
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        nextIndex = (index - 1 + items.length) % items.length;
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        nextIndex = 0;
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        nextIndex = items.length - 1;
+      }
+
+      if (nextIndex !== null) {
+        const target = document.getElementById(triggerId(nextIndex));
+        target?.focus();
+      }
+    },
+    [items.length],
+  );
+
   const triggerId = (index: number) => `${baseId}-trigger-${index}`;
   const panelId = (index: number) => `${baseId}-panel-${index}`;
 
@@ -145,7 +177,8 @@ export default function FeatureAccordion({
       <section
         aria-label={headline ?? 'Features'}
         className={cn(
-          'mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
+          'mx-auto',
+          SECTION_PADDING,
           className,
         )}
         style={{
@@ -155,7 +188,7 @@ export default function FeatureAccordion({
       >
         {/* Header */}
         {(headline || subheadline) && (
-          <header className="text-center mb-12 lg:mb-16">
+          <header className={cn('text-center', HEADER_MARGIN_BOTTOM)}>
             {headline && (
               <h2
                 className="font-bold tracking-tight"
@@ -198,16 +231,17 @@ export default function FeatureAccordion({
                   <button
                     id={triggerId(index)}
                     onClick={() => toggleItem(index)}
+                    onKeyDown={(e) => handleKeyDown(e, index)}
                     aria-expanded={isOpen}
                     aria-controls={panelId(index)}
                     className={cn(
                       'w-full flex items-center gap-4 px-6 py-5 text-left',
                       'transition-colors duration-200 motion-reduce:transition-none',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                      FOCUS_RING,
                     )}
                     style={{
                       color: 'var(--card-foreground)',
-                      ['--tw-ring-color' as string]: 'var(--primary)',
+                      ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                       ['--tw-ring-offset-color' as string]: 'var(--background)',
                     }}
                   >
@@ -246,7 +280,7 @@ export default function FeatureAccordion({
                     <p
                       className={cn(
                         'text-sm leading-relaxed',
-                        item.icon ? 'pl-13' : '',
+                        item.icon ? ICON_INDENT : '',
                       )}
                       style={{ color: 'var(--muted-foreground)' }}
                     >

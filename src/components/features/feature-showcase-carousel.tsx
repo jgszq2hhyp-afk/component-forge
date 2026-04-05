@@ -28,6 +28,15 @@ const DOT_ACTIVE_WIDTH = 'w-8';
 const DOT_INACTIVE_WIDTH = 'w-2';
 const IMAGE_ASPECT_RATIO = 'aspect-[4/3]';
 const PROGRESS_BAR_HEIGHT = 'h-0.5';
+const HEADING_CLAMP = 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)';
+const SUBHEADING_FONT_SIZE = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
+const TITLE_CLAMP = 'clamp(1.5rem, 1.25rem + 1vw, 1.875rem)';
+const STAT_CLAMP = 'clamp(2.25rem, 2rem + 1.5vw, 3rem)';
+const SLIDE_IN_OFFSET_PX = 24;
+const FADE_DURATION_S = 0.4;
+const SLIDE_DURATION_S = 0.5;
+const CUBIC_EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const NAV_ICON_SIZE = 16;
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
@@ -60,7 +69,7 @@ const keyframes = `
 @keyframes showcase-slide-in {
   from {
     opacity: 0;
-    transform: translateX(24px);
+    transform: translateX(${SLIDE_IN_OFFSET_PX}px);
   }
   to {
     opacity: 1;
@@ -182,7 +191,7 @@ export default function FeatureShowcaseCarousel({
                 className="font-bold tracking-tight"
                 style={{
                   color: 'var(--foreground)',
-                  fontSize: 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)',
+                  fontSize: HEADING_CLAMP,
                 }}
               >
                 {headline}
@@ -190,8 +199,11 @@ export default function FeatureShowcaseCarousel({
             )}
             {subheadline && (
               <p
-                className="mt-4 text-lg leading-relaxed"
-                style={{ color: 'var(--muted-foreground)' }}
+                className="mt-4 leading-relaxed"
+                style={{
+                  color: 'var(--muted-foreground)',
+                  fontSize: SUBHEADING_FONT_SIZE,
+                }}
               >
                 {subheadline}
               </p>
@@ -217,7 +229,7 @@ export default function FeatureShowcaseCarousel({
                 alt={current.imageAlt ?? current.title}
                 fill
                 className="showcase-image object-cover"
-                style={{ animation: 'showcase-fade-in 0.4s ease-out both' }}
+                style={{ animation: `showcase-fade-in ${FADE_DURATION_S}s ease-out both` }}
                 priority={activeIndex === 0}
               />
             ) : (
@@ -240,7 +252,7 @@ export default function FeatureShowcaseCarousel({
             <div
               key={activeIndex}
               className="showcase-detail"
-              style={{ animation: 'showcase-slide-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both' }}
+              style={{ animation: `showcase-slide-in ${SLIDE_DURATION_S}s ${CUBIC_EASE_OUT} both` }}
               aria-live="polite"
               aria-atomic="true"
             >
@@ -263,7 +275,7 @@ export default function FeatureShowcaseCarousel({
                   className="font-extrabold tracking-tight mb-2"
                   style={{
                     color: 'var(--primary)',
-                    fontSize: 'clamp(2.25rem, 2rem + 1.5vw, 3rem)',
+                    fontSize: STAT_CLAMP,
                   }}
                 >
                   {current.stat}
@@ -274,7 +286,7 @@ export default function FeatureShowcaseCarousel({
                 className="font-bold tracking-tight"
                 style={{
                   color: 'var(--foreground)',
-                  fontSize: 'clamp(1.5rem, 1.25rem + 1vw, 1.875rem)',
+                  fontSize: TITLE_CLAMP,
                 }}
               >
                 {current.title}
@@ -289,7 +301,7 @@ export default function FeatureShowcaseCarousel({
             </div>
 
             {/* Navigation Dots & Buttons */}
-            <div
+            <nav
               className="mt-8 flex items-center gap-3"
               role="tablist"
               aria-label="Feature slides"
@@ -304,7 +316,7 @@ export default function FeatureShowcaseCarousel({
                   aria-label={`Show feature: ${item.title}`}
                   onClick={() => goTo(index)}
                   className={cn(
-                    'relative rounded-full transition-all duration-300',
+                    'relative rounded-full transition-all duration-300 motion-reduce:transition-none',
                     FOCUS_RING,
                     DOT_HEIGHT,
                     index === activeIndex ? DOT_ACTIVE_WIDTH : DOT_INACTIVE_WIDTH,
@@ -313,8 +325,8 @@ export default function FeatureShowcaseCarousel({
                     backgroundColor: index === activeIndex
                       ? 'var(--primary)'
                       : 'var(--border)',
-                    '--tw-ring-color': 'var(--ring, hsl(215 20% 65%))',
-                  } as React.CSSProperties}
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                  }}
                 />
               ))}
 
@@ -324,7 +336,7 @@ export default function FeatureShowcaseCarousel({
                   aria-label="Previous feature"
                   className={cn(
                     'inline-flex items-center justify-center rounded-full border',
-                    'transition-colors duration-200',
+                    'transition-colors duration-200 motion-reduce:transition-none',
                     FOCUS_RING,
                     NAV_BUTTON_SIZE,
                   )}
@@ -332,10 +344,10 @@ export default function FeatureShowcaseCarousel({
                     borderColor: 'var(--border)',
                     color: 'var(--foreground)',
                     backgroundColor: 'var(--card)',
-                    '--tw-ring-color': 'var(--ring, hsl(215 20% 65%))',
-                  } as React.CSSProperties}
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                  }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <svg width={NAV_ICON_SIZE} height={NAV_ICON_SIZE} viewBox={`0 0 ${NAV_ICON_SIZE} ${NAV_ICON_SIZE}`} fill="none" aria-hidden="true">
                     <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
@@ -344,7 +356,7 @@ export default function FeatureShowcaseCarousel({
                   aria-label="Next feature"
                   className={cn(
                     'inline-flex items-center justify-center rounded-full border',
-                    'transition-colors duration-200',
+                    'transition-colors duration-200 motion-reduce:transition-none',
                     FOCUS_RING,
                     NAV_BUTTON_SIZE,
                   )}
@@ -352,15 +364,15 @@ export default function FeatureShowcaseCarousel({
                     borderColor: 'var(--border)',
                     color: 'var(--foreground)',
                     backgroundColor: 'var(--card)',
-                    '--tw-ring-color': 'var(--ring, hsl(215 20% 65%))',
-                  } as React.CSSProperties}
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                  }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <svg width={NAV_ICON_SIZE} height={NAV_ICON_SIZE} viewBox={`0 0 ${NAV_ICON_SIZE} ${NAV_ICON_SIZE}`} fill="none" aria-hidden="true">
                     <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
               </div>
-            </div>
+            </nav>
 
             {/* Progress bar */}
             <div
@@ -373,7 +385,7 @@ export default function FeatureShowcaseCarousel({
               aria-label={`Feature ${activeIndex + 1} of ${items.length}`}
             >
               <div
-                className={cn('showcase-progress-fill h-full rounded-full')}
+                className="showcase-progress-fill h-full rounded-full"
                 style={{
                   backgroundColor: 'var(--primary)',
                   width: `${((activeIndex + 1) / items.length) * 100}%`,

@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -141,9 +141,19 @@ export default function TestimonialVideoCards({
   className,
 }: TestimonialVideoCardsProps) {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
 
-  const openVideo = useCallback((url: string) => setActiveVideo(url), []);
-  const closeVideo = useCallback(() => setActiveVideo(null), []);
+  const openVideo = useCallback((url: string, trigger: HTMLButtonElement) => {
+    triggerRef.current = trigger;
+    setActiveVideo(url);
+  }, []);
+
+  const closeVideo = useCallback(() => {
+    setActiveVideo(null);
+    // Return focus to the trigger button that opened the modal
+    triggerRef.current?.focus();
+  }, []);
 
   // Close modal on Escape key
   useEffect(() => {
@@ -155,9 +165,22 @@ export default function TestimonialVideoCards({
       }
     }
 
+    // Focus the close button when modal opens
+    closeButtonRef.current?.focus();
+
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [activeVideo, closeVideo]);
+
+  // Trap focus inside the modal
+  useEffect(() => {
+    if (!activeVideo) return;
+
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeVideo]);
 
   return (
     <>
@@ -216,7 +239,7 @@ export default function TestimonialVideoCards({
               {/* Thumbnail */}
               <button
                 type="button"
-                onClick={() => openVideo(testimonial.videoUrl)}
+                onClick={(e) => openVideo(testimonial.videoUrl, e.currentTarget)}
                 className={cn(
                   'relative w-full aspect-video group',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
@@ -284,12 +307,10 @@ export default function TestimonialVideoCards({
           >
             {/* Backdrop */}
             <div
-              className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+              className="absolute inset-0 backdrop-blur-sm"
+              style={{ backgroundColor: 'color-mix(in oklch, var(--foreground) 70%, transparent)' }}
               onClick={closeVideo}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') closeVideo(); }}
-              role="button"
-              tabIndex={-1}
-              aria-label="Video schließen"
+              aria-hidden="true"
             />
 
             {/* Content */}
@@ -309,6 +330,7 @@ export default function TestimonialVideoCards({
 
               {/* Close button */}
               <button
+                ref={closeButtonRef}
                 type="button"
                 onClick={closeVideo}
                 className={cn(
@@ -319,9 +341,9 @@ export default function TestimonialVideoCards({
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                 )}
                 style={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                  color: 'white',
-                  ['--tw-ring-color' as string]: 'white',
+                  backgroundColor: 'color-mix(in oklch, var(--foreground) 60%, transparent)',
+                  color: 'var(--background)',
+                  ['--tw-ring-color' as string]: 'var(--background)',
                   ['--tw-ring-offset-color' as string]: 'transparent',
                 }}
                 aria-label="Video schließen"

@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category features
 // @name feature-interactive-bento
 // @source aura-inspired
@@ -13,6 +13,18 @@ import { cn } from '@/lib/utils';
 const SECTION_MAX_WIDTH = '80rem';
 const HEADING_CLAMP = 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)';
 const SUBHEADING_CLAMP = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
+const CARD_TITLE_CLAMP_DEFAULT = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
+const CARD_TITLE_CLAMP_LARGE = 'clamp(1.125rem, 1rem + 0.5vw, 1.375rem)';
+const ICON_SIZE = 'w-11 h-11';
+const ICON_RADIUS = 'rounded-xl';
+const DOT_PATTERN_SIZE = 80;
+const DOT_PATTERN_OFFSET = -8;
+const DOT_SIZE_PX = 8;
+const LINE_CONTAINER_SIZE = 120;
+const LINE_WIDTH = 160;
+const LINE_OFFSET = -30;
+const HOVER_TRANSLATE_PX = -4;
+const IMAGE_HEIGHT_DEFAULT = 'h-40 lg:h-52';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,16 +72,16 @@ const styles = `
 
 .fib-card:hover,
 .fib-card:focus-visible {
-  transform: translateY(-4px);
+  transform: translateY(${HOVER_TRANSLATE_PX}px);
   box-shadow:
-    0 8px 30px -8px rgba(0, 0, 0, 0.12),
-    0 2px 8px -2px rgba(0, 0, 0, 0.06);
+    0 8px 30px -8px color-mix(in oklch, var(--foreground) 12%, transparent),
+    0 2px 8px -2px color-mix(in oklch, var(--foreground) 6%, transparent);
 }
 
 /* Large card gets exaggerated border-radius on hover */
 .fib-card--large:hover,
 .fib-card--large:focus-visible {
-  border-radius: 1.5rem; /* rounded-3xl */
+  border-radius: 1.5rem;
 }
 
 /* ---- Icon area gradient shift ---- */
@@ -101,17 +113,17 @@ const styles = `
 /* ---- Decorative dot pattern ---- */
 .fib-dots {
   position: absolute;
-  bottom: -8px;
-  right: -8px;
-  width: 80px;
-  height: 80px;
+  bottom: ${DOT_PATTERN_OFFSET}px;
+  right: ${DOT_PATTERN_OFFSET}px;
+  width: ${DOT_PATTERN_SIZE}px;
+  height: ${DOT_PATTERN_SIZE}px;
   opacity: 0.06;
   background-image: radial-gradient(
     circle,
     var(--foreground) 1px,
     transparent 1px
   );
-  background-size: 8px 8px;
+  background-size: ${DOT_SIZE_PX}px ${DOT_SIZE_PX}px;
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
 }
@@ -126,8 +138,8 @@ const styles = `
   position: absolute;
   top: 0;
   right: 0;
-  width: 120px;
-  height: 120px;
+  width: ${LINE_CONTAINER_SIZE}px;
+  height: ${LINE_CONTAINER_SIZE}px;
   overflow: hidden;
   pointer-events: none;
   opacity: 0.07;
@@ -136,9 +148,9 @@ const styles = `
 .fib-line::after {
   content: '';
   position: absolute;
-  top: -30px;
-  right: -30px;
-  width: 160px;
+  top: ${LINE_OFFSET}px;
+  right: ${LINE_OFFSET}px;
+  width: ${LINE_WIDTH}px;
   height: 1px;
   background: var(--foreground);
   transform: rotate(-45deg);
@@ -288,9 +300,9 @@ export default function FeatureInteractiveBento({
                 style={{
                   backgroundColor: 'var(--card)',
                   borderColor: 'var(--border)',
-                  '--tw-ring-color': 'var(--ring, hsl(215 20% 65%))',
-                  '--tw-ring-offset-color': 'var(--background)',
-                } as React.CSSProperties}
+                  ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                  ['--tw-ring-offset-color' as string]: 'var(--background)',
+                }}
               >
                 {/* Decorative dot pattern */}
                 <div className="fib-dots" aria-hidden="true" />
@@ -300,7 +312,7 @@ export default function FeatureInteractiveBento({
 
                 {/* Optional image (large card) */}
                 {card.imageSrc && (
-                  <div className="relative w-full h-40 lg:h-52">
+                  <figure className={`relative w-full ${IMAGE_HEIGHT_DEFAULT}`}>
                     <Image
                       src={card.imageSrc}
                       alt={card.imageAlt ?? card.title}
@@ -308,7 +320,7 @@ export default function FeatureInteractiveBento({
                       loading={index === 0 ? 'eager' : 'lazy'}
                       className="fib-image object-cover"
                     />
-                  </div>
+                  </figure>
                 )}
 
                 {/* Content area */}
@@ -316,7 +328,11 @@ export default function FeatureInteractiveBento({
                   {/* Icon */}
                   {card.icon && (
                     <div
-                      className="fib-icon-area inline-flex items-center justify-center w-11 h-11 rounded-xl mb-4"
+                      className={cn(
+                        'fib-icon-area inline-flex items-center justify-center mb-4',
+                        ICON_SIZE,
+                        ICON_RADIUS,
+                      )}
                       style={{
                         backgroundColor: 'var(--accent)',
                         color: 'var(--primary)',
@@ -333,8 +349,8 @@ export default function FeatureInteractiveBento({
                     style={{
                       color: 'var(--card-foreground)',
                       fontSize: isLarge
-                        ? 'clamp(1.125rem, 1rem + 0.5vw, 1.375rem)'
-                        : 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)',
+                        ? CARD_TITLE_CLAMP_LARGE
+                        : CARD_TITLE_CLAMP_DEFAULT,
                     }}
                   >
                     {card.title}

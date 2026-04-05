@@ -3,8 +3,6 @@
 // @name testimonial-grid
 // @source self-authored
 
-'use client';
-
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -79,7 +77,7 @@ const keyframes = `
 `;
 
 // ---------------------------------------------------------------------------
-// Component
+// Component (Server Component — no client interactivity needed)
 // ---------------------------------------------------------------------------
 
 export default function TestimonialGrid({

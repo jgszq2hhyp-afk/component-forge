@@ -3,10 +3,10 @@
 // @name feature-bento-grid
 // @source self-authored
 
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { cn } from '@/lib/utils';
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -15,11 +15,21 @@ import { cn } from '@/lib/utils';
 const ANIMATION_BASE_DELAY_S = 0.1;
 const ANIMATION_STEP_DELAY_S = 0.08;
 const ANIMATION_DURATION_S = 0.6;
-const IMAGE_SCALE_HOVER = 1.05;
-const HEADING_CLAMP = 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)';
-const SUBHEADING_CLAMP = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
-const SECTION_MAX_WIDTH = '80rem'; // 1280px
-const CUBIC_EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const HEADING_CLAMP = "clamp(1.875rem, 1.5rem + 1.5vw, 3rem)";
+const SUBHEADING_CLAMP = "clamp(1rem, 0.9rem + 0.4vw, 1.125rem)";
+const CARD_TITLE_CLAMP = "clamp(1rem, 0.9rem + 0.4vw, 1.125rem)";
+const SECTION_MAX_WIDTH = "80rem";
+const CUBIC_EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
+const ICON_BOX_SIZE = "w-10 h-10";
+const ICON_BOX_RADIUS = "rounded-lg";
+const IMAGE_HEIGHT_SM = "h-40";
+const IMAGE_HEIGHT_LG = "lg:h-48";
+const FOCUS_RING =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
+const RING_STYLE = {
+  "--tw-ring-color": "var(--ring, hsl(215 20% 65%))",
+  "--tw-ring-offset-color": "var(--background)",
+} as React.CSSProperties;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -31,7 +41,7 @@ interface BentoItem {
   icon?: React.ReactNode;
   imageSrc?: string;
   imageAlt?: string;
-  span?: 'default' | 'wide' | 'tall' | 'large';
+  span?: "default" | "wide" | "tall" | "large";
 }
 
 interface FeatureBentoGridProps {
@@ -59,8 +69,8 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes bento-fade-up {
-    from { opacity: 1; }
-    to   { opacity: 1; }
+    from { opacity: 1; transform: none; }
+    to   { opacity: 1; transform: none; }
   }
 
   .bento-card,
@@ -76,18 +86,18 @@ const keyframes = `
 // Helpers
 // ---------------------------------------------------------------------------
 
-const spanClasses: Record<NonNullable<BentoItem['span']>, string> = {
-  default: 'md:col-span-1 md:row-span-1',
-  wide: 'md:col-span-2 md:row-span-1',
-  tall: 'md:col-span-1 md:row-span-2',
-  large: 'md:col-span-2 md:row-span-2',
+const spanClasses: Record<NonNullable<BentoItem["span"]>, string> = {
+  default: "md:col-span-1 md:row-span-1",
+  wide: "md:col-span-2 md:row-span-1",
+  tall: "md:col-span-1 md:row-span-2",
+  large: "md:col-span-2 md:row-span-2",
 };
 
 function toSlug(title: string, index: number): string {
   const slug = title
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
   return slug || `bento-item-${index}`;
 }
 
@@ -106,14 +116,14 @@ export default function FeatureBentoGrid({
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
-        aria-label={headline ?? 'Feature overview'}
+        aria-label={headline ?? "Feature overview"}
         className={cn(
-          'mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
+          "mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24",
           className,
         )}
         style={{
           maxWidth: SECTION_MAX_WIDTH,
-          backgroundColor: 'var(--background)',
+          backgroundColor: "var(--background)",
         }}
       >
         {/* Header */}
@@ -123,7 +133,7 @@ export default function FeatureBentoGrid({
               <h2
                 className="font-bold tracking-tight"
                 style={{
-                  color: 'var(--foreground)',
+                  color: "var(--foreground)",
                   fontSize: HEADING_CLAMP,
                 }}
               >
@@ -134,7 +144,7 @@ export default function FeatureBentoGrid({
               <p
                 className="mt-4 leading-relaxed"
                 style={{
-                  color: 'var(--muted-foreground)',
+                  color: "var(--muted-foreground)",
                   fontSize: SUBHEADING_CLAMP,
                 }}
               >
@@ -145,57 +155,60 @@ export default function FeatureBentoGrid({
         )}
 
         {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6" role="list">
+        <div
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6"
+          role="list"
+        >
           {items.map((item, index) => (
             <article
               key={toSlug(item.title, index)}
               role="listitem"
               tabIndex={0}
               className={cn(
-                'bento-card',
-                'group relative rounded-2xl overflow-hidden border p-6 lg:p-8',
-                'transition-shadow duration-300 hover:shadow-lg',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                spanClasses[item.span ?? 'default'],
+                "bento-card",
+                "group relative rounded-2xl overflow-hidden border p-6 lg:p-8",
+                "transition-shadow duration-300 hover:shadow-lg motion-reduce:transition-none",
+                FOCUS_RING,
+                spanClasses[item.span ?? "default"],
               )}
               style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                '--tw-ring-color': 'var(--ring, hsl(215 20% 65%))',
-                '--tw-ring-offset-color': 'var(--background)',
+                backgroundColor: "var(--card)",
+                borderColor: "var(--border)",
+                ...RING_STYLE,
                 animation: `bento-fade-up ${ANIMATION_DURATION_S}s ${CUBIC_EASE_OUT} both`,
                 animationDelay: `${ANIMATION_BASE_DELAY_S + index * ANIMATION_STEP_DELAY_S}s`,
               } as React.CSSProperties}
             >
               {/* Optional image */}
               {item.imageSrc && (
-                <div className="relative w-full h-40 lg:h-48 mb-4 rounded-lg overflow-hidden">
+                <figure
+                  className={cn(
+                    "relative w-full mb-4 rounded-lg overflow-hidden",
+                    IMAGE_HEIGHT_SM,
+                    IMAGE_HEIGHT_LG,
+                  )}
+                >
                   <Image
                     src={item.imageSrc}
                     alt={item.imageAlt ?? item.title}
                     fill
-                    loading={index === 0 ? 'eager' : 'lazy'}
-                    className={cn(
-                      'bento-card-image',
-                      'object-cover transition-transform duration-500',
-                    )}
-                    style={{
-                      '--tw-scale-x': '1',
-                      '--tw-scale-y': '1',
-                    } as React.CSSProperties}
-                    onMouseEnter={undefined}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    className="bento-card-image object-cover"
                   />
-                  {/* Hover scale handled via group-hover with reduced-motion override in keyframes */}
-                </div>
+                </figure>
               )}
 
               {/* Icon */}
               {item.icon && (
                 <div
-                  className="inline-flex items-center justify-center w-10 h-10 rounded-lg mb-4"
+                  className={cn(
+                    "inline-flex items-center justify-center mb-4",
+                    ICON_BOX_SIZE,
+                    ICON_BOX_RADIUS,
+                  )}
                   style={{
-                    backgroundColor: 'var(--accent)',
-                    color: 'var(--accent-foreground)',
+                    backgroundColor: "var(--accent)",
+                    color: "var(--accent-foreground)",
                   }}
                   aria-hidden="true"
                 >
@@ -207,15 +220,15 @@ export default function FeatureBentoGrid({
               <h3
                 className="font-semibold tracking-tight"
                 style={{
-                  color: 'var(--card-foreground)',
-                  fontSize: 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)',
+                  color: "var(--card-foreground)",
+                  fontSize: CARD_TITLE_CLAMP,
                 }}
               >
                 {item.title}
               </h3>
               <p
                 className="mt-2 text-sm leading-relaxed"
-                style={{ color: 'var(--muted-foreground)' }}
+                style={{ color: "var(--muted-foreground)" }}
               >
                 {item.description}
               </p>

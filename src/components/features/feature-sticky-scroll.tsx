@@ -18,6 +18,10 @@ const HEADER_MAX_WIDTH = 'max-w-2xl';
 const SECTION_PADDING_Y = 'py-16 sm:py-20 lg:py-24';
 const SECTION_PADDING_X = 'px-4 sm:px-6 lg:px-8';
 const HEADER_MARGIN_BOTTOM = 'mb-14 lg:mb-20';
+const HEADING_CLAMP = 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)';
+const SUBHEADING_FONT_SIZE = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
+const TITLE_CLAMP = 'clamp(1.5rem, 1.25rem + 1vw, 1.875rem)';
+const STAT_CLAMP = 'clamp(2.25rem, 2rem + 1.5vw, 3rem)';
 const GRID_COLUMNS = 'grid-cols-1 lg:grid-cols-12';
 const NAV_COLUMN_SPAN = 'lg:col-span-4';
 const CONTENT_COLUMN_SPAN = 'lg:col-span-8';
@@ -32,6 +36,12 @@ const IMAGE_ASPECT_RATIO = 'aspect-[16/9]';
 const EAGER_LOAD_THRESHOLD = 2;
 const INACTIVE_OPACITY = 'lg:opacity-40';
 const ACTIVE_OPACITY = 'opacity-100';
+const NAV_BUTTON_PADDING = 'p-4';
+const NAV_BUTTON_RADIUS = 'rounded-xl';
+const NAV_SPACING = 'space-y-2';
+const INDICATOR_BAR_HEIGHT = 'h-0.5';
+const CONTENT_CARD_PADDING = 'p-6 lg:p-10';
+const CONTENT_CARD_RADIUS = 'rounded-2xl';
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
@@ -193,7 +203,7 @@ export default function FeatureStickyScroll({
                 className="font-bold tracking-tight"
                 style={{
                   color: 'var(--foreground)',
-                  fontSize: 'clamp(1.875rem, 1.5rem + 1.5vw, 3rem)',
+                  fontSize: HEADING_CLAMP,
                 }}
               >
                 {headline}
@@ -201,8 +211,11 @@ export default function FeatureStickyScroll({
             )}
             {subheadline && (
               <p
-                className="mt-4 text-lg leading-relaxed"
-                style={{ color: 'var(--muted-foreground)' }}
+                className="mt-4 leading-relaxed"
+                style={{
+                  color: 'var(--muted-foreground)',
+                  fontSize: SUBHEADING_FONT_SIZE,
+                }}
               >
                 {subheadline}
               </p>
@@ -215,7 +228,7 @@ export default function FeatureStickyScroll({
           {/* Left: Sticky nav (desktop) / stacked list (mobile) */}
           <div className={NAV_COLUMN_SPAN}>
             <nav
-              className={cn('lg:sticky', NAV_STICKY_TOP, 'space-y-2')}
+              className={cn('lg:sticky', NAV_STICKY_TOP, NAV_SPACING)}
               aria-label="Feature navigation"
             >
               {items.map((item, index) => (
@@ -229,7 +242,10 @@ export default function FeatureStickyScroll({
                   }}
                   onKeyDown={(e) => handleNavKeyDown(e, index)}
                   className={cn(
-                    'sticky-nav-button w-full text-left p-4 rounded-xl border transition-all duration-300',
+                    'sticky-nav-button w-full text-left border transition-all duration-300',
+                    'motion-reduce:transition-none',
+                    NAV_BUTTON_PADDING,
+                    NAV_BUTTON_RADIUS,
                     FOCUS_RING,
                     index === activeIndex
                       ? 'shadow-md'
@@ -238,8 +254,8 @@ export default function FeatureStickyScroll({
                   style={{
                     backgroundColor: index === activeIndex ? 'var(--card)' : 'transparent',
                     borderColor: index === activeIndex ? 'var(--primary)' : 'var(--border)',
-                    '--tw-ring-color': 'var(--ring, hsl(215 20% 65%))',
-                  } as React.CSSProperties}
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                  }}
                   aria-current={index === activeIndex ? 'true' : undefined}
                 >
                   <div className="flex items-center gap-3">
@@ -280,7 +296,8 @@ export default function FeatureStickyScroll({
                   {/* Active indicator bar */}
                   <div
                     className={cn(
-                      'sticky-indicator-bar mt-3 h-0.5 rounded-full transition-all duration-300',
+                      'sticky-indicator-bar mt-3 rounded-full transition-all duration-300',
+                      INDICATOR_BAR_HEIGHT,
                       index === activeIndex ? 'w-full' : 'w-0',
                     )}
                     style={{ backgroundColor: 'var(--primary)' }}
@@ -299,7 +316,9 @@ export default function FeatureStickyScroll({
                 ref={(el) => { sectionRefs.current[index] = el; }}
                 className={cn(
                   'sticky-content-panel',
-                  'rounded-2xl border p-6 lg:p-10 transition-opacity duration-500',
+                  'border transition-opacity duration-500',
+                  CONTENT_CARD_RADIUS,
+                  CONTENT_CARD_PADDING,
                   index === activeIndex ? ACTIVE_OPACITY : INACTIVE_OPACITY,
                 )}
                 style={{
@@ -329,7 +348,7 @@ export default function FeatureStickyScroll({
                     className="font-bold tracking-tight"
                     style={{
                       color: 'var(--card-foreground)',
-                      fontSize: 'clamp(1.5rem, 1.25rem + 1vw, 1.875rem)',
+                      fontSize: TITLE_CLAMP,
                     }}
                   >
                     {item.title}
@@ -341,7 +360,7 @@ export default function FeatureStickyScroll({
                     className="font-extrabold tracking-tight mb-3"
                     style={{
                       color: 'var(--primary)',
-                      fontSize: 'clamp(2.25rem, 2rem + 1.5vw, 3rem)',
+                      fontSize: STAT_CLAMP,
                     }}
                   >
                     {item.stat}
@@ -357,7 +376,7 @@ export default function FeatureStickyScroll({
 
                 {/* Optional screenshot */}
                 {item.imageSrc && (
-                  <div
+                  <figure
                     className={cn(
                       'relative mt-6 rounded-xl overflow-hidden border',
                       IMAGE_ASPECT_RATIO,
@@ -371,7 +390,7 @@ export default function FeatureStickyScroll({
                       className="object-cover"
                       loading={index < EAGER_LOAD_THRESHOLD ? 'eager' : 'lazy'}
                     />
-                  </div>
+                  </figure>
                 )}
               </article>
             ))}
