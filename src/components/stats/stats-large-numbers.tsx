@@ -1,9 +1,22 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category stats
 // @name Stats Large Numbers
 // @source custom-implementation
 
 import { cn } from "@/lib/utils";
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                          */
+/* ------------------------------------------------------------------ */
+
+const SECTION_PY = "py-16 sm:py-24";
+const MAX_WIDTH_WIDE = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
+const MAX_WIDTH_NARROW = "mx-auto max-w-5xl px-4 sm:px-6 lg:px-8";
+const STACKED_VALUE_WIDTH = "sm:w-64 lg:w-80";
+const HEADING_CLAMP = "text-[clamp(1.5rem,1rem+1.5vw,1.875rem)]";
+const VALUE_CLAMP_SIDE = "text-[clamp(3rem,2rem+3vw,4.5rem)]";
+const VALUE_CLAMP_ALT = "text-[clamp(3.75rem,2.5rem+4vw,6rem)]";
+const VALUE_CLAMP_STACKED = "text-[clamp(3rem,2rem+3vw,4.5rem)]";
 
 interface LargeStat {
   value: string;
@@ -23,17 +36,20 @@ const defaultStats: LargeStat[] = [
   {
     value: "10M+",
     label: "Requests per day",
-    description: "Handling enterprise-scale traffic with 99.99% reliability across all regions.",
+    description:
+      "Handling enterprise-scale traffic with 99.99% reliability across all regions.",
   },
   {
     value: "$2.1B",
     label: "Processed annually",
-    description: "Trusted by Fortune 500 companies for their most critical payment infrastructure.",
+    description:
+      "Trusted by Fortune 500 companies for their most critical payment infrastructure.",
   },
   {
     value: "150+",
     label: "Enterprise clients",
-    description: "From startups to global corporations, across every major industry vertical.",
+    description:
+      "From startups to global corporations, across every major industry vertical.",
   },
 ];
 
@@ -47,14 +63,24 @@ export default function StatsLargeNumbers({
   if (variant === "side-by-side") {
     return (
       <section
-        className={cn("py-16 sm:py-24 bg-[var(--stats-large-bg,transparent)]", className)}
+        className={cn(
+          SECTION_PY,
+          "bg-[var(--stats-large-bg,transparent)]",
+          className
+        )}
         aria-label="Key figures"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className={MAX_WIDTH_WIDE}>
           {(heading || subheading) && (
-            <div className="mb-16 max-w-2xl">
+            <header className="mb-16 max-w-2xl">
               {heading && (
-                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--stats-large-heading-color,hsl(0_0%_9%))]">
+                <h2
+                  className={cn(
+                    "font-bold",
+                    HEADING_CLAMP,
+                    "text-[var(--stats-large-heading-color,hsl(0_0%_9%))]"
+                  )}
+                >
                   {heading}
                 </h2>
               )}
@@ -63,18 +89,24 @@ export default function StatsLargeNumbers({
                   {subheading}
                 </p>
               )}
-            </div>
+            </header>
           )}
 
-          <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-3">
+          <dl className="grid gap-12 sm:grid-cols-2 lg:grid-cols-3">
             {stats.map((stat) => (
               <div key={stat.label}>
-                <p className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter text-[var(--stats-large-value-color,hsl(0_0%_9%))]">
+                <dd
+                  className={cn(
+                    "font-bold tracking-tighter",
+                    VALUE_CLAMP_SIDE,
+                    "text-[var(--stats-large-value-color,hsl(0_0%_9%))]"
+                  )}
+                >
                   {stat.value}
-                </p>
-                <p className="mt-4 text-base font-semibold text-[var(--stats-large-label-color,hsl(0_0%_20%))]">
+                </dd>
+                <dt className="mt-4 text-base font-semibold text-[var(--stats-large-label-color,hsl(0_0%_20%))]">
                   {stat.label}
-                </p>
+                </dt>
                 {stat.description && (
                   <p className="mt-2 text-sm leading-relaxed text-[var(--stats-large-desc-color,hsl(0_0%_45%))]">
                     {stat.description}
@@ -82,7 +114,7 @@ export default function StatsLargeNumbers({
                 )}
               </div>
             ))}
-          </div>
+          </dl>
         </div>
       </section>
     );
@@ -91,14 +123,24 @@ export default function StatsLargeNumbers({
   if (variant === "alternating") {
     return (
       <section
-        className={cn("py-16 sm:py-24 bg-[var(--stats-large-bg,transparent)]", className)}
+        className={cn(
+          SECTION_PY,
+          "bg-[var(--stats-large-bg,transparent)]",
+          className
+        )}
         aria-label="Key figures"
       >
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div className={MAX_WIDTH_NARROW}>
           {(heading || subheading) && (
-            <div className="mb-16 text-center">
+            <header className="mb-16 text-center">
               {heading && (
-                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--stats-large-heading-color,hsl(0_0%_9%))]">
+                <h2
+                  className={cn(
+                    "font-bold",
+                    HEADING_CLAMP,
+                    "text-[var(--stats-large-heading-color,hsl(0_0%_9%))]"
+                  )}
+                >
                   {heading}
                 </h2>
               )}
@@ -107,10 +149,10 @@ export default function StatsLargeNumbers({
                   {subheading}
                 </p>
               )}
-            </div>
+            </header>
           )}
 
-          <div className="space-y-16 sm:space-y-20">
+          <dl className="space-y-16 sm:space-y-20">
             {stats.map((stat, i) => (
               <div
                 key={stat.label}
@@ -119,13 +161,25 @@ export default function StatsLargeNumbers({
                   i % 2 !== 0 && "sm:flex-row-reverse sm:text-right"
                 )}
               >
-                <p className="flex-shrink-0 text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tighter text-[var(--stats-large-value-color,hsl(0_0%_9%))]">
+                <dd
+                  className={cn(
+                    "flex-shrink-0 font-bold tracking-tighter",
+                    VALUE_CLAMP_ALT,
+                    "text-[var(--stats-large-value-color,hsl(0_0%_9%))]"
+                  )}
+                >
                   {stat.value}
-                </p>
-                <div className={cn("border-l-2 border-[var(--stats-large-accent,hsl(220_80%_55%))] pl-6", i % 2 !== 0 && "sm:border-l-0 sm:border-r-2 sm:pl-0 sm:pr-6")}>
-                  <p className="text-lg font-semibold text-[var(--stats-large-label-color,hsl(0_0%_20%))]">
+                </dd>
+                <div
+                  className={cn(
+                    "border-l-2 border-[var(--stats-large-accent,hsl(220_80%_55%))] pl-6",
+                    i % 2 !== 0 &&
+                      "sm:border-l-0 sm:border-r-2 sm:pl-0 sm:pr-6"
+                  )}
+                >
+                  <dt className="text-lg font-semibold text-[var(--stats-large-label-color,hsl(0_0%_20%))]">
                     {stat.label}
-                  </p>
+                  </dt>
                   {stat.description && (
                     <p className="mt-2 text-sm leading-relaxed text-[var(--stats-large-desc-color,hsl(0_0%_45%))]">
                       {stat.description}
@@ -134,7 +188,7 @@ export default function StatsLargeNumbers({
                 </div>
               </div>
             ))}
-          </div>
+          </dl>
         </div>
       </section>
     );
@@ -143,14 +197,24 @@ export default function StatsLargeNumbers({
   // stacked variant (default)
   return (
     <section
-      className={cn("py-16 sm:py-24 bg-[var(--stats-large-bg,transparent)]", className)}
+      className={cn(
+        SECTION_PY,
+        "bg-[var(--stats-large-bg,transparent)]",
+        className
+      )}
       aria-label="Key figures"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className={MAX_WIDTH_WIDE}>
         {(heading || subheading) && (
-          <div className="mb-16 text-center">
+          <header className="mb-16 text-center">
             {heading && (
-              <h2 className="text-2xl sm:text-3xl font-bold text-[var(--stats-large-heading-color,hsl(0_0%_9%))]">
+              <h2
+                className={cn(
+                  "font-bold",
+                  HEADING_CLAMP,
+                  "text-[var(--stats-large-heading-color,hsl(0_0%_9%))]"
+                )}
+              >
                 {heading}
               </h2>
             )}
@@ -159,22 +223,29 @@ export default function StatsLargeNumbers({
                 {subheading}
               </p>
             )}
-          </div>
+          </header>
         )}
 
-        <div className="divide-y divide-[var(--stats-large-divider,hsl(0_0%_0%/0.08))]">
+        <dl className="divide-y divide-[var(--stats-large-divider,hsl(0_0%_0%/0.08))]">
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="flex flex-col gap-2 py-10 sm:flex-row sm:items-baseline sm:gap-8 first:pt-0 last:pb-0"
+              className="flex flex-col gap-2 py-10 first:pt-0 last:pb-0 sm:flex-row sm:items-baseline sm:gap-8"
             >
-              <p className="flex-shrink-0 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter text-[var(--stats-large-value-color,hsl(0_0%_9%))] sm:w-64 lg:w-80">
+              <dd
+                className={cn(
+                  "flex-shrink-0 font-bold tracking-tighter",
+                  VALUE_CLAMP_STACKED,
+                  STACKED_VALUE_WIDTH,
+                  "text-[var(--stats-large-value-color,hsl(0_0%_9%))]"
+                )}
+              >
                 {stat.value}
-              </p>
+              </dd>
               <div>
-                <p className="text-lg font-semibold text-[var(--stats-large-label-color,hsl(0_0%_20%))]">
+                <dt className="text-lg font-semibold text-[var(--stats-large-label-color,hsl(0_0%_20%))]">
                   {stat.label}
-                </p>
+                </dt>
                 {stat.description && (
                   <p className="mt-1 text-sm leading-relaxed text-[var(--stats-large-desc-color,hsl(0_0%_45%))]">
                     {stat.description}
@@ -183,7 +254,7 @@ export default function StatsLargeNumbers({
               </div>
             </div>
           ))}
-        </div>
+        </dl>
       </div>
     </section>
   );

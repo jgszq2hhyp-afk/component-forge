@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category heroes
 // @name hero-with-video-modal
 // @source self-authored
@@ -7,7 +7,19 @@
 
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const MODAL_FADE_DURATION = '0.2s';
+const MODAL_SCALE_DURATION = '0.25s';
+const BACKDROP_OPACITY = 0.8;
+const OVERLAY_OPACITY = 0.7;
+const HEADING_CLAMP = 'clamp(2.25rem, 5vw + 1rem, 4rem)';
+const PLAY_ICON_SIZE = 48;
+const CLOSE_BUTTON_SIZE = 36;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,7 +38,32 @@ interface HeroWithVideoModalProps {
 }
 
 // ---------------------------------------------------------------------------
-// Component ('use client' — modal open/close state)
+// Keyframe styles
+// ---------------------------------------------------------------------------
+
+const keyframes = `
+@keyframes hero-modal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes hero-modal-scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes hero-modal-fade-in {
+    from, to { opacity: 1; }
+  }
+  @keyframes hero-modal-scale-in {
+    from, to { opacity: 1; transform: none; }
+  }
+}
+`;
+
+// ---------------------------------------------------------------------------
+// Component ('use client' -- modal open/close state)
 // ---------------------------------------------------------------------------
 
 export default function HeroWithVideoModal({
@@ -41,8 +78,14 @@ export default function HeroWithVideoModal({
   className,
 }: HeroWithVideoModalProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
-  const close = useCallback(() => setIsOpen(false), []);
+  const close = useCallback(() => {
+    setIsOpen(false);
+    // Return focus to trigger button on close
+    triggerRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -54,6 +97,9 @@ export default function HeroWithVideoModal({
     document.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
 
+    // Focus close button when modal opens
+    closeButtonRef.current?.focus();
+
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
@@ -62,7 +108,10 @@ export default function HeroWithVideoModal({
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: keyframes }} />
+
       <section
+        aria-label="Video hero"
         className={cn(
           'relative flex min-h-[85vh] items-center justify-center overflow-hidden',
           'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
@@ -70,35 +119,6 @@ export default function HeroWithVideoModal({
           className,
         )}
       >
-        {/* Keyframes */}
-        <style>{`
-          @keyframes hero-modal-fade-in {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-          @keyframes hero-modal-scale-in {
-            from { opacity: 0; transform: scale(0.92); }
-            to { opacity: 1; transform: scale(1); }
-          }
-          @keyframes hero-modal-pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.08); }
-          }
-          @media (prefers-reduced-motion: reduce) {
-            @keyframes hero-modal-fade-in {
-              from { opacity: 0; }
-              to { opacity: 1; }
-            }
-            @keyframes hero-modal-scale-in {
-              from { opacity: 0; }
-              to { opacity: 1; }
-            }
-            @keyframes hero-modal-pulse {
-              0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            }
-          }
-        `}</style>
-
         {/* Background image */}
         <Image
           src={backgroundImageSrc}
@@ -111,14 +131,18 @@ export default function HeroWithVideoModal({
         {/* Overlay */}
         <div
           className="absolute inset-0"
-          style={{ backgroundColor: 'var(--background)', opacity: 0.7 }}
+          style={{ backgroundColor: 'var(--background)', opacity: OVERLAY_OPACITY }}
+          aria-hidden="true"
         />
 
         {/* Content */}
-        <div className="relative z-10 max-w-3xl">
+        <header className="relative z-10 max-w-3xl">
           <h1
-            className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl"
-            style={{ color: 'var(--foreground)' }}
+            className="font-bold tracking-tight"
+            style={{
+              fontSize: HEADING_CLAMP,
+              color: 'var(--foreground)',
+            }}
           >
             {headline}
           </h1>
@@ -132,37 +156,55 @@ export default function HeroWithVideoModal({
             </p>
           )}
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-5">
+          <nav aria-label="Call to action" className="mt-10 flex flex-wrap items-center justify-center gap-5">
             {ctaText && (
               <a
                 href={ctaHref}
-                className="inline-flex items-center rounded-lg px-6 py-3 text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:outline-none"
+                className={cn(
+                  'inline-flex items-center justify-center',
+                  'rounded-lg px-7 py-3.5 text-sm font-semibold',
+                  'transition-all duration-200',
+                  'hover:brightness-110 hover:shadow-lg',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                  'active:scale-[0.98]',
+                )}
                 style={{
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',
-                  '--tw-ring-color': 'var(--ring)',
-                } as React.CSSProperties}
+                  ['--tw-ring-color' as string]: 'var(--primary)',
+                  ['--tw-ring-offset-color' as string]: 'var(--background)',
+                }}
               >
                 {ctaText}
               </a>
             )}
 
             <button
+              ref={triggerRef}
               onClick={() => setIsOpen(true)}
-              className="group inline-flex items-center gap-3 text-sm font-semibold transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:outline-none rounded-lg px-4 py-3"
+              className={cn(
+                'group inline-flex items-center gap-3 text-sm font-semibold',
+                'transition-opacity hover:opacity-80',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                'rounded-lg px-4 py-3',
+              )}
               style={{
                 color: 'var(--foreground)',
-                '--tw-ring-color': 'var(--ring)',
-              } as React.CSSProperties}
+                ['--tw-ring-color' as string]: 'var(--primary)',
+                ['--tw-ring-offset-color' as string]: 'var(--background)',
+              }}
               aria-label={playButtonLabel}
             >
               {/* Play icon circle */}
               <span
-                className="inline-flex h-12 w-12 items-center justify-center rounded-full transition-transform group-hover:scale-105"
+                className="inline-flex items-center justify-center rounded-full transition-transform group-hover:scale-105"
                 style={{
+                  width: `${PLAY_ICON_SIZE}px`,
+                  height: `${PLAY_ICON_SIZE}px`,
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',
                 }}
+                aria-hidden="true"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -176,8 +218,8 @@ export default function HeroWithVideoModal({
               </span>
               {playButtonLabel}
             </button>
-          </div>
-        </div>
+          </nav>
+        </header>
       </section>
 
       {/* Video Modal */}
@@ -187,12 +229,12 @@ export default function HeroWithVideoModal({
           role="dialog"
           aria-modal="true"
           aria-label="Video player"
-          style={{ animation: 'hero-modal-fade-in 0.2s ease-out' }}
+          style={{ animation: `hero-modal-fade-in ${MODAL_FADE_DURATION} ease-out` }}
         >
           {/* Backdrop */}
           <div
             className="absolute inset-0 cursor-pointer"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
+            style={{ backgroundColor: `rgba(0, 0, 0, ${BACKDROP_OPACITY})` }}
             onClick={close}
             aria-hidden="true"
           />
@@ -200,7 +242,7 @@ export default function HeroWithVideoModal({
           {/* Video container */}
           <div
             className="relative w-full max-w-4xl aspect-video rounded-xl overflow-hidden shadow-2xl"
-            style={{ animation: 'hero-modal-scale-in 0.25s ease-out' }}
+            style={{ animation: `hero-modal-scale-in ${MODAL_SCALE_DURATION} ease-out` }}
           >
             <iframe
               src={videoSrc}
@@ -212,12 +254,20 @@ export default function HeroWithVideoModal({
 
             {/* Close button */}
             <button
+              ref={closeButtonRef}
               onClick={close}
-              className="absolute top-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full text-white/80 transition-colors hover:text-white focus-visible:ring-2 focus-visible:outline-none"
+              className={cn(
+                'absolute top-3 right-3 inline-flex items-center justify-center rounded-full',
+                'text-white/80 transition-colors hover:text-white',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+              )}
               style={{
+                width: `${CLOSE_BUTTON_SIZE}px`,
+                height: `${CLOSE_BUTTON_SIZE}px`,
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                '--tw-ring-color': 'var(--ring)',
-              } as React.CSSProperties}
+                ['--tw-ring-color' as string]: 'white',
+                ['--tw-ring-offset-color' as string]: 'transparent',
+              }}
               aria-label="Close video"
             >
               <svg

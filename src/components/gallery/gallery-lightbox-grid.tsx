@@ -1,12 +1,27 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category gallery
 // @name Gallery Lightbox Grid
 // @source custom-implementation
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                         */
+/* ------------------------------------------------------------------ */
+
+const OVERLAY_ICON_SIZE = 40; // px
+const LIGHTBOX_CLOSE_ICON_SIZE = 24; // px
+const LIGHTBOX_NAV_ICON_SIZE = 32; // px
+const LIGHTBOX_MAX_IMAGE_VH = 85;
+const LIGHTBOX_MAX_IMAGE_VW = 90;
+const LIGHTBOX_Z_INDEX = 100;
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                             */
+/* ------------------------------------------------------------------ */
 
 interface GalleryImage {
   src: string;
@@ -22,6 +37,10 @@ interface GalleryLightboxGridProps {
   className?: string;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Default data                                                      */
+/* ------------------------------------------------------------------ */
+
 const defaultImages: GalleryImage[] = [
   { src: "/placeholder-1.jpg", alt: "Gallery image 1", caption: "Beautiful landscape" },
   { src: "/placeholder-2.jpg", alt: "Gallery image 2", caption: "Urban architecture" },
@@ -31,6 +50,20 @@ const defaultImages: GalleryImage[] = [
   { src: "/placeholder-6.jpg", alt: "Gallery image 6", caption: "Abstract art" },
 ];
 
+/* ------------------------------------------------------------------ */
+/*  Column class mapping                                              */
+/* ------------------------------------------------------------------ */
+
+const COLUMN_CLASSES: Record<2 | 3 | 4, string> = {
+  2: "grid-cols-1 sm:grid-cols-2",
+  3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+  4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+};
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                         */
+/* ------------------------------------------------------------------ */
+
 export default function GalleryLightboxGrid({
   title = "Our Work",
   subtitle = "A selection of our recent projects and creative explorations.",
@@ -39,6 +72,7 @@ export default function GalleryLightboxGrid({
   className,
 }: GalleryLightboxGridProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -58,6 +92,7 @@ export default function GalleryLightboxGrid({
   useEffect(() => {
     if (lightboxIndex !== null) {
       document.body.style.overflow = "hidden";
+      closeBtnRef.current?.focus();
     } else {
       document.body.style.overflow = "";
     }
@@ -66,20 +101,17 @@ export default function GalleryLightboxGrid({
     };
   }, [lightboxIndex]);
 
-  const colClass = {
-    2: "grid-cols-1 sm:grid-cols-2",
-    3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
-    4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
-  }[columns];
-
   return (
-    <section className={cn("py-16 sm:py-24 bg-[var(--gallery-bg,hsl(0_0%_100%))]", className)}>
+    <section
+      className={cn("py-16 sm:py-24 bg-[var(--gallery-bg,hsl(0_0%_100%))]", className)}
+      aria-label="Image gallery"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         {(title || subtitle) && (
-          <div className="text-center max-w-2xl mx-auto mb-12">
+          <header className="text-center max-w-2xl mx-auto mb-12">
             {title && (
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[var(--gallery-title,hsl(0_0%_9%))]">
+              <h2 className="font-bold tracking-tight text-[clamp(1.75rem,4vw,2.5rem)] text-[var(--gallery-title,hsl(0_0%_9%))]">
                 {title}
               </h2>
             )}
@@ -88,50 +120,57 @@ export default function GalleryLightboxGrid({
                 {subtitle}
               </p>
             )}
-          </div>
+          </header>
         )}
 
         {/* Grid */}
-        <div className={cn("grid gap-4", colClass)}>
+        <div className={cn("grid gap-4", COLUMN_CLASSES[columns])} role="list">
           {images.map((image, index) => (
-            <button
-              key={index}
-              onClick={() => setLightboxIndex(index)}
-              className={cn(
-                "group relative aspect-[4/3] overflow-hidden rounded-xl transition-shadow duration-300",
-                "hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[var(--gallery-ring,hsl(220_90%_56%))] focus:ring-offset-2",
-                "motion-reduce:transition-none"
-              )}
-            >
-              <img
-                src={image.src}
-                alt={image.alt}
-                loading="lazy"
+            <div key={index} role="listitem">
+              <button
+                onClick={() => setLightboxIndex(index)}
                 className={cn(
-                  "h-full w-full object-cover transition-transform duration-500",
-                  "group-hover:scale-110",
-                  "motion-reduce:group-hover:scale-100 motion-reduce:transition-none"
+                  "group relative aspect-[4/3] w-full overflow-hidden rounded-xl",
+                  "hover:shadow-xl",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gallery-ring,hsl(220_90%_56%))] focus-visible:ring-offset-2",
+                  "motion-reduce:!transition-none motion-reduce:!transform-none"
                 )}
-              />
-              <div
-                className={cn(
-                  "absolute inset-0 flex items-center justify-center transition-opacity duration-300",
-                  "bg-[var(--gallery-overlay,hsl(0_0%_0%/0.4))]",
-                  "opacity-0 group-hover:opacity-100",
-                  "motion-reduce:transition-none"
-                )}
+                aria-label={`View ${image.alt}`}
               >
-                <svg
-                  className="h-10 w-10 text-[var(--gallery-overlay-icon,hsl(0_0%_100%))]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  loading="lazy"
+                  className={cn(
+                    "h-full w-full object-cover transition-transform duration-500",
+                    "group-hover:scale-110",
+                    "motion-reduce:!scale-100 motion-reduce:!transition-none"
+                  )}
+                />
+                <div
+                  className={cn(
+                    "absolute inset-0 flex items-center justify-center transition-opacity duration-300",
+                    "bg-[var(--gallery-overlay,hsl(0_0%_0%/0.4))]",
+                    "opacity-0 group-hover:opacity-100",
+                    "motion-reduce:!transition-none"
+                  )}
+                  aria-hidden="true"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
-                </svg>
-              </div>
-            </button>
+                  <svg
+                    width={OVERLAY_ICON_SIZE}
+                    height={OVERLAY_ICON_SIZE}
+                    className="text-[var(--gallery-overlay-icon,hsl(0_0%_100%))]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                  </svg>
+                </div>
+              </button>
+            </div>
           ))}
         </div>
       </div>
@@ -139,19 +178,36 @@ export default function GalleryLightboxGrid({
       {/* Lightbox */}
       {lightboxIndex !== null && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--gallery-lightbox-bg,hsl(0_0%_0%/0.9))] p-4"
+          className="fixed inset-0 flex items-center justify-center bg-[var(--gallery-lightbox-bg,hsl(0_0%_0%/0.9))] p-4"
+          style={{ zIndex: LIGHTBOX_Z_INDEX }}
           onClick={() => setLightboxIndex(null)}
           role="dialog"
           aria-modal="true"
-          aria-label="Image lightbox"
+          aria-label={`Image lightbox: ${images[lightboxIndex].alt}`}
         >
           {/* Close button */}
           <button
+            ref={closeBtnRef}
             onClick={() => setLightboxIndex(null)}
-            className="absolute top-4 right-4 z-10 p-2 rounded-full text-[var(--gallery-lightbox-control,hsl(0_0%_100%/0.8))] hover:text-[var(--gallery-lightbox-control-hover,hsl(0_0%_100%))] hover:bg-[var(--gallery-lightbox-control-bg,hsl(0_0%_100%/0.1))] transition-colors"
+            className={cn(
+              "absolute top-4 right-4 z-10 p-2 rounded-full",
+              "text-[var(--gallery-lightbox-control,hsl(0_0%_100%/0.8))]",
+              "hover:text-[var(--gallery-lightbox-control-hover,hsl(0_0%_100%))]",
+              "hover:bg-[var(--gallery-lightbox-control-bg,hsl(0_0%_100%/0.1))]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+              "transition-colors motion-reduce:!transition-none"
+            )}
             aria-label="Close lightbox"
           >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <svg
+              width={LIGHTBOX_CLOSE_ICON_SIZE}
+              height={LIGHTBOX_CLOSE_ICON_SIZE}
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -162,33 +218,50 @@ export default function GalleryLightboxGrid({
               e.stopPropagation();
               setLightboxIndex((lightboxIndex - 1 + images.length) % images.length);
             }}
-            className="absolute left-4 z-10 p-2 rounded-full text-[var(--gallery-lightbox-control,hsl(0_0%_100%/0.8))] hover:text-[var(--gallery-lightbox-control-hover,hsl(0_0%_100%))] hover:bg-[var(--gallery-lightbox-control-bg,hsl(0_0%_100%/0.1))] transition-colors"
+            className={cn(
+              "absolute left-4 z-10 p-2 rounded-full",
+              "text-[var(--gallery-lightbox-control,hsl(0_0%_100%/0.8))]",
+              "hover:text-[var(--gallery-lightbox-control-hover,hsl(0_0%_100%))]",
+              "hover:bg-[var(--gallery-lightbox-control-bg,hsl(0_0%_100%/0.1))]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+              "transition-colors motion-reduce:!transition-none"
+            )}
             aria-label="Previous image"
           >
-            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <svg
+              width={LIGHTBOX_NAV_ICON_SIZE}
+              height={LIGHTBOX_NAV_ICON_SIZE}
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
           </button>
 
           {/* Image */}
-          <div
-            className="relative max-h-[85vh] max-w-[90vw]"
+          <figure
+            className="relative"
+            style={{ maxHeight: `${LIGHTBOX_MAX_IMAGE_VH}vh`, maxWidth: `${LIGHTBOX_MAX_IMAGE_VW}vw` }}
             onClick={(e) => e.stopPropagation()}
           >
             <img
               src={images[lightboxIndex].src}
               alt={images[lightboxIndex].alt}
-              className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain"
+              className="rounded-lg object-contain"
+              style={{ maxHeight: `${LIGHTBOX_MAX_IMAGE_VH}vh`, maxWidth: `${LIGHTBOX_MAX_IMAGE_VW}vw` }}
             />
             {images[lightboxIndex].caption && (
-              <p className="mt-3 text-center text-sm text-[var(--gallery-lightbox-caption,hsl(0_0%_100%/0.7))]">
+              <figcaption className="mt-3 text-center text-sm text-[var(--gallery-lightbox-caption,hsl(0_0%_100%/0.7))]">
                 {images[lightboxIndex].caption}
-              </p>
+              </figcaption>
             )}
-            <p className="mt-1 text-center text-xs text-[var(--gallery-lightbox-counter,hsl(0_0%_100%/0.4))]">
+            <p className="mt-1 text-center text-xs text-[var(--gallery-lightbox-counter,hsl(0_0%_100%/0.4))]" aria-live="polite">
               {lightboxIndex + 1} / {images.length}
             </p>
-          </div>
+          </figure>
 
           {/* Next */}
           <button
@@ -196,10 +269,25 @@ export default function GalleryLightboxGrid({
               e.stopPropagation();
               setLightboxIndex((lightboxIndex + 1) % images.length);
             }}
-            className="absolute right-4 z-10 p-2 rounded-full text-[var(--gallery-lightbox-control,hsl(0_0%_100%/0.8))] hover:text-[var(--gallery-lightbox-control-hover,hsl(0_0%_100%))] hover:bg-[var(--gallery-lightbox-control-bg,hsl(0_0%_100%/0.1))] transition-colors"
+            className={cn(
+              "absolute right-4 z-10 p-2 rounded-full",
+              "text-[var(--gallery-lightbox-control,hsl(0_0%_100%/0.8))]",
+              "hover:text-[var(--gallery-lightbox-control-hover,hsl(0_0%_100%))]",
+              "hover:bg-[var(--gallery-lightbox-control-bg,hsl(0_0%_100%/0.1))]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+              "transition-colors motion-reduce:!transition-none"
+            )}
             aria-label="Next image"
           >
-            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <svg
+              width={LIGHTBOX_NAV_ICON_SIZE}
+              height={LIGHTBOX_NAV_ICON_SIZE}
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
             </svg>
           </button>

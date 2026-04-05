@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category team
 // @name About Story Timeline
 // @source custom-implementation
@@ -7,6 +7,20 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                         */
+/* ------------------------------------------------------------------ */
+
+const INTERSECTION_THRESHOLD = 0.2;
+const TRANSLATE_OFFSET_PX = 32; // translate-y-8 = 2rem = 32px
+const DOT_SIZE = 12; // px
+const IMAGE_MAX_HEIGHT = 192; // px – max-h-48
+const ANIMATION_DURATION_MS = 700;
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                             */
+/* ------------------------------------------------------------------ */
 
 interface TimelineEvent {
   year: string;
@@ -23,6 +37,10 @@ interface AboutStoryTimelineProps {
   variant?: "vertical" | "alternating";
   className?: string;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Default data                                                      */
+/* ------------------------------------------------------------------ */
 
 const defaultEvents: TimelineEvent[] = [
   {
@@ -60,10 +78,13 @@ const defaultEvents: TimelineEvent[] = [
   },
 ];
 
+/* ------------------------------------------------------------------ */
+/*  TimelineItem                                                      */
+/* ------------------------------------------------------------------ */
+
 function TimelineItem({
   event,
   isVisible,
-  side,
   prefersReducedMotion,
 }: {
   event: TimelineEvent;
@@ -72,13 +93,16 @@ function TimelineItem({
   prefersReducedMotion: boolean;
 }) {
   return (
-    <div
+    <article
       className={cn(
-        "transition-all duration-700 motion-reduce:transition-none",
-        isVisible || prefersReducedMotion
+        "motion-reduce:!opacity-100 motion-reduce:!translate-y-0 motion-reduce:!transition-none",
+        prefersReducedMotion
           ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-8"
+          : isVisible
+            ? `opacity-100 translate-y-0 transition-all`
+            : `opacity-0 translate-y-8 transition-all`
       )}
+      style={!prefersReducedMotion ? { transitionDuration: `${ANIMATION_DURATION_MS}ms` } : undefined}
     >
       <div
         className={cn(
@@ -109,15 +133,20 @@ function TimelineItem({
         {event.imageSrc && (
           <img
             src={event.imageSrc}
-            alt={event.title}
-            className="mt-4 rounded-xl w-full object-cover max-h-48"
+            alt={`${event.title} – ${event.year}`}
+            className="mt-4 rounded-xl w-full object-cover"
+            style={{ maxHeight: IMAGE_MAX_HEIGHT }}
             loading="lazy"
           />
         )}
       </div>
-    </div>
+    </article>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/*  Main component                                                    */
+/* ------------------------------------------------------------------ */
 
 export default function AboutStoryTimeline({
   events = defaultEvents,
@@ -151,12 +180,15 @@ export default function AboutStoryTimeline({
 
   useEffect(() => {
     if (prefersReducedMotion) return;
-    const observer = new IntersectionObserver(handleIntersect, { threshold: 0.2 });
+    const observer = new IntersectionObserver(handleIntersect, {
+      threshold: INTERSECTION_THRESHOLD,
+    });
     const items = sectionRef.current?.querySelectorAll("[data-index]");
     items?.forEach((item) => observer.observe(item));
     return () => observer.disconnect();
   }, [handleIntersect, prefersReducedMotion]);
 
+  /* ---- Alternating variant ---- */
   if (variant === "alternating") {
     return (
       <section
@@ -166,9 +198,9 @@ export default function AboutStoryTimeline({
       >
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           {(heading || subheading) && (
-            <div className="mb-16 text-center">
+            <header className="mb-16 text-center">
               {heading && (
-                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--timeline-heading-color,hsl(0_0%_9%))]">
+                <h2 className="font-bold text-[clamp(1.5rem,3vw,2rem)] text-[var(--timeline-heading-color,hsl(0_0%_9%))]">
                   {heading}
                 </h2>
               )}
@@ -177,12 +209,15 @@ export default function AboutStoryTimeline({
                   {subheading}
                 </p>
               )}
-            </div>
+            </header>
           )}
 
           <div className="relative">
             {/* Center line */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-[var(--timeline-line-color,hsl(0_0%_0%/0.1))] hidden md:block" />
+            <div
+              className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-[var(--timeline-line-color,hsl(0_0%_0%/0.1))] hidden md:block"
+              aria-hidden="true"
+            />
 
             <div className="space-y-12 md:space-y-0">
               {events.map((event, i) => {
@@ -207,14 +242,19 @@ export default function AboutStoryTimeline({
                     </div>
 
                     {/* Center dot */}
-                    <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex h-4 w-4 items-center justify-center">
+                    <div
+                      className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center justify-center"
+                      style={{ width: DOT_SIZE + 4, height: DOT_SIZE + 4 }}
+                      aria-hidden="true"
+                    >
                       <div
                         className={cn(
-                          "h-3 w-3 rounded-full",
+                          "rounded-full",
                           event.highlight
                             ? "bg-[var(--timeline-dot-highlight,hsl(220_80%_55%))]"
                             : "bg-[var(--timeline-dot-color,hsl(0_0%_75%))]"
                         )}
+                        style={{ width: DOT_SIZE, height: DOT_SIZE }}
                       />
                     </div>
 
@@ -249,7 +289,7 @@ export default function AboutStoryTimeline({
     );
   }
 
-  // vertical variant (default)
+  /* ---- Vertical variant (default) ---- */
   return (
     <section
       ref={sectionRef}
@@ -258,9 +298,9 @@ export default function AboutStoryTimeline({
     >
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         {(heading || subheading) && (
-          <div className="mb-16 text-center">
+          <header className="mb-16 text-center">
             {heading && (
-              <h2 className="text-2xl sm:text-3xl font-bold text-[var(--timeline-heading-color,hsl(0_0%_9%))]">
+              <h2 className="font-bold text-[clamp(1.5rem,3vw,2rem)] text-[var(--timeline-heading-color,hsl(0_0%_9%))]">
                 {heading}
               </h2>
             )}
@@ -269,12 +309,15 @@ export default function AboutStoryTimeline({
                 {subheading}
               </p>
             )}
-          </div>
+          </header>
         )}
 
         <div className="relative">
           {/* Timeline line */}
-          <div className="absolute left-4 sm:left-6 top-0 bottom-0 w-px bg-[var(--timeline-line-color,hsl(0_0%_0%/0.1))]" />
+          <div
+            className="absolute left-4 sm:left-6 top-0 bottom-0 w-px bg-[var(--timeline-line-color,hsl(0_0%_0%/0.1))]"
+            aria-hidden="true"
+          />
 
           <div className="space-y-10">
             {events.map((event, i) => (
@@ -284,14 +327,15 @@ export default function AboutStoryTimeline({
                 className="relative pl-12 sm:pl-16"
               >
                 {/* Dot */}
-                <div className="absolute left-4 sm:left-6 -translate-x-1/2 mt-2">
+                <div className="absolute left-4 sm:left-6 -translate-x-1/2 mt-2" aria-hidden="true">
                   <div
                     className={cn(
-                      "h-3 w-3 rounded-full ring-4 ring-[var(--timeline-bg,hsl(0_0%_100%))]",
+                      "rounded-full ring-4 ring-[var(--timeline-bg,hsl(0_0%_100%))]",
                       event.highlight
                         ? "bg-[var(--timeline-dot-highlight,hsl(220_80%_55%))]"
                         : "bg-[var(--timeline-dot-color,hsl(0_0%_75%))]"
                     )}
+                    style={{ width: DOT_SIZE, height: DOT_SIZE }}
                   />
                 </div>
 

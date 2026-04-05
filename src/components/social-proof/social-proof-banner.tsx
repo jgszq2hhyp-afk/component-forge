@@ -1,9 +1,18 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category social-proof
 // @name Social Proof Banner
 // @source custom-implementation
 
 import { cn } from "@/lib/utils";
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                          */
+/* ------------------------------------------------------------------ */
+
+const SECTION_PY = "py-10 sm:py-14";
+const MAX_WIDTH = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
+const STAT_PX = "px-6 sm:px-10";
+const DIVIDER_HEIGHT = "h-12";
 
 interface Stat {
   value: string;
@@ -24,7 +33,10 @@ const defaultStats: Stat[] = [
   { value: "4.9/5", label: "Rating" },
 ];
 
-const variantStyles: Record<string, { bg: string; headline: string; value: string; label: string; divider: string }> = {
+const variantStyles: Record<
+  string,
+  { bg: string; headline: string; value: string; label: string; divider: string }
+> = {
   dark: {
     bg: "bg-[var(--proof-banner-bg,hsl(0_0%_5%))]",
     headline: "text-[var(--proof-banner-headline,hsl(0_0%_100%))]",
@@ -58,14 +70,15 @@ export default function SocialProofBanner({
 
   return (
     <section
-      className={cn("py-10 sm:py-14", styles.bg, className)}
-      aria-label="Social proof"
+      className={cn(SECTION_PY, styles.bg, className)}
+      aria-label="Social proof statistics"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className={MAX_WIDTH}>
         {headline && (
           <p
             className={cn(
-              "mb-8 text-center text-base sm:text-lg font-medium",
+              "mb-8 text-center font-medium",
+              "text-[clamp(1rem,0.5rem+1vw,1.125rem)]",
               styles.headline
             )}
           >
@@ -73,31 +86,37 @@ export default function SocialProofBanner({
           </p>
         )}
 
-        <div className="flex flex-wrap items-center justify-center gap-y-6">
+        <dl className="flex flex-wrap items-center justify-center gap-y-6">
           {stats.map((stat, i) => (
             <div key={stat.label} className="flex items-center">
-              <div className="px-6 sm:px-10 text-center">
-                <p
-                  className={cn(
-                    "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight",
-                    styles.value
-                  )}
-                >
-                  {stat.value}
-                </p>
-                <p
-                  className={cn(
-                    "mt-1 text-sm font-medium",
-                    styles.label
-                  )}
-                >
-                  {stat.label}
-                </p>
+              <div className={cn(STAT_PX, "text-center")}>
+                <dt className="order-2">
+                  <span
+                    className={cn(
+                      "mt-1 block text-sm font-medium",
+                      styles.label
+                    )}
+                  >
+                    {stat.label}
+                  </span>
+                </dt>
+                <dd className="order-1">
+                  <span
+                    className={cn(
+                      "font-bold tracking-tight",
+                      "text-[clamp(1.5rem,1rem+1.5vw,2.25rem)]",
+                      styles.value
+                    )}
+                  >
+                    {stat.value}
+                  </span>
+                </dd>
               </div>
               {i < stats.length - 1 && (
                 <div
                   className={cn(
-                    "hidden sm:block h-12 w-px",
+                    "hidden sm:block w-px",
+                    DIVIDER_HEIGHT,
                     styles.divider
                   )}
                   aria-hidden="true"
@@ -105,7 +124,7 @@ export default function SocialProofBanner({
               )}
             </div>
           ))}
-        </div>
+        </dl>
       </div>
     </section>
   );

@@ -1,9 +1,20 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category team
 // @name Team Minimal List
 // @source custom-implementation
 
 import { cn } from "@/lib/utils";
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                         */
+/* ------------------------------------------------------------------ */
+
+const AVATAR_SIZE = 40; // px – used for both img and fallback circle
+const LOCATION_ICON_SIZE = 12; // px
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                             */
+/* ------------------------------------------------------------------ */
 
 interface TeamMember {
   name: string;
@@ -23,14 +34,22 @@ interface TeamMinimalListProps {
   className?: string;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Default data                                                      */
+/* ------------------------------------------------------------------ */
+
 const defaultMembers: TeamMember[] = [
   { name: "Anna Schmidt", role: "CEO & Co-Founder", avatarSrc: "/team/anna.jpg", department: "Leadership", location: "Berlin" },
   { name: "Max Weber", role: "CTO & Co-Founder", avatarSrc: "/team/max.jpg", department: "Leadership", location: "Berlin" },
-  { name: "Lena M\u00FCller", role: "Head of Design", avatarSrc: "/team/lena.jpg", department: "Design", location: "Hamburg" },
+  { name: "Lena Müller", role: "Head of Design", avatarSrc: "/team/lena.jpg", department: "Design", location: "Hamburg" },
   { name: "Tom Fischer", role: "Head of Engineering", avatarSrc: "/team/tom.jpg", department: "Engineering", location: "Munich" },
   { name: "Sarah Klein", role: "Head of Marketing", avatarSrc: "/team/sarah.jpg", department: "Marketing", location: "Berlin" },
   { name: "Jan Becker", role: "Senior Developer", avatarSrc: "/team/jan.jpg", department: "Engineering", location: "Remote" },
 ];
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                         */
+/* ------------------------------------------------------------------ */
 
 export default function TeamMinimalList({
   members = defaultMembers,
@@ -56,9 +75,9 @@ export default function TeamMinimalList({
     >
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         {(heading || subheading) && (
-          <div className="mb-10">
+          <header className="mb-10">
             {heading && (
-              <h2 className="text-2xl sm:text-3xl font-bold text-[var(--team-list-heading-color,hsl(0_0%_9%))]">
+              <h2 className="font-bold text-[clamp(1.5rem,3vw,2rem)] text-[var(--team-list-heading-color,hsl(0_0%_9%))]">
                 {heading}
               </h2>
             )}
@@ -67,13 +86,13 @@ export default function TeamMinimalList({
                 {subheading}
               </p>
             )}
-          </div>
+          </header>
         )}
 
         {grouped ? (
           <div className="space-y-10">
             {Object.entries(grouped).map(([department, deptMembers]) => (
-              <div key={department}>
+              <section key={department} aria-label={`${department} department`}>
                 <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--team-list-dept-color,hsl(0_0%_45%))]">
                   {department}
                 </h3>
@@ -86,7 +105,7 @@ export default function TeamMinimalList({
                     />
                   ))}
                 </ul>
-              </div>
+              </section>
             ))}
           </div>
         ) : (
@@ -105,6 +124,10 @@ export default function TeamMinimalList({
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  MemberRow                                                         */
+/* ------------------------------------------------------------------ */
+
 function MemberRow({
   member,
   showLocation,
@@ -113,16 +136,24 @@ function MemberRow({
   showLocation: boolean;
 }) {
   return (
-    <li className="flex items-center gap-4 py-4" role="listitem">
+    <li className="flex items-center gap-4 py-4">
       {member.avatarSrc ? (
         <img
           src={member.avatarSrc}
-          alt={member.name}
-          className="h-10 w-10 flex-shrink-0 rounded-full object-cover"
+          alt=""
+          aria-hidden="true"
+          width={AVATAR_SIZE}
+          height={AVATAR_SIZE}
+          className="flex-shrink-0 rounded-full object-cover"
+          style={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}
           loading="lazy"
         />
       ) : (
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[var(--team-list-avatar-bg,hsl(0_0%_92%))] text-sm font-semibold text-[var(--team-list-avatar-color,hsl(0_0%_35%))]">
+        <div
+          className="flex flex-shrink-0 items-center justify-center rounded-full bg-[var(--team-list-avatar-bg,hsl(0_0%_92%))] text-sm font-semibold text-[var(--team-list-avatar-color,hsl(0_0%_35%))]"
+          style={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}
+          aria-hidden="true"
+        >
           {member.name
             .split(" ")
             .map((n) => n[0])
@@ -141,7 +172,16 @@ function MemberRow({
 
       {showLocation && member.location && (
         <span className="hidden sm:inline-flex items-center gap-1 text-xs text-[var(--team-list-location-color,hsl(0_0%_55%))]">
-          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <svg
+            className="shrink-0"
+            width={LOCATION_ICON_SIZE}
+            height={LOCATION_ICON_SIZE}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
           </svg>
@@ -152,7 +192,10 @@ function MemberRow({
       {member.email && (
         <a
           href={`mailto:${member.email}`}
-          className="hidden sm:inline-flex text-sm text-[var(--team-list-link-color,hsl(220_80%_55%))] hover:underline"
+          className={cn(
+            "hidden sm:inline-flex text-sm text-[var(--team-list-link-color,hsl(220_80%_55%))] hover:underline",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--team-list-link-color,hsl(220_80%_55%))] focus-visible:ring-offset-2 rounded-sm"
+          )}
         >
           Email
         </a>

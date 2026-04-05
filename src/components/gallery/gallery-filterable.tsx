@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category gallery
 // @name Gallery Filterable
 // @source custom-implementation
@@ -7,6 +7,23 @@
 
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                         */
+/* ------------------------------------------------------------------ */
+
+const IMAGE_HOVER_SCALE = 1.05;
+const ANIMATION_DURATION_MS = 500;
+
+const COLUMN_CLASSES: Record<2 | 3 | 4, string> = {
+  2: "grid-cols-1 sm:grid-cols-2",
+  3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+  4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+};
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                             */
+/* ------------------------------------------------------------------ */
 
 interface GalleryItem {
   src: string;
@@ -26,6 +43,10 @@ interface GalleryFilterableProps {
   className?: string;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Default data                                                      */
+/* ------------------------------------------------------------------ */
+
 const defaultItems: GalleryItem[] = [
   { src: "/placeholder-1.jpg", alt: "Web project", title: "E-Commerce Platform", category: "Web Design", description: "Full redesign and development" },
   { src: "/placeholder-2.jpg", alt: "Brand project", title: "Tech Startup Identity", category: "Branding", description: "Logo, colors, and guidelines" },
@@ -37,6 +58,10 @@ const defaultItems: GalleryItem[] = [
   { src: "/placeholder-8.jpg", alt: "Web project", title: "Portfolio Site", category: "Web Design", description: "Minimal portfolio" },
   { src: "/placeholder-9.jpg", alt: "Print project", title: "Packaging Design", category: "Print", description: "Product packaging" },
 ];
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                         */
+/* ------------------------------------------------------------------ */
 
 export default function GalleryFilterable({
   title = "Our Portfolio",
@@ -58,20 +83,17 @@ export default function GalleryFilterable({
     return items.filter((item) => item.category === activeCategory);
   }, [items, activeCategory, allLabel]);
 
-  const colClass = {
-    2: "grid-cols-1 sm:grid-cols-2",
-    3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
-    4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
-  }[columns];
-
   return (
-    <section className={cn("py-16 sm:py-24 bg-[var(--gallery-bg,hsl(0_0%_100%))]", className)}>
+    <section
+      className={cn("py-16 sm:py-24 bg-[var(--gallery-bg,hsl(0_0%_100%))]", className)}
+      aria-label="Filterable portfolio gallery"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         {(title || subtitle) && (
-          <div className="text-center max-w-2xl mx-auto mb-10">
+          <header className="text-center max-w-2xl mx-auto mb-10">
             {title && (
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[var(--gallery-title,hsl(0_0%_9%))]">
+              <h2 className="font-bold tracking-tight text-[clamp(1.75rem,4vw,2.5rem)] text-[var(--gallery-title,hsl(0_0%_9%))]">
                 {title}
               </h2>
             )}
@@ -80,17 +102,20 @@ export default function GalleryFilterable({
                 {subtitle}
               </p>
             )}
-          </div>
+          </header>
         )}
 
         {/* Filter Tabs */}
-        <div className="flex flex-wrap justify-center gap-2 mb-10">
+        <nav aria-label="Gallery category filter" className="flex flex-wrap justify-center gap-2 mb-10">
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
+              aria-pressed={activeCategory === category}
               className={cn(
-                "rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 motion-reduce:transition-none",
+                "rounded-full px-4 py-2 text-sm font-medium",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gallery-ring,hsl(220_90%_56%))] focus-visible:ring-offset-2",
+                "transition-all duration-200 motion-reduce:!transition-none",
                 activeCategory === category
                   ? "bg-[var(--gallery-tab-active-bg,hsl(0_0%_9%))] text-[var(--gallery-tab-active-text,hsl(0_0%_100%))] shadow-sm"
                   : "bg-[var(--gallery-tab-bg,hsl(0_0%_0%/0.05))] text-[var(--gallery-tab-text,hsl(0_0%_40%))] hover:bg-[var(--gallery-tab-hover-bg,hsl(0_0%_0%/0.1))] hover:text-[var(--gallery-tab-hover-text,hsl(0_0%_9%))]"
@@ -104,24 +129,27 @@ export default function GalleryFilterable({
               )}
             </button>
           ))}
-        </div>
+        </nav>
 
         {/* Grid */}
-        <div className={cn("grid gap-6", colClass)}>
+        <div className={cn("grid gap-6", COLUMN_CLASSES[columns])} role="list" aria-live="polite">
           {filteredItems.map((item, index) => {
-            const Wrapper = item.href ? "a" : "div";
-            const wrapperProps = item.href ? { href: item.href } : {};
+            const isLink = Boolean(item.href);
+            const Wrapper = isLink ? "a" : "div";
+            const wrapperProps = isLink ? { href: item.href } : {};
 
             return (
               <Wrapper
                 key={`${item.title}-${index}`}
                 {...wrapperProps}
+                role="listitem"
                 className={cn(
-                  "group overflow-hidden rounded-xl transition-shadow duration-300",
+                  "group overflow-hidden rounded-xl",
                   "bg-[var(--gallery-card-bg,hsl(0_0%_100%))]",
                   "border border-[var(--gallery-card-border,hsl(0_0%_0%/0.08))]",
                   "hover:shadow-lg",
-                  "motion-reduce:transition-none"
+                  "transition-shadow duration-300 motion-reduce:!transition-none",
+                  isLink && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gallery-ring,hsl(220_90%_56%))] focus-visible:ring-offset-2"
                 )}
               >
                 <div className="aspect-[4/3] overflow-hidden">
@@ -130,9 +158,10 @@ export default function GalleryFilterable({
                     alt={item.alt}
                     loading="lazy"
                     className={cn(
-                      "h-full w-full object-cover transition-transform duration-500",
+                      "h-full w-full object-cover",
+                      `transition-transform duration-500`,
                       "group-hover:scale-105",
-                      "motion-reduce:group-hover:scale-100 motion-reduce:transition-none"
+                      "motion-reduce:!scale-100 motion-reduce:!transition-none"
                     )}
                   />
                 </div>
@@ -156,7 +185,7 @@ export default function GalleryFilterable({
 
         {/* Empty State */}
         {filteredItems.length === 0 && (
-          <div className="py-16 text-center">
+          <div className="py-16 text-center" role="status">
             <p className="text-sm text-[var(--gallery-subtitle,hsl(0_0%_40%))]">
               No projects found in this category.
             </p>

@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category stats
 // @name Stats Inline Bar
 // @source custom-implementation
@@ -7,6 +7,18 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                          */
+/* ------------------------------------------------------------------ */
+
+const SECTION_PY = "py-16 sm:py-24";
+const MAX_WIDTH = "mx-auto max-w-3xl px-4 sm:px-6 lg:px-8";
+const BAR_HEIGHT = "h-2.5";
+const INTERSECTION_THRESHOLD = 0.3;
+const DEFAULT_ANIMATION_DURATION_MS = 1200;
+const DEFAULT_MAX_VALUE = 100;
+const PERCENTAGE_CAP = 100;
 
 interface BarStat {
   label: string;
@@ -35,7 +47,7 @@ export default function StatsInlineBar({
   stats = defaultStats,
   heading,
   subheading,
-  animationDuration = 1200,
+  animationDuration = DEFAULT_ANIMATION_DURATION_MS,
   className,
 }: StatsInlineBarProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -45,20 +57,24 @@ export default function StatsInlineBar({
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setPrefersReducedMotion(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    const handler = (e: MediaQueryListEvent) =>
+      setPrefersReducedMotion(e.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  const handleIntersect = useCallback((entries: IntersectionObserverEntry[]) => {
-    if (entries[0].isIntersecting) {
-      setIsVisible(true);
-    }
-  }, []);
+  const handleIntersect = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      if (entries[0].isIntersecting) {
+        setIsVisible(true);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     const observer = new IntersectionObserver(handleIntersect, {
-      threshold: 0.3,
+      threshold: INTERSECTION_THRESHOLD,
     });
     if (sectionRef.current) {
       observer.observe(sectionRef.current);
@@ -69,14 +85,24 @@ export default function StatsInlineBar({
   return (
     <section
       ref={sectionRef}
-      className={cn("py-16 sm:py-24 bg-[var(--stats-bar-bg,transparent)]", className)}
+      className={cn(
+        SECTION_PY,
+        "bg-[var(--stats-bar-bg,transparent)]",
+        className
+      )}
       aria-label="Performance statistics"
     >
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <div className={MAX_WIDTH}>
         {(heading || subheading) && (
-          <div className="mb-12 text-center">
+          <header className="mb-12 text-center">
             {heading && (
-              <h2 className="text-2xl sm:text-3xl font-bold text-[var(--stats-bar-heading-color,hsl(0_0%_9%))]">
+              <h2
+                className={cn(
+                  "font-bold",
+                  "text-[clamp(1.5rem,1rem+1.5vw,1.875rem)]",
+                  "text-[var(--stats-bar-heading-color,hsl(0_0%_9%))]"
+                )}
+              >
                 {heading}
               </h2>
             )}
@@ -85,16 +111,20 @@ export default function StatsInlineBar({
                 {subheading}
               </p>
             )}
-          </div>
+          </header>
         )}
 
-        <div className="space-y-8">
+        <div className="space-y-8" role="list">
           {stats.map((stat) => {
-            const maxVal = stat.maxValue ?? 100;
-            const percentage = Math.min((stat.value / maxVal) * 100, 100);
+            const maxVal = stat.maxValue ?? DEFAULT_MAX_VALUE;
+            const percentage = Math.min(
+              (stat.value / maxVal) * PERCENTAGE_CAP,
+              PERCENTAGE_CAP
+            );
+            const showFilled = isVisible || prefersReducedMotion;
 
             return (
-              <div key={stat.label}>
+              <div key={stat.label} role="listitem">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-medium text-[var(--stats-bar-label-color,hsl(0_0%_20%))]">
                     {stat.label}
@@ -104,7 +134,11 @@ export default function StatsInlineBar({
                   </span>
                 </div>
                 <div
-                  className="h-2.5 w-full overflow-hidden rounded-full bg-[var(--stats-bar-track-bg,hsl(0_0%_92%))]"
+                  className={cn(
+                    BAR_HEIGHT,
+                    "w-full overflow-hidden rounded-full",
+                    "bg-[var(--stats-bar-track-bg,hsl(0_0%_92%))]"
+                  )}
                   role="progressbar"
                   aria-valuenow={stat.value}
                   aria-valuemin={0}
@@ -114,11 +148,13 @@ export default function StatsInlineBar({
                   <div
                     className={cn(
                       "h-full rounded-full",
-                      "motion-reduce:transition-none"
+                      "motion-reduce:!transition-none"
                     )}
                     style={{
-                      width: isVisible || prefersReducedMotion ? `${percentage}%` : "0%",
-                      backgroundColor: stat.color ?? "var(--stats-bar-fill-color, hsl(220 80% 55%))",
+                      width: showFilled ? `${percentage}%` : "0%",
+                      backgroundColor:
+                        stat.color ??
+                        "var(--stats-bar-fill-color, hsl(220 80% 55%))",
                       transition: prefersReducedMotion
                         ? "none"
                         : `width ${animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`,

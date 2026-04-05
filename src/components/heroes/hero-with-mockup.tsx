@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category heroes
 // @name hero-with-mockup
 // @source https://dev.to/vaibhavg/shadcn-hero-sections-37af, https://prebuiltui.com/components/hero-section
@@ -7,6 +7,24 @@
 
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const FADE_DURATION = '0.9s';
+const FLOAT_DURATION = '6s';
+const EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const TEXT_DELAY = '0.1s';
+const MOCKUP_ENTRANCE_DELAY = '0.3s';
+const MOCKUP_FLOAT_DELAY = '1.2s';
+const HEADING_CLAMP = 'clamp(2.25rem, 4vw + 1rem, 4.25rem)';
+const ACTIVE_SCALE = '0.98';
+const CTA_FONT_SIZE = '0.9375rem';
+const PHONE_WIDTH = 320;
+const PHONE_HEIGHT = 640;
+const DESKTOP_WIDTH = 1200;
+const DESKTOP_HEIGHT = 720;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -65,15 +83,13 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hwm-fade-left {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from, to { opacity: 1; transform: none; filter: none; }
   }
   @keyframes hwm-fade-right {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from, to { opacity: 1; transform: none; filter: none; }
   }
   @keyframes hwm-float {
-    0%, 100% { transform: translateY(0); }
+    from, to { transform: none; }
   }
 }
 `;
@@ -98,6 +114,7 @@ function BrowserFrame({ children }: { children: React.ReactNode }) {
           backgroundColor: 'color-mix(in srgb, var(--foreground) 5%, var(--background))',
           borderBottom: '1px solid color-mix(in srgb, var(--foreground) 8%, transparent)',
         }}
+        aria-hidden="true"
       >
         <div className="flex gap-1.5">
           <span className="size-2.5 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 15%, transparent)' }} />
@@ -132,6 +149,7 @@ function PhoneFrame({ children }: { children: React.ReactNode }) {
           style={{
             backgroundColor: 'color-mix(in srgb, var(--foreground) 8%, var(--background))',
           }}
+          aria-hidden="true"
         />
         <div className="overflow-hidden rounded-[1.5rem]">{children}</div>
       </div>
@@ -160,12 +178,14 @@ function LaptopFrame({ children }: { children: React.ReactNode }) {
           backgroundColor: 'color-mix(in srgb, var(--foreground) 10%, var(--background))',
           borderTop: '1px solid color-mix(in srgb, var(--foreground) 15%, transparent)',
         }}
+        aria-hidden="true"
       />
       <div
         className="h-1 w-[40%] rounded-b-md"
         style={{
           backgroundColor: 'color-mix(in srgb, var(--foreground) 8%, var(--background))',
         }}
+        aria-hidden="true"
       />
     </div>
   );
@@ -200,6 +220,7 @@ export default function HeroWithMockup({
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
+        aria-label="Product hero with mockup"
         className={cn(
           'relative overflow-hidden',
           'px-6 py-16 md:px-12 md:py-24 lg:px-20 lg:py-32',
@@ -216,17 +237,17 @@ export default function HeroWithMockup({
           )}
         >
           {/* Text side */}
-          <div
+          <header
             className="flex flex-col justify-center"
             style={{
-              animation: 'hwm-fade-left 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-              animationDelay: '0.1s',
+              animation: `hwm-fade-left ${FADE_DURATION} ${EASING} both`,
+              animationDelay: TEXT_DELAY,
             }}
           >
             <h1
               className="font-bold tracking-tight leading-[1.08]"
               style={{
-                fontSize: 'clamp(2.25rem, 4vw + 1rem, 4.25rem)',
+                fontSize: HEADING_CLAMP,
                 color: 'var(--foreground)',
               }}
             >
@@ -243,17 +264,17 @@ export default function HeroWithMockup({
             )}
 
             {(ctaText || secondaryCtaText) && (
-              <div className="mt-8 md:mt-10 flex flex-wrap items-center gap-4">
+              <nav aria-label="Call to action" className="mt-8 md:mt-10 flex flex-wrap items-center gap-4">
                 {ctaText && (
                   <a
                     href={ctaHref}
                     className={cn(
                       'inline-flex items-center justify-center',
-                      'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
+                      `rounded-lg px-7 py-3.5 text-[${CTA_FONT_SIZE}] font-semibold`,
                       'transition-all duration-200',
                       'hover:brightness-110 hover:shadow-lg',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                      'active:scale-[0.98]',
+                      `active:scale-[${ACTIVE_SCALE}]`,
                     )}
                     style={{
                       backgroundColor: 'var(--primary)',
@@ -271,11 +292,11 @@ export default function HeroWithMockup({
                     href={secondaryCtaHref}
                     className={cn(
                       'inline-flex items-center justify-center',
-                      'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
+                      `rounded-lg px-7 py-3.5 text-[${CTA_FONT_SIZE}] font-semibold`,
                       'border transition-all duration-200',
                       'hover:brightness-110',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                      'active:scale-[0.98]',
+                      `active:scale-[${ACTIVE_SCALE}]`,
                     )}
                     style={{
                       color: 'var(--foreground)',
@@ -287,27 +308,28 @@ export default function HeroWithMockup({
                     {secondaryCtaText}
                   </a>
                 )}
-              </div>
+              </nav>
             )}
-          </div>
+          </header>
 
           {/* Mockup side */}
-          <div
+          <figure
+            aria-label={screenshotAlt}
             style={{
-              animation: 'hwm-fade-right 0.9s cubic-bezier(0.16, 1, 0.3, 1) both, hwm-float 6s ease-in-out infinite',
-              animationDelay: '0.3s, 1.2s',
+              animation: `hwm-fade-right ${FADE_DURATION} ${EASING} both, hwm-float ${FLOAT_DURATION} ease-in-out infinite`,
+              animationDelay: `${MOCKUP_ENTRANCE_DELAY}, ${MOCKUP_FLOAT_DELAY}`,
             }}
           >
             <Frame>
               <Image
                 src={screenshotSrc}
                 alt={screenshotAlt}
-                width={mockupType === 'phone' ? 320 : 1200}
-                height={mockupType === 'phone' ? 640 : 720}
+                width={mockupType === 'phone' ? PHONE_WIDTH : DESKTOP_WIDTH}
+                height={mockupType === 'phone' ? PHONE_HEIGHT : DESKTOP_HEIGHT}
                 className="w-full h-auto"
               />
             </Frame>
-          </div>
+          </figure>
         </div>
       </section>
     </>

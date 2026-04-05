@@ -1,9 +1,18 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category heroes
 // @name hero-gradient-text
 // @source self-authored
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const GRADIENT_SHIFT_DURATION = '6s';
+const GRADIENT_BG_SIZE = '200% 200%';
+const DEFAULT_GRADIENT = 'linear-gradient(135deg, var(--primary), var(--accent), var(--primary))';
+const HEADING_CLAMP = 'clamp(2.5rem, 6vw + 1rem, 5.5rem)';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -34,13 +43,13 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hero-gradient-shift {
-    0%, 50%, 100% { background-position: 0% 50%; }
+    from, to { background-position: 0% 50%; }
   }
 }
 `;
 
 // ---------------------------------------------------------------------------
-// Component (server component — pure CSS gradient animation)
+// Component (server component -- pure CSS gradient animation)
 // ---------------------------------------------------------------------------
 
 export default function HeroGradientText({
@@ -53,12 +62,11 @@ export default function HeroGradientText({
   gradient,
   className,
 }: HeroGradientTextProps) {
-  const gradientValue =
-    gradient ??
-    'linear-gradient(135deg, var(--primary), var(--accent), var(--primary))';
+  const gradientValue = gradient ?? DEFAULT_GRADIENT;
 
   return (
     <section
+      aria-label="Gradient text hero"
       className={cn(
         'relative flex min-h-[80vh] flex-col items-center justify-center',
         'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
@@ -69,38 +77,50 @@ export default function HeroGradientText({
     >
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
-      <h1
-        className="max-w-5xl text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
-        style={{
-          background: gradientValue,
-          backgroundSize: '200% 200%',
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          animation: 'hero-gradient-shift 6s ease infinite',
-        }}
-      >
-        {headline}
-      </h1>
-
-      {subheadline && (
-        <p
-          className="mt-6 max-w-2xl text-lg leading-relaxed md:text-xl"
-          style={{ color: 'var(--muted-foreground)' }}
+      <header className="max-w-5xl">
+        <h1
+          className="font-extrabold tracking-tight"
+          style={{
+            fontSize: HEADING_CLAMP,
+            background: gradientValue,
+            backgroundSize: GRADIENT_BG_SIZE,
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            animation: `hero-gradient-shift ${GRADIENT_SHIFT_DURATION} ease infinite`,
+          }}
         >
-          {subheadline}
-        </p>
-      )}
+          {headline}
+        </h1>
+
+        {subheadline && (
+          <p
+            className="mt-6 max-w-2xl mx-auto text-lg leading-relaxed md:text-xl"
+            style={{ color: 'var(--muted-foreground)' }}
+          >
+            {subheadline}
+          </p>
+        )}
+      </header>
 
       {(ctaText || secondaryCtaText) && (
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <nav aria-label="Call to action" className="mt-10 flex flex-wrap items-center justify-center gap-4">
           {ctaText && (
             <a
               href={ctaHref}
-              className="inline-flex items-center rounded-lg px-6 py-3 text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:outline-none"
+              className={cn(
+                'inline-flex items-center justify-center',
+                'rounded-lg px-7 py-3.5 text-sm font-semibold',
+                'transition-all duration-200',
+                'hover:brightness-110 hover:shadow-lg',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                'active:scale-[0.98]',
+              )}
               style={{
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',
+                ['--tw-ring-color' as string]: 'var(--primary)',
+                ['--tw-ring-offset-color' as string]: 'var(--background)',
               }}
             >
               {ctaText}
@@ -110,16 +130,25 @@ export default function HeroGradientText({
           {secondaryCtaText && (
             <a
               href={secondaryCtaHref}
-              className="inline-flex items-center rounded-lg px-6 py-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              className={cn(
+                'inline-flex items-center justify-center',
+                'rounded-lg px-7 py-3.5 text-sm font-semibold',
+                'border transition-all duration-200',
+                'hover:brightness-110',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                'active:scale-[0.98]',
+              )}
               style={{
-                border: '1px solid var(--border)',
                 color: 'var(--foreground)',
+                borderColor: 'color-mix(in srgb, var(--foreground) 20%, transparent)',
+                ['--tw-ring-color' as string]: 'var(--foreground)',
+                ['--tw-ring-offset-color' as string]: 'var(--background)',
               }}
             >
               {secondaryCtaText}
             </a>
           )}
-        </div>
+        </nav>
       )}
     </section>
   );

@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category heroes
 // @name hero-animated-text
 // @source self-authored
@@ -7,6 +7,14 @@
 
 import { cn } from '@/lib/utils';
 import { useEffect, useState, useCallback } from 'react';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const WORD_TRANSITION_DURATION = 300;
+const DEFAULT_INTERVAL_MS = 2500;
+const HEADING_CLAMP = 'clamp(2.25rem, 5vw + 1rem, 4.5rem)';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,7 +34,7 @@ interface HeroAnimatedTextProps {
 }
 
 // ---------------------------------------------------------------------------
-// Component ('use client' — text rotation with interval)
+// Component ('use client' -- text rotation with interval)
 // ---------------------------------------------------------------------------
 
 export default function HeroAnimatedText({
@@ -38,7 +46,7 @@ export default function HeroAnimatedText({
   ctaHref = '#',
   secondaryCtaText,
   secondaryCtaHref = '#',
-  intervalMs = 2500,
+  intervalMs = DEFAULT_INTERVAL_MS,
   className,
 }: HeroAnimatedTextProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -49,7 +57,7 @@ export default function HeroAnimatedText({
     const timeout = setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % rotatingWords.length);
       setIsAnimating(false);
-    }, 300);
+    }, WORD_TRANSITION_DURATION);
     return () => clearTimeout(timeout);
   }, [rotatingWords.length]);
 
@@ -65,6 +73,7 @@ export default function HeroAnimatedText({
 
   return (
     <section
+      aria-label="Animated text hero"
       className={cn(
         'relative flex min-h-[80vh] flex-col items-center justify-center',
         'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
@@ -74,7 +83,7 @@ export default function HeroAnimatedText({
       style={{ backgroundColor: 'var(--background)' }}
     >
       {/* Keyframes */}
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes hero-word-enter {
           from { opacity: 0; transform: translateY(100%); }
           to { opacity: 1; transform: translateY(0); }
@@ -85,63 +94,76 @@ export default function HeroAnimatedText({
         }
         @media (prefers-reduced-motion: reduce) {
           @keyframes hero-word-enter {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from, to { opacity: 1; transform: none; }
           }
           @keyframes hero-word-exit {
-            from { opacity: 1; }
-            to { opacity: 0; }
+            from, to { opacity: 0; transform: none; }
           }
         }
-      `}</style>
+      ` }} />
 
-      <h1
-        className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
-        style={{ color: 'var(--foreground)' }}
-      >
-        {headlineBefore && <span>{headlineBefore} </span>}
-
-        <span
-          className="relative inline-block overflow-hidden align-bottom"
-          style={{ minWidth: '2ch' }}
+      <header className="max-w-5xl">
+        <h1
+          className="font-bold tracking-tight"
+          style={{
+            fontSize: HEADING_CLAMP,
+            color: 'var(--foreground)',
+          }}
         >
+          {headlineBefore && <span>{headlineBefore} </span>}
+
           <span
-            key={currentIndex}
-            className="inline-block"
-            style={{
-              color: 'var(--primary)',
-              animation: isAnimating
-                ? 'hero-word-exit 0.3s ease-in forwards'
-                : 'hero-word-enter 0.3s ease-out forwards',
-            }}
+            className="relative inline-block overflow-hidden align-bottom"
+            style={{ minWidth: '2ch' }}
+            aria-live="polite"
+            aria-atomic="true"
           >
-            {rotatingWords[currentIndex]}
+            <span
+              key={currentIndex}
+              className="inline-block"
+              style={{
+                color: 'var(--primary)',
+                animation: isAnimating
+                  ? `hero-word-exit ${WORD_TRANSITION_DURATION}ms ease-in forwards`
+                  : `hero-word-enter ${WORD_TRANSITION_DURATION}ms ease-out forwards`,
+              }}
+            >
+              {rotatingWords[currentIndex]}
+            </span>
           </span>
-        </span>
 
-        {headlineAfter && <span> {headlineAfter}</span>}
-      </h1>
+          {headlineAfter && <span> {headlineAfter}</span>}
+        </h1>
 
-      {subheadline && (
-        <p
-          className="mt-6 max-w-2xl text-lg leading-relaxed md:text-xl"
-          style={{ color: 'var(--muted-foreground)' }}
-        >
-          {subheadline}
-        </p>
-      )}
+        {subheadline && (
+          <p
+            className="mt-6 max-w-2xl mx-auto text-lg leading-relaxed md:text-xl"
+            style={{ color: 'var(--muted-foreground)' }}
+          >
+            {subheadline}
+          </p>
+        )}
+      </header>
 
       {(ctaText || secondaryCtaText) && (
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <nav aria-label="Call to action" className="mt-10 flex flex-wrap items-center justify-center gap-4">
           {ctaText && (
             <a
               href={ctaHref}
-              className="inline-flex items-center rounded-lg px-6 py-3 text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:outline-none"
+              className={cn(
+                'inline-flex items-center justify-center',
+                'rounded-lg px-7 py-3.5 text-sm font-semibold',
+                'transition-all duration-200',
+                'hover:brightness-110 hover:shadow-lg',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                'active:scale-[0.98]',
+              )}
               style={{
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',
-                '--tw-ring-color': 'var(--ring)',
-              } as React.CSSProperties}
+                ['--tw-ring-color' as string]: 'var(--primary)',
+                ['--tw-ring-offset-color' as string]: 'var(--background)',
+              }}
             >
               {ctaText}
             </a>
@@ -150,17 +172,25 @@ export default function HeroAnimatedText({
           {secondaryCtaText && (
             <a
               href={secondaryCtaHref}
-              className="inline-flex items-center rounded-lg px-6 py-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              className={cn(
+                'inline-flex items-center justify-center',
+                'rounded-lg px-7 py-3.5 text-sm font-semibold',
+                'border transition-all duration-200',
+                'hover:brightness-110',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                'active:scale-[0.98]',
+              )}
               style={{
-                border: '1px solid var(--border)',
                 color: 'var(--foreground)',
-                '--tw-ring-color': 'var(--ring)',
-              } as React.CSSProperties}
+                borderColor: 'color-mix(in srgb, var(--foreground) 20%, transparent)',
+                ['--tw-ring-color' as string]: 'var(--foreground)',
+                ['--tw-ring-offset-color' as string]: 'var(--background)',
+              }}
             >
               {secondaryCtaText}
             </a>
           )}
-        </div>
+        </nav>
       )}
     </section>
   );

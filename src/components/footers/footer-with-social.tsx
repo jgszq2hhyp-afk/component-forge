@@ -1,10 +1,21 @@
-// @version 1.0.0 // @category footers // @name footer-with-social // @source custom
+// @version 2.0.0
+// @category footers
+// @name footer-with-social
+// @source custom
 
 import { cn } from '@/lib/utils';
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Constants                                                         */
+/* ------------------------------------------------------------------ */
+
+const MAX_CONTENT_WIDTH = '80rem'; // max-w-7xl
+const SOCIAL_ICON_SIZE = 40; // px – h-10 w-10
+const MAX_BRAND_WIDTH = '24rem'; // max-w-sm
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                             */
+/* ------------------------------------------------------------------ */
 
 interface FooterLink {
   label: string;
@@ -26,9 +37,9 @@ interface FooterWithSocialProps {
   className?: string;
 }
 
-// ---------------------------------------------------------------------------
-// Component (Server Component)
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Component (Server Component)                                      */
+/* ------------------------------------------------------------------ */
 
 export default function FooterWithSocial({
   logo,
@@ -44,17 +55,18 @@ export default function FooterWithSocial({
     <footer
       className={cn('px-6 pt-16 pb-8 md:px-12 lg:px-20', className)}
       style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
+      aria-label="Site footer"
     >
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto" style={{ maxWidth: MAX_CONTENT_WIDTH }}>
         {/* Top section */}
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           {/* Brand + description */}
-          <div className="max-w-sm">
+          <div style={{ maxWidth: MAX_BRAND_WIDTH }}>
             {logo ? (
               <div className="mb-3">{logo}</div>
             ) : (
               <p
-                className="mb-3 text-lg font-bold tracking-tight"
+                className="mb-3 font-bold tracking-tight text-[clamp(1rem,2.5vw,1.25rem)]"
                 style={{ color: 'var(--foreground)' }}
               >
                 {companyName}
@@ -69,20 +81,23 @@ export default function FooterWithSocial({
               </p>
             )}
 
-            {/* Social icons — prominent */}
-            <div className="mt-6 flex items-center gap-3">
+            {/* Social icons */}
+            <div className="mt-6 flex items-center gap-3" role="list" aria-label="Social media links">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
+                  role="listitem"
                   className={cn(
-                    'inline-flex h-10 w-10 items-center justify-center rounded-full',
-                    'transition-all duration-200',
+                    'inline-flex items-center justify-center rounded-full',
+                    'transition-all duration-200 motion-reduce:!transition-none motion-reduce:!transform-none',
                     'hover:scale-110',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                   )}
                   style={{
+                    width: SOCIAL_ICON_SIZE,
+                    height: SOCIAL_ICON_SIZE,
                     backgroundColor: 'color-mix(in oklch, var(--foreground) 8%, transparent)',
                     color: 'var(--foreground)',
                     ['--tw-ring-color' as string]: 'var(--primary)',
@@ -97,15 +112,16 @@ export default function FooterWithSocial({
 
           {/* Navigation links */}
           {links && links.length > 0 && (
-            <nav aria-label="Footer" className="flex flex-wrap gap-x-8 gap-y-3">
+            <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-8 gap-y-3">
               {links.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
                   className={cn(
-                    'text-sm transition-colors duration-200',
+                    'text-sm rounded-sm',
+                    'transition-colors duration-200 motion-reduce:!transition-none',
                     'hover:underline underline-offset-4',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-sm',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                   )}
                   style={{
                     color: 'var(--muted-foreground)',
@@ -124,16 +140,17 @@ export default function FooterWithSocial({
         <div
           className="mt-12 mb-6 h-px"
           style={{ backgroundColor: 'var(--border)' }}
+          role="separator"
           aria-hidden="true"
         />
 
         {/* Copyright */}
-        <p
-          className="text-center text-xs"
+        <small
+          className="block text-center text-xs"
           style={{ color: 'var(--muted-foreground)' }}
         >
           &copy; {currentYear} {companyName}. All rights reserved.
-        </p>
+        </small>
       </div>
     </footer>
   );
