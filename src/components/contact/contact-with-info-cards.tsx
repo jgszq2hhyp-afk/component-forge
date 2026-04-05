@@ -1,4 +1,4 @@
-// @version 1.1.0
+// @version 2.0.0
 // @category contact
 // @name Contact With Info Cards
 // @source custom-implementation
@@ -7,6 +7,28 @@
 
 import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SECTION_PADDING_Y_SM = "py-16";
+const SECTION_PADDING_Y_LG = "sm:py-24";
+const MAX_PAGE_WIDTH = "max-w-7xl";
+const MAX_FORM_WIDTH = "max-w-2xl";
+const INPUT_PADDING_X = "px-4";
+const INPUT_PADDING_Y = "py-2.5";
+const TEXTAREA_ROWS = 5;
+const ICON_CONTAINER_SIZE = "h-12 w-12";
+const ICON_SIZE = "h-6 w-6";
+const SUCCESS_ICON_SIZE = "h-6 w-6";
+const SUCCESS_CIRCLE_SIZE = "h-12 w-12";
+const SPINNER_SIZE = "h-4 w-4";
+const HEADING_CLAMP = "clamp(1.5rem, 4vw, 2.25rem)";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface InfoCard {
   icon?: React.ReactNode;
@@ -33,22 +55,30 @@ interface ContactWithInfoCardsProps {
   className?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Validation
+// ---------------------------------------------------------------------------
+
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
+// ---------------------------------------------------------------------------
+// Default Icons
+// ---------------------------------------------------------------------------
+
 const defaultPhoneIcon = (
-  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+  <svg className={ICON_SIZE} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
   </svg>
 );
 
 const defaultEmailIcon = (
-  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+  <svg className={ICON_SIZE} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
     <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
   </svg>
 );
 
 const defaultLocationIcon = (
-  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+  <svg className={ICON_SIZE} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
   </svg>
@@ -77,6 +107,10 @@ const defaultInfoCards: InfoCard[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Validation
+// ---------------------------------------------------------------------------
+
 function validate(data: FormData): FormErrors {
   const errors: FormErrors = {};
   if (!data.name.trim()) errors.name = "Name is required.";
@@ -88,6 +122,10 @@ function validate(data: FormData): FormErrors {
   if (!data.message.trim()) errors.message = "Message is required.";
   return errors;
 }
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function ContactWithInfoCards({
   title = "Let's Talk",
@@ -169,7 +207,9 @@ export default function ContactWithInfoCards({
 
   const inputClasses = (field: keyof FormData) =>
     cn(
-      "w-full rounded-lg border px-4 py-2.5 text-sm transition-colors",
+      "w-full rounded-lg border text-sm transition-colors motion-reduce:transition-none",
+      INPUT_PADDING_X,
+      INPUT_PADDING_Y,
       "bg-[var(--background)] text-[var(--foreground)]",
       "placeholder:text-[var(--muted-foreground)]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]",
@@ -182,31 +222,35 @@ export default function ContactWithInfoCards({
 
   return (
     <section
-      className={cn("py-16 sm:py-24 bg-[var(--background)]", className)}
+      aria-label="Contact information and form"
+      className={cn(SECTION_PADDING_Y_SM, SECTION_PADDING_Y_LG, "bg-[var(--background)]", className)}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className={cn("mx-auto px-4 sm:px-6 lg:px-8", MAX_PAGE_WIDTH)}>
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[var(--foreground)]">
+        <header className={cn("text-center mx-auto", MAX_FORM_WIDTH)}>
+          <h2
+            className="font-bold tracking-tight text-[var(--foreground)]"
+            style={{ fontSize: HEADING_CLAMP }}
+          >
             {title}
           </h2>
           <p className="mt-3 text-base text-[var(--muted-foreground)]">
             {subtitle}
           </p>
-        </div>
+        </header>
 
         {/* Info Cards */}
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 list-none p-0" role="list">
           {infoCards.map((card, i) => (
-            <div
+            <li
               key={i}
               className={cn(
-                "rounded-xl border p-6 text-center transition-shadow hover:shadow-md",
+                "rounded-xl border p-6 text-center transition-shadow motion-reduce:transition-none hover:shadow-md",
                 "bg-[var(--background)] border-[var(--border)]"
               )}
             >
               {card.icon && (
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
+                <div className={cn("mx-auto mb-4 flex items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)]", ICON_CONTAINER_SIZE)}>
                   {card.icon}
                 </div>
               )}
@@ -228,16 +272,16 @@ export default function ContactWithInfoCards({
                   {card.value}
                 </p>
               )}
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
 
         {/* Form */}
-        <div className="mt-12 mx-auto max-w-2xl rounded-2xl border p-6 sm:p-8 bg-[var(--background)] border-[var(--border)]">
+        <div className={cn("mt-12 mx-auto rounded-2xl border p-6 sm:p-8 bg-[var(--background)] border-[var(--border)]", MAX_FORM_WIDTH)}>
           {isSubmitted ? (
-            <div className="flex flex-col items-center py-8 text-center">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10">
-                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+            <div className="flex flex-col items-center py-8 text-center" role="status">
+              <div className={cn("mb-4 flex items-center justify-center rounded-full bg-green-500/10", SUCCESS_CIRCLE_SIZE)}>
+                <svg className={cn(SUCCESS_ICON_SIZE, "text-green-600")} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
               </div>
@@ -256,7 +300,7 @@ export default function ContactWithInfoCards({
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate aria-label="Contact form">
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label htmlFor="info-name" className="block text-sm font-medium mb-1.5 text-[var(--foreground)]">
@@ -267,6 +311,7 @@ export default function ContactWithInfoCards({
                     name="name"
                     type="text"
                     required
+                    autoComplete="name"
                     value={formData.name}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -290,6 +335,7 @@ export default function ContactWithInfoCards({
                     name="email"
                     type="email"
                     required
+                    autoComplete="email"
                     value={formData.email}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -313,6 +359,7 @@ export default function ContactWithInfoCards({
                   id="info-phone"
                   name="phone"
                   type="tel"
+                  autoComplete="tel"
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="+1 (555) 000-0000"
@@ -327,7 +374,7 @@ export default function ContactWithInfoCards({
                   id="info-message"
                   name="message"
                   required
-                  rows={5}
+                  rows={TEXTAREA_ROWS}
                   value={formData.message}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -346,7 +393,8 @@ export default function ContactWithInfoCards({
                 type="submit"
                 disabled={isSubmitting}
                 className={cn(
-                  "w-full rounded-lg px-5 py-2.5 text-sm font-medium transition-colors",
+                  "w-full rounded-lg px-5 text-sm font-medium transition-colors motion-reduce:transition-none",
+                  INPUT_PADDING_Y,
                   "bg-[var(--primary)] text-[var(--primary-foreground,var(--background))]",
                   "hover:bg-[var(--primary)]/90",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]",
@@ -355,7 +403,7 @@ export default function ContactWithInfoCards({
               >
                 {isSubmitting ? (
                   <span className="inline-flex items-center gap-2">
-                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <svg className={cn(SPINNER_SIZE, "motion-safe:animate-spin")} viewBox="0 0 24 24" fill="none" aria-hidden="true">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>

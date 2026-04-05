@@ -1,4 +1,4 @@
-// @version 1.1.0
+// @version 2.0.0
 // @category contact
 // @name Contact Simple Centered
 // @source custom-implementation
@@ -7,6 +7,25 @@
 
 import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SECTION_PADDING_Y_SM = "py-16";
+const SECTION_PADDING_Y_LG = "sm:py-24";
+const MAX_CONTENT_WIDTH = "max-w-xl";
+const INPUT_PADDING_X = "px-4";
+const INPUT_PADDING_Y = "py-3";
+const TEXTAREA_ROWS = 6;
+const SUCCESS_ICON_SIZE = "h-7 w-7";
+const SUCCESS_CIRCLE_SIZE = "h-14 w-14";
+const SPINNER_SIZE = "h-4 w-4";
+const HEADING_CLAMP = "clamp(1.5rem, 4vw, 2.25rem)";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface FormData {
   name: string;
@@ -23,6 +42,10 @@ interface ContactSimpleCenteredProps {
   className?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Validation
+// ---------------------------------------------------------------------------
+
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 function validate(data: FormData): FormErrors {
@@ -36,6 +59,10 @@ function validate(data: FormData): FormErrors {
   if (!data.message.trim()) errors.message = "Message is required.";
   return errors;
 }
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function ContactSimpleCentered({
   title = "Contact Us",
@@ -115,7 +142,9 @@ export default function ContactSimpleCentered({
 
   const inputClasses = (field: keyof FormData) =>
     cn(
-      "w-full rounded-lg border px-4 py-3 text-sm transition-colors",
+      "w-full rounded-lg border text-sm transition-colors",
+      INPUT_PADDING_X,
+      INPUT_PADDING_Y,
       "bg-[var(--background)] text-[var(--foreground)]",
       "placeholder:text-[var(--muted-foreground)]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]",
@@ -128,23 +157,27 @@ export default function ContactSimpleCentered({
 
   return (
     <section
-      className={cn("py-16 sm:py-24 bg-[var(--background)]", className)}
+      aria-label="Contact form"
+      className={cn(SECTION_PADDING_Y_SM, SECTION_PADDING_Y_LG, "bg-[var(--background)]", className)}
     >
-      <div className="mx-auto max-w-xl px-4 sm:px-6">
-        <div className="text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[var(--foreground)]">
+      <div className={cn("mx-auto px-4 sm:px-6", MAX_CONTENT_WIDTH)}>
+        <header className="text-center">
+          <h2
+            className="font-bold tracking-tight text-[var(--foreground)]"
+            style={{ fontSize: HEADING_CLAMP }}
+          >
             {title}
           </h2>
           <p className="mt-3 text-base text-[var(--muted-foreground)]">
             {subtitle}
           </p>
-        </div>
+        </header>
 
         <div className="mt-10">
           {isSubmitted ? (
-            <div className="flex flex-col items-center py-12 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-500/10">
-                <svg className="h-7 w-7 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+            <div className="flex flex-col items-center py-12 text-center" role="status">
+              <div className={cn("mb-4 flex items-center justify-center rounded-full bg-green-500/10", SUCCESS_CIRCLE_SIZE)}>
+                <svg className={cn(SUCCESS_ICON_SIZE, "text-green-600")} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
               </div>
@@ -167,7 +200,7 @@ export default function ContactSimpleCentered({
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate aria-label="Contact form fields">
               <div>
                 <label htmlFor="simple-name" className="block text-sm font-medium mb-1.5 text-[var(--foreground)]">
                   Name <span aria-hidden="true">*</span>
@@ -177,6 +210,7 @@ export default function ContactSimpleCentered({
                   name="name"
                   type="text"
                   required
+                  autoComplete="name"
                   value={formData.name}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -200,6 +234,7 @@ export default function ContactSimpleCentered({
                   name="email"
                   type="email"
                   required
+                  autoComplete="email"
                   value={formData.email}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -222,7 +257,7 @@ export default function ContactSimpleCentered({
                   id="simple-message"
                   name="message"
                   required
-                  rows={6}
+                  rows={TEXTAREA_ROWS}
                   value={formData.message}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -241,7 +276,8 @@ export default function ContactSimpleCentered({
                 type="submit"
                 disabled={isSubmitting}
                 className={cn(
-                  "w-full rounded-lg px-5 py-3 text-sm font-medium transition-colors",
+                  "w-full rounded-lg px-5 text-sm font-medium transition-colors motion-reduce:transition-none",
+                  INPUT_PADDING_Y,
                   "bg-[var(--primary)] text-[var(--primary-foreground,var(--background))]",
                   "hover:bg-[var(--primary)]/90",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]",
@@ -250,7 +286,7 @@ export default function ContactSimpleCentered({
               >
                 {isSubmitting ? (
                   <span className="inline-flex items-center gap-2">
-                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <svg className={cn(SPINNER_SIZE, "motion-safe:animate-spin")} viewBox="0 0 24 24" fill="none" aria-hidden="true">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>

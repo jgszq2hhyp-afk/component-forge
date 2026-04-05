@@ -1,4 +1,4 @@
-// @version 1.1.0
+// @version 2.0.0
 // @category contact
 // @name Contact Full Page
 // @source custom-implementation
@@ -7,6 +7,25 @@
 
 import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const MAX_FORM_WIDTH = "max-w-lg";
+const INPUT_PADDING_X = "px-4";
+const INPUT_PADDING_Y = "py-3";
+const TEXTAREA_ROWS = 6;
+const MIN_NAME_LENGTH = 2;
+const MIN_MESSAGE_LENGTH = 10;
+const SUCCESS_ICON_SIZE = "h-8 w-8";
+const SUCCESS_CIRCLE_SIZE = "h-16 w-16";
+const HEADING_CLAMP_PANEL = "clamp(1.5rem, 5vw, 3rem)";
+const HEADING_CLAMP_SUCCESS = "clamp(1.25rem, 3vw, 1.5rem)";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface SocialLink {
   label: string;
@@ -40,6 +59,10 @@ interface ContactFullPageProps {
   className?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Validation
+// ---------------------------------------------------------------------------
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const budgetOptions = [
@@ -55,8 +78,8 @@ function validateForm(data: FormData): FieldErrors {
 
   if (!data.name.trim()) {
     errors.name = "Name is required.";
-  } else if (data.name.trim().length < 2) {
-    errors.name = "Name must be at least 2 characters.";
+  } else if (data.name.trim().length < MIN_NAME_LENGTH) {
+    errors.name = `Name must be at least ${MIN_NAME_LENGTH} characters.`;
   }
 
   if (!data.email.trim()) {
@@ -67,12 +90,16 @@ function validateForm(data: FormData): FieldErrors {
 
   if (!data.message.trim()) {
     errors.message = "Message is required.";
-  } else if (data.message.trim().length < 10) {
-    errors.message = "Message must be at least 10 characters.";
+  } else if (data.message.trim().length < MIN_MESSAGE_LENGTH) {
+    errors.message = `Message must be at least ${MIN_MESSAGE_LENGTH} characters.`;
   }
 
   return errors;
 }
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function ContactFullPage({
   title = "Let's Build Something Great",
@@ -160,7 +187,9 @@ export default function ContactFullPage({
 
   const inputClasses = (field?: keyof FieldErrors) =>
     cn(
-      "w-full rounded-lg border px-4 py-3 text-sm transition-colors",
+      "w-full rounded-lg border text-sm transition-colors motion-reduce:transition-none",
+      INPUT_PADDING_X,
+      INPUT_PADDING_Y,
       "bg-[var(--contact-input-bg,var(--background,hsl(0_0%_100%)))]",
       "text-[var(--contact-input-text,var(--foreground,hsl(0_0%_9%)))]",
       "placeholder:text-[var(--contact-input-placeholder,var(--muted-foreground,hsl(0_0%_50%)))]",
@@ -179,6 +208,7 @@ export default function ContactFullPage({
 
   return (
     <section
+      aria-label="Full page contact"
       className={cn(
         "min-h-screen bg-[var(--contact-bg,var(--background,hsl(0_0%_100%)))]",
         className
@@ -186,9 +216,12 @@ export default function ContactFullPage({
     >
       <div className="grid min-h-screen lg:grid-cols-5">
         {/* Left Panel - Info */}
-        <div className="lg:col-span-2 flex flex-col justify-between p-8 sm:p-12 lg:p-16 bg-[var(--contact-panel-bg,var(--foreground,hsl(0_0%_4%)))] text-[var(--contact-panel-text,var(--background,hsl(0_0%_100%)))]">
+        <aside className="lg:col-span-2 flex flex-col justify-between p-8 sm:p-12 lg:p-16 bg-[var(--contact-panel-bg,var(--foreground,hsl(0_0%_4%)))] text-[var(--contact-panel-text,var(--background,hsl(0_0%_100%)))]">
           <div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+            <h1
+              className="font-bold tracking-tight"
+              style={{ fontSize: HEADING_CLAMP_PANEL }}
+            >
               {title}
             </h1>
             <p className="mt-4 text-base text-[var(--contact-panel-muted,var(--muted-foreground,hsl(0_0%_100%/0.6)))]">
@@ -196,7 +229,7 @@ export default function ContactFullPage({
             </p>
           </div>
 
-          <div className="mt-12 space-y-8">
+          <address className="mt-12 space-y-8 not-italic">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-[var(--contact-panel-muted,var(--muted-foreground,hsl(0_0%_100%/0.4)))]">
                 Email
@@ -241,33 +274,34 @@ export default function ContactFullPage({
                 {hours}
               </p>
             </div>
-          </div>
+          </address>
 
           {/* Social Links */}
-          <div className="mt-12 flex gap-4">
+          <nav aria-label="Social links" className="mt-12 flex gap-4">
             {socialLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
+                aria-label={link.label}
                 className={cn(
-                  "text-sm font-medium text-[var(--contact-panel-muted,var(--muted-foreground,hsl(0_0%_100%/0.6)))] hover:text-[var(--contact-panel-text,var(--background,hsl(0_0%_100%)))] transition-colors",
+                  "text-sm font-medium text-[var(--contact-panel-muted,var(--muted-foreground,hsl(0_0%_100%/0.6)))] hover:text-[var(--contact-panel-text,var(--background,hsl(0_0%_100%)))] transition-colors motion-reduce:transition-none",
                   focusRing
                 )}
               >
                 {link.icon ?? link.label}
               </a>
             ))}
-          </div>
-        </div>
+          </nav>
+        </aside>
 
         {/* Right Panel - Form */}
         <div className="lg:col-span-3 flex items-center justify-center p-8 sm:p-12 lg:p-16">
-          <div className="w-full max-w-lg">
+          <div className={cn("w-full", MAX_FORM_WIDTH)}>
             {isSubmitted ? (
-              <div className="flex flex-col items-center py-16 text-center">
-                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--contact-success-bg,hsl(142_76%_36%/0.1))]">
+              <div className="flex flex-col items-center py-16 text-center" role="status">
+                <div className={cn("mb-6 flex items-center justify-center rounded-full bg-[var(--contact-success-bg,hsl(142_76%_36%/0.1))]", SUCCESS_CIRCLE_SIZE)}>
                   <svg
-                    className="h-8 w-8 text-[var(--contact-success-icon,hsl(142_76%_36%))]"
+                    className={cn(SUCCESS_ICON_SIZE, "text-[var(--contact-success-icon,hsl(142_76%_36%))]")}
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={2}
@@ -281,7 +315,10 @@ export default function ContactFullPage({
                     />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-[var(--contact-title,var(--foreground,hsl(0_0%_9%)))]">
+                <h2
+                  className="font-bold text-[var(--contact-title,var(--foreground,hsl(0_0%_9%)))]"
+                  style={{ fontSize: HEADING_CLAMP_SUCCESS }}
+                >
                   Message received!
                 </h2>
                 <p className="mt-3 text-sm text-[var(--contact-subtitle,var(--muted-foreground,hsl(0_0%_40%)))]">
@@ -310,15 +347,16 @@ export default function ContactFullPage({
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} noValidate className="space-y-6">
-                <div className="grid gap-6 sm:grid-cols-2">
+              <form onSubmit={handleSubmit} noValidate className="space-y-6" aria-label="Project inquiry form">
+                <fieldset className="grid gap-6 sm:grid-cols-2 border-none p-0 m-0">
+                  <legend className="sr-only">Your details</legend>
                   <div>
                     <label
                       htmlFor="full-name"
                       className="block text-sm font-medium mb-1.5 text-[var(--contact-label,var(--muted-foreground,hsl(0_0%_30%)))]"
                     >
                       Full Name
-                      <span className="text-[var(--destructive,hsl(0_84%_60%))] ml-0.5">
+                      <span className="text-[var(--destructive,hsl(0_84%_60%))] ml-0.5" aria-hidden="true">
                         *
                       </span>
                     </label>
@@ -327,7 +365,8 @@ export default function ContactFullPage({
                       name="name"
                       type="text"
                       required
-                      minLength={2}
+                      autoComplete="name"
+                      minLength={MIN_NAME_LENGTH}
                       value={formData.name}
                       onChange={handleChange}
                       onBlur={handleBlur}
@@ -354,7 +393,7 @@ export default function ContactFullPage({
                       className="block text-sm font-medium mb-1.5 text-[var(--contact-label,var(--muted-foreground,hsl(0_0%_30%)))]"
                     >
                       Email
-                      <span className="text-[var(--destructive,hsl(0_84%_60%))] ml-0.5">
+                      <span className="text-[var(--destructive,hsl(0_84%_60%))] ml-0.5" aria-hidden="true">
                         *
                       </span>
                     </label>
@@ -363,6 +402,7 @@ export default function ContactFullPage({
                       name="email"
                       type="email"
                       required
+                      autoComplete="email"
                       value={formData.email}
                       onChange={handleChange}
                       onBlur={handleBlur}
@@ -383,8 +423,9 @@ export default function ContactFullPage({
                       </p>
                     )}
                   </div>
-                </div>
-                <div className="grid gap-6 sm:grid-cols-2">
+                </fieldset>
+                <fieldset className="grid gap-6 sm:grid-cols-2 border-none p-0 m-0">
+                  <legend className="sr-only">Project details</legend>
                   <div>
                     <label
                       htmlFor="full-company"
@@ -396,6 +437,7 @@ export default function ContactFullPage({
                       id="full-company"
                       name="company"
                       type="text"
+                      autoComplete="organization"
                       value={formData.company}
                       onChange={handleChange}
                       onBlur={handleBlur}
@@ -430,14 +472,14 @@ export default function ContactFullPage({
                       ))}
                     </select>
                   </div>
-                </div>
+                </fieldset>
                 <div>
                   <label
                     htmlFor="full-message"
                     className="block text-sm font-medium mb-1.5 text-[var(--contact-label,var(--muted-foreground,hsl(0_0%_30%)))]"
                   >
                     Tell us about your project
-                    <span className="text-[var(--destructive,hsl(0_84%_60%))] ml-0.5">
+                    <span className="text-[var(--destructive,hsl(0_84%_60%))] ml-0.5" aria-hidden="true">
                       *
                     </span>
                   </label>
@@ -445,8 +487,8 @@ export default function ContactFullPage({
                     id="full-message"
                     name="message"
                     required
-                    minLength={10}
-                    rows={6}
+                    minLength={MIN_MESSAGE_LENGTH}
+                    rows={TEXTAREA_ROWS}
                     value={formData.message}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -471,7 +513,8 @@ export default function ContactFullPage({
                   type="submit"
                   disabled={isSubmitting}
                   className={cn(
-                    "w-full rounded-lg px-5 py-3 text-sm font-medium transition-colors",
+                    "w-full rounded-lg px-5 text-sm font-medium transition-colors motion-reduce:transition-none",
+                    INPUT_PADDING_Y,
                     "bg-[var(--contact-btn-bg,var(--foreground,hsl(0_0%_9%)))] text-[var(--contact-btn-text,var(--background,hsl(0_0%_100%)))]",
                     "hover:bg-[var(--contact-btn-hover,hsl(0_0%_20%))]",
                     "disabled:opacity-50 disabled:cursor-not-allowed",

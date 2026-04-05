@@ -1,9 +1,19 @@
-// @version 1.0.0 // @category faq // @name faq-with-search // @source custom
+// @version 2.0.0 // @category faq // @name faq-with-search // @source custom
 
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HEADING_CLAMP = 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)';
+const PANEL_MAX_HEIGHT = '500px';
+const ICON_SIZE_SEARCH = 18;
+const ICON_SIZE_CHEVRON = 20;
+const SECTION_MAX_WIDTH = '48rem'; // max-w-3xl
 
 // ---------------------------------------------------------------------------
 // Types
@@ -29,7 +39,13 @@ interface FaqWithSearchProps {
 
 function SearchIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <svg
+      width={ICON_SIZE_SEARCH}
+      height={ICON_SIZE_SEARCH}
+      viewBox={`0 0 ${ICON_SIZE_SEARCH} ${ICON_SIZE_SEARCH}`}
+      fill="none"
+      aria-hidden="true"
+    >
       <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.5" />
       <path
         d="M12.5 12.5L16 16"
@@ -44,12 +60,12 @@ function SearchIcon() {
 function ChevronIcon({ open }: { open: boolean }) {
   return (
     <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
+      width={ICON_SIZE_CHEVRON}
+      height={ICON_SIZE_CHEVRON}
+      viewBox={`0 0 ${ICON_SIZE_CHEVRON} ${ICON_SIZE_CHEVRON}`}
       fill="none"
       aria-hidden="true"
-      className="shrink-0 transition-transform duration-200"
+      className="shrink-0 motion-safe:transition-transform motion-safe:duration-200"
       style={{
         transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
       }}
@@ -104,16 +120,17 @@ export default function FaqWithSearch({
 
   return (
     <section
+      aria-label={headline}
       className={cn('px-6 py-20 md:px-12 md:py-28 lg:px-20', className)}
       style={{ backgroundColor: 'var(--background)' }}
     >
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto" style={{ maxWidth: SECTION_MAX_WIDTH }}>
         {/* Header */}
-        <div className="mb-10 text-center">
+        <header className="mb-10 text-center">
           <h2
             className="font-bold tracking-tight"
             style={{
-              fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)',
+              fontSize: HEADING_CLAMP,
               color: 'var(--foreground)',
             }}
           >
@@ -127,10 +144,10 @@ export default function FaqWithSearch({
               {description}
             </p>
           )}
-        </div>
+        </header>
 
         {/* Search bar */}
-        <div className="relative mb-10">
+        <search className="relative mb-10">
           <label htmlFor="faq-search" className="sr-only">
             Search FAQ
           </label>
@@ -151,7 +168,7 @@ export default function FaqWithSearch({
             }}
             className={cn(
               'w-full rounded-xl border py-3.5 pl-11 pr-4 text-sm',
-              'transition-colors duration-200',
+              'motion-safe:transition-colors motion-safe:duration-200',
               'placeholder:opacity-60',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
             )}
@@ -163,18 +180,19 @@ export default function FaqWithSearch({
               ['--tw-ring-offset-color' as string]: 'var(--background)',
             }}
           />
-        </div>
+        </search>
 
         {/* Results */}
         {filteredItems.length === 0 ? (
           <p
             className="py-8 text-center text-sm"
+            role="status"
             style={{ color: 'var(--muted-foreground)' }}
           >
             {noResultsText}
           </p>
         ) : (
-          <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+          <dl className="divide-y" style={{ borderColor: 'var(--border)' }}>
             {filteredItems.map((item, index) => {
               const isOpen = openIndices.has(index);
               const panelId = `faq-search-panel-${index}`;
@@ -182,7 +200,7 @@ export default function FaqWithSearch({
 
               return (
                 <div key={item.question}>
-                  <h3>
+                  <dt>
                     <button
                       id={triggerId}
                       type="button"
@@ -203,14 +221,14 @@ export default function FaqWithSearch({
                       <span>{item.question}</span>
                       <ChevronIcon open={isOpen} />
                     </button>
-                  </h3>
-                  <div
+                  </dt>
+                  <dd
                     id={panelId}
                     role="region"
                     aria-labelledby={triggerId}
-                    className="overflow-hidden transition-all duration-200"
+                    className="overflow-hidden motion-safe:transition-all motion-safe:duration-200"
                     style={{
-                      maxHeight: isOpen ? '500px' : '0',
+                      maxHeight: isOpen ? PANEL_MAX_HEIGHT : '0',
                       opacity: isOpen ? 1 : 0,
                     }}
                   >
@@ -220,11 +238,11 @@ export default function FaqWithSearch({
                     >
                       {item.answer}
                     </p>
-                  </div>
+                  </dd>
                 </div>
               );
             })}
-          </div>
+          </dl>
         )}
       </div>
     </section>

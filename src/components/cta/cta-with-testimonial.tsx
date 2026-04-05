@@ -1,9 +1,34 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category cta
 // @name cta-with-testimonial
 // @source custom
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HEADING_CLAMP = 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)';
+const MAX_CONTENT_WIDTH = 'max-w-6xl';
+const SECTION_PADDING = 'px-6 py-16 md:px-12 lg:py-24';
+const QUOTE_BG = 'color-mix(in oklch, var(--primary) 5%, var(--background))';
+const QUOTE_BORDER = '1px solid color-mix(in oklch, var(--border) 40%, transparent)';
+const QUOTE_ICON_SIZE = 40;
+const BTN_FONT_SIZE = '0.9375rem';
+const ACTIVE_SCALE = '0.98';
+
+const REDUCED_MOTION_CSS = `
+@media (prefers-reduced-motion: reduce) {
+  [data-cta-with-testimonial] *,
+  [data-cta-with-testimonial] *::before,
+  [data-cta-with-testimonial] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}`;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -36,29 +61,34 @@ export default function CtaWithTestimonial({
 }: CtaWithTestimonialProps) {
   return (
     <section
+      aria-label="Handlungsaufforderung mit Kundenstimme"
+      data-cta-with-testimonial=""
       className={cn(
         'relative overflow-hidden',
-        'px-6 py-16 md:px-12 lg:py-24',
+        SECTION_PADDING,
         className,
       )}
       style={{
         backgroundColor: 'var(--background)',
       }}
     >
-      <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:items-center md:gap-16">
-        {/* Left — Testimonial */}
+      <style dangerouslySetInnerHTML={{ __html: REDUCED_MOTION_CSS }} />
+
+      <div className={cn('mx-auto grid gap-10 md:grid-cols-2 md:items-center md:gap-16', MAX_CONTENT_WIDTH)}>
+        {/* Left -- Testimonial */}
         <figure
           className="relative rounded-2xl p-8 md:p-10"
+          aria-label={`Kundenstimme von ${authorName}`}
           style={{
-            backgroundColor: 'color-mix(in oklch, var(--primary) 5%, var(--background))',
-            border: '1px solid color-mix(in oklch, var(--border) 40%, transparent)',
+            backgroundColor: QUOTE_BG,
+            border: QUOTE_BORDER,
           }}
         >
           {/* Quote mark */}
           <svg
             className="absolute top-6 left-6 opacity-15 md:top-8 md:left-8"
-            width="40"
-            height="40"
+            width={QUOTE_ICON_SIZE}
+            height={QUOTE_ICON_SIZE}
             viewBox="0 0 24 24"
             fill="none"
             aria-hidden="true"
@@ -97,12 +127,12 @@ export default function CtaWithTestimonial({
           </figcaption>
         </figure>
 
-        {/* Right — CTA */}
-        <div>
+        {/* Right -- CTA */}
+        <header>
           <h2
             className="font-bold tracking-tight leading-[1.1]"
             style={{
-              fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)',
+              fontSize: HEADING_CLAMP,
               color: 'var(--foreground)',
             }}
           >
@@ -116,18 +146,19 @@ export default function CtaWithTestimonial({
             {description}
           </p>
 
-          <div className="mt-8">
+          <nav className="mt-8" aria-label="Handlungsaufforderung">
             <a
               href={href}
               className={cn(
                 'inline-flex items-center justify-center',
-                'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
+                'rounded-lg px-7 py-3.5 font-semibold',
                 'transition-all duration-200',
                 'hover:brightness-110 hover:shadow-lg',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                'active:scale-[0.98]',
+                `active:scale-[${ACTIVE_SCALE}]`,
               )}
               style={{
+                fontSize: BTN_FONT_SIZE,
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',
                 ['--tw-ring-color' as string]: 'var(--primary)',
@@ -136,22 +167,9 @@ export default function CtaWithTestimonial({
             >
               {ctaText}
             </a>
-          </div>
-        </div>
+          </nav>
+        </header>
       </div>
-
-      {/* Reduced-motion */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-@media (prefers-reduced-motion: reduce) {
-  .cta-with-testimonial * {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-  }
-}`,
-        }}
-      />
     </section>
   );
 }

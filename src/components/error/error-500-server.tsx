@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category error
 // @name error-500-server
 // @source custom
@@ -6,6 +6,23 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HEADING_CLAMP = 'clamp(1.5rem, 4vw, 2.25rem)';
+const CONTENT_MAX_WIDTH = 'max-w-lg';
+const DESCRIPTION_MAX_WIDTH = 'max-w-md';
+const ICON_CONTAINER_SIZE = 'size-16';
+const ICON_SIZE = 'size-8';
+const RETRY_ICON_SIZE = 'size-4';
+const ARROW_ICON_SIZE = 'size-4';
+const BUTTON_PADDING_X = 'px-7';
+const BUTTON_PADDING_Y = 'py-3';
+const PULSE_DURATION = '2.5s';
+const PULSE_SCALE = '1.06';
+const HOME_LINK_OPACITY = 0.7;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,6 +59,7 @@ export default function Error500Server({
 
   return (
     <main
+      aria-label="500 server error page"
       className={cn(
         'flex min-h-svh flex-col items-center justify-center',
         'px-6 py-20 md:px-12 md:py-28',
@@ -53,7 +71,8 @@ export default function Error500Server({
       {/* Warning icon */}
       <div
         className={cn(
-          'mb-6 flex size-16 items-center justify-center rounded-full',
+          'mb-6 flex items-center justify-center rounded-full',
+          ICON_CONTAINER_SIZE,
           'error-500-icon',
         )}
         style={{
@@ -62,7 +81,7 @@ export default function Error500Server({
         aria-hidden="true"
       >
         <svg
-          className="size-8"
+          className={ICON_SIZE}
           viewBox="0 0 24 24"
           fill="none"
           stroke="var(--primary)"
@@ -83,20 +102,24 @@ export default function Error500Server({
           backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
           color: 'var(--primary)',
         }}
+        role="status"
       >
         Error 500
       </span>
 
-      <div className="max-w-lg">
+      <div className={CONTENT_MAX_WIDTH}>
         <h1
-          className="text-2xl font-bold tracking-tight md:text-3xl lg:text-4xl"
-          style={{ color: 'var(--foreground)' }}
+          className="font-bold tracking-tight"
+          style={{
+            color: 'var(--foreground)',
+            fontSize: HEADING_CLAMP,
+          }}
         >
           {title}
         </h1>
 
         <p
-          className="mx-auto mt-4 max-w-md text-base leading-relaxed md:text-lg"
+          className={cn('mx-auto mt-4 text-base leading-relaxed md:text-lg', DESCRIPTION_MAX_WIDTH)}
           style={{ color: 'var(--muted-foreground)' }}
         >
           {message}
@@ -110,11 +133,13 @@ export default function Error500Server({
             onClick={handleRetry}
             className={cn(
               'inline-flex items-center justify-center gap-2',
-              'rounded-lg px-7 py-3 text-sm font-semibold',
-              'transition-all duration-200',
+              'rounded-lg text-sm font-semibold',
+              BUTTON_PADDING_X,
+              BUTTON_PADDING_Y,
+              'transition-all duration-200 motion-reduce:transition-none',
               'hover:brightness-110 hover:shadow-lg',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-              'active:scale-[0.98]',
+              'active:scale-[0.98] motion-reduce:active:scale-100',
             )}
             style={{
               backgroundColor: 'var(--primary)',
@@ -124,7 +149,7 @@ export default function Error500Server({
             }}
           >
             <svg
-              className="size-4"
+              className={RETRY_ICON_SIZE}
               viewBox="0 0 16 16"
               fill="none"
               aria-hidden="true"
@@ -152,7 +177,7 @@ export default function Error500Server({
             className={cn(
               'inline-flex items-center gap-2',
               'text-sm font-semibold',
-              'transition-colors duration-200',
+              'transition-colors duration-200 motion-reduce:transition-none',
               'hover:underline underline-offset-4',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
             )}
@@ -164,7 +189,7 @@ export default function Error500Server({
           >
             Contact support
             <svg
-              className="size-4"
+              className={ARROW_ICON_SIZE}
               viewBox="0 0 16 16"
               fill="none"
               aria-hidden="true"
@@ -183,13 +208,17 @@ export default function Error500Server({
         {/* Home fallback */}
         <p
           className="mt-10 text-sm"
-          style={{ color: 'var(--muted-foreground)', opacity: 0.7 }}
+          style={{ color: 'var(--muted-foreground)', opacity: HOME_LINK_OPACITY }}
         >
           Or go back to the{' '}
           <a
             href={homeHref}
-            className="underline underline-offset-4 transition-colors duration-150"
-            style={{ color: 'var(--foreground)' }}
+            className="underline underline-offset-4 transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            style={{
+              color: 'var(--foreground)',
+              ['--tw-ring-color' as string]: 'var(--primary)',
+              ['--tw-ring-offset-color' as string]: 'var(--background)',
+            }}
           >
             homepage
           </a>
@@ -197,20 +226,21 @@ export default function Error500Server({
         </p>
       </div>
 
-      {/* Animations + reduced motion */}
+      {/* Animations + reduced motion: disable ALL */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
             .error-500-icon {
-              animation: error500Pulse 2.5s ease-in-out infinite;
+              animation: error500Pulse ${PULSE_DURATION} ease-in-out infinite;
             }
             @keyframes error500Pulse {
               0%, 100% { transform: scale(1); }
-              50%      { transform: scale(1.06); }
+              50%      { transform: scale(${PULSE_SCALE}); }
             }
             @media (prefers-reduced-motion: reduce) {
               .error-500-icon {
-                animation: none;
+                animation: none !important;
+                transition: none !important;
               }
             }
           `,

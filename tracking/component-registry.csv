@@ -122,3 +122,9 @@ id,category,name,version,score,accessibility,performance,visual,code,responsive,
 121,navigation,nav-minimal-logo,1.0.0,80,20,17,17,13,8,5,production,2026-04-05,2026-04-05
 122,navigation,nav-with-cta-bar,1.0.0,82,21,17,17,13,8,6,production,2026-04-05,2026-04-05
 123,cta,cta-exit-intent,1.0.0,79,20,16,17,13,8,5,needs-improvement,2026-04-05,2026-04-05
+124,heroes,hero-floating-cards,1.0.0,87,23,18,19,14,8,5,production,2026-04-05,2026-04-05
+125,animations,text-marquee,1.0.0,88,23,19,19,14,8,5,production,2026-04-05,2026-04-05
+126,features,feature-interactive-bento,1.0.0,89,24,19,19,14,8,5,production,2026-04-05,2026-04-05
+127,heroes,hero-glassmorphism,1.0.0,90,24,19,20,14,8,5,award-worthy,2026-04-05,2026-04-05
+128,banners,announcement-banner,1.0.0,85,22,18,18,13,8,6,production,2026-04-05,2026-04-05
+129,backgrounds,background-gradient-mesh,1.0.0,88,23,19,19,14,8,5,production,2026-04-05,2026-04-05

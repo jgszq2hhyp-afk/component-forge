@@ -1,9 +1,19 @@
-// @version 1.0.0 // @category faq // @name faq-with-categories // @source custom
+// @version 2.0.0 // @category faq // @name faq-with-categories // @source custom
 
 'use client';
 
 import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HEADING_CLAMP = 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)';
+const PANEL_MAX_HEIGHT = '500px';
+const ICON_SIZE = 20;
+const SECTION_MAX_WIDTH = '56rem'; // max-w-4xl
+const INACTIVE_BG = 'color-mix(in oklch, var(--foreground) 6%, transparent)';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -33,12 +43,12 @@ interface FaqWithCategoriesProps {
 function ChevronIcon({ open }: { open: boolean }) {
   return (
     <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
+      width={ICON_SIZE}
+      height={ICON_SIZE}
+      viewBox={`0 0 ${ICON_SIZE} ${ICON_SIZE}`}
       fill="none"
       aria-hidden="true"
-      className="shrink-0 transition-transform duration-200"
+      className="shrink-0 motion-safe:transition-transform motion-safe:duration-200"
       style={{
         transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
       }}
@@ -88,16 +98,17 @@ export default function FaqWithCategories({
 
   return (
     <section
+      aria-label={headline}
       className={cn('px-6 py-20 md:px-12 md:py-28 lg:px-20', className)}
       style={{ backgroundColor: 'var(--background)' }}
     >
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto" style={{ maxWidth: SECTION_MAX_WIDTH }}>
         {/* Header */}
-        <div className="mb-12 text-center">
+        <header className="mb-12 text-center">
           <h2
             className="font-bold tracking-tight"
             style={{
-              fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)',
+              fontSize: HEADING_CLAMP,
               color: 'var(--foreground)',
             }}
           >
@@ -111,44 +122,46 @@ export default function FaqWithCategories({
               {description}
             </p>
           )}
-        </div>
+        </header>
 
         {/* Category tabs */}
-        <div className="mb-10 flex flex-wrap justify-center gap-2" role="tablist">
-          {categories.map((category, index) => (
-            <button
-              key={category.name}
-              type="button"
-              role="tab"
-              aria-selected={index === activeCategory}
-              aria-controls={`faq-category-panel-${index}`}
-              onClick={() => switchCategory(index)}
-              className={cn(
-                'rounded-full px-5 py-2 text-sm font-medium',
-                'transition-all duration-200',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-              )}
-              style={{
-                backgroundColor:
-                  index === activeCategory
-                    ? 'var(--primary)'
-                    : 'color-mix(in oklch, var(--foreground) 6%, transparent)',
-                color:
-                  index === activeCategory
-                    ? 'var(--primary-foreground)'
-                    : 'var(--muted-foreground)',
-                ['--tw-ring-color' as string]: 'var(--primary)',
-                ['--tw-ring-offset-color' as string]: 'var(--background)',
-              }}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
+        <nav aria-label="FAQ categories" className="mb-10 flex flex-wrap justify-center gap-2">
+          <div role="tablist">
+            {categories.map((category, index) => (
+              <button
+                key={category.name}
+                type="button"
+                role="tab"
+                aria-selected={index === activeCategory}
+                aria-controls={`faq-category-panel-${index}`}
+                onClick={() => switchCategory(index)}
+                className={cn(
+                  'rounded-full px-5 py-2 text-sm font-medium',
+                  'motion-safe:transition-all motion-safe:duration-200',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                )}
+                style={{
+                  backgroundColor:
+                    index === activeCategory
+                      ? 'var(--primary)'
+                      : INACTIVE_BG,
+                  color:
+                    index === activeCategory
+                      ? 'var(--primary-foreground)'
+                      : 'var(--muted-foreground)',
+                  ['--tw-ring-color' as string]: 'var(--primary)',
+                  ['--tw-ring-offset-color' as string]: 'var(--background)',
+                }}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        </nav>
 
         {/* FAQ items for active category */}
         {currentCategory && (
-          <div
+          <dl
             id={`faq-category-panel-${activeCategory}`}
             role="tabpanel"
             className="divide-y"
@@ -161,7 +174,7 @@ export default function FaqWithCategories({
 
               return (
                 <div key={triggerId}>
-                  <h3>
+                  <dt>
                     <button
                       id={triggerId}
                       type="button"
@@ -182,14 +195,14 @@ export default function FaqWithCategories({
                       <span>{item.question}</span>
                       <ChevronIcon open={isOpen} />
                     </button>
-                  </h3>
-                  <div
+                  </dt>
+                  <dd
                     id={panelId}
                     role="region"
                     aria-labelledby={triggerId}
-                    className="overflow-hidden transition-all duration-200"
+                    className="overflow-hidden motion-safe:transition-all motion-safe:duration-200"
                     style={{
-                      maxHeight: isOpen ? '500px' : '0',
+                      maxHeight: isOpen ? PANEL_MAX_HEIGHT : '0',
                       opacity: isOpen ? 1 : 0,
                     }}
                   >
@@ -199,11 +212,11 @@ export default function FaqWithCategories({
                     >
                       {item.answer}
                     </p>
-                  </div>
+                  </dd>
                 </div>
               );
             })}
-          </div>
+          </dl>
         )}
       </div>
     </section>

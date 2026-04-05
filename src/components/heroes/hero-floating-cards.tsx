@@ -294,7 +294,7 @@ export default function HeroFloatingCards({
             style={{
               backgroundColor: 'var(--primary)',
               color: 'var(--primary-foreground)',
-              focusVisibleRingColor: 'var(--primary)',
+              ['--tw-ring-color' as string]: 'var(--primary)',
             }}
           >
             {ctaText}

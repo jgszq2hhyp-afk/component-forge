@@ -1,6 +1,20 @@
-// @version 1.0.0 // @category faq // @name faq-timeline // @source custom
+// @version 2.0.0 // @category faq // @name faq-timeline // @source custom
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HEADING_CLAMP = 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)';
+const SECTION_MAX_WIDTH = '48rem'; // max-w-3xl
+const NODE_SIZE_SM = '2.5rem'; // h-10 w-10
+const NODE_SIZE_LG = '3rem'; // sm:h-12 sm:w-12
+const TERMINAL_DOT_SIZE = '0.75rem'; // h-3 w-3
+const STAGGER_DELAY_MS = 100;
+const ANIMATION_DURATION = '0.45s';
+const SLIDE_IN_OFFSET = '-16px';
+const ITEM_GAP = '2.5rem'; // gap-10
 
 // ---------------------------------------------------------------------------
 // Types
@@ -31,18 +45,22 @@ export default function FaqTimeline({
 }: FaqTimelineProps) {
   return (
     <section
+      aria-label={title}
       className={cn(
         'w-full px-4 py-16 sm:px-6 lg:px-8',
         className,
       )}
       style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
     >
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto" style={{ maxWidth: SECTION_MAX_WIDTH }}>
         {/* Header */}
-        <div className="mb-14 text-center">
+        <header className="mb-14 text-center">
           <h2
-            className="text-3xl font-bold tracking-tight sm:text-4xl"
-            style={{ color: 'var(--foreground)' }}
+            className="font-bold tracking-tight"
+            style={{
+              fontSize: HEADING_CLAMP,
+              color: 'var(--foreground)',
+            }}
           >
             {title}
           </h2>
@@ -54,10 +72,10 @@ export default function FaqTimeline({
               {description}
             </p>
           )}
-        </div>
+        </header>
 
         {/* Timeline */}
-        <div className="relative">
+        <div className="relative" role="list" aria-label="FAQ timeline">
           {/* Vertical line */}
           <div
             className="absolute left-5 top-0 h-full w-px sm:left-6"
@@ -65,16 +83,23 @@ export default function FaqTimeline({
             aria-hidden="true"
           />
 
-          <div className="flex flex-col gap-10">
+          <dl className="flex flex-col" style={{ gap: ITEM_GAP }}>
             {items.map((item, index) => (
               <div
-                key={index}
+                key={`faq-timeline-${index}`}
                 className="faq-timeline-item relative pl-14 sm:pl-16"
+                role="listitem"
               >
                 {/* Number node */}
                 <div
-                  className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-bold sm:h-12 sm:w-12 sm:text-base"
+                  className={cn(
+                    'absolute left-0 top-0 flex items-center justify-center rounded-full border-2',
+                    'text-sm font-bold sm:text-base',
+                  )}
+                  aria-hidden="true"
                   style={{
+                    width: NODE_SIZE_SM,
+                    height: NODE_SIZE_SM,
                     backgroundColor: 'var(--card)',
                     borderColor: 'var(--primary)',
                     color: 'var(--primary)',
@@ -84,26 +109,26 @@ export default function FaqTimeline({
                 </div>
 
                 {/* Content */}
-                <div
+                <article
                   className="rounded-lg border p-5"
                   style={{
                     backgroundColor: 'var(--card)',
                     borderColor: 'var(--border)',
                   }}
                 >
-                  <h3
+                  <dt
                     className="text-lg font-semibold"
                     style={{ color: 'var(--foreground)' }}
                   >
                     {item.question}
-                  </h3>
+                  </dt>
 
-                  <p
+                  <dd
                     className="mt-2 text-base leading-relaxed"
                     style={{ color: 'var(--muted-foreground)' }}
                   >
                     {item.answer}
-                  </p>
+                  </dd>
 
                   {item.category && (
                     <span
@@ -116,15 +141,19 @@ export default function FaqTimeline({
                       {item.category}
                     </span>
                   )}
-                </div>
+                </article>
               </div>
             ))}
-          </div>
+          </dl>
 
           {/* Terminal dot */}
           <div
-            className="absolute bottom-0 left-3.5 h-3 w-3 rounded-full sm:left-4.5"
-            style={{ backgroundColor: 'var(--primary)' }}
+            className="absolute bottom-0 left-3.5 rounded-full sm:left-4.5"
+            style={{
+              width: TERMINAL_DOT_SIZE,
+              height: TERMINAL_DOT_SIZE,
+              backgroundColor: 'var(--primary)',
+            }}
             aria-hidden="true"
           />
         </div>
@@ -139,30 +168,30 @@ export default function FaqTimeline({
 
         @media (prefers-reduced-motion: no-preference) {
           .faq-timeline-item {
-            animation: faq-timeline-slide-in 0.45s ease both;
+            animation: faq-timeline-slide-in ${ANIMATION_DURATION} ease both;
           }
 
           .faq-timeline-item:nth-child(1) { animation-delay: 0ms; }
-          .faq-timeline-item:nth-child(2) { animation-delay: 100ms; }
-          .faq-timeline-item:nth-child(3) { animation-delay: 200ms; }
-          .faq-timeline-item:nth-child(4) { animation-delay: 300ms; }
-          .faq-timeline-item:nth-child(5) { animation-delay: 400ms; }
-          .faq-timeline-item:nth-child(6) { animation-delay: 500ms; }
-          .faq-timeline-item:nth-child(7) { animation-delay: 600ms; }
-          .faq-timeline-item:nth-child(8) { animation-delay: 700ms; }
+          .faq-timeline-item:nth-child(2) { animation-delay: ${STAGGER_DELAY_MS}ms; }
+          .faq-timeline-item:nth-child(3) { animation-delay: ${STAGGER_DELAY_MS * 2}ms; }
+          .faq-timeline-item:nth-child(4) { animation-delay: ${STAGGER_DELAY_MS * 3}ms; }
+          .faq-timeline-item:nth-child(5) { animation-delay: ${STAGGER_DELAY_MS * 4}ms; }
+          .faq-timeline-item:nth-child(6) { animation-delay: ${STAGGER_DELAY_MS * 5}ms; }
+          .faq-timeline-item:nth-child(7) { animation-delay: ${STAGGER_DELAY_MS * 6}ms; }
+          .faq-timeline-item:nth-child(8) { animation-delay: ${STAGGER_DELAY_MS * 7}ms; }
         }
 
         @media (prefers-reduced-motion: reduce) {
           .faq-timeline-item {
-            animation: none;
-            transition: none;
+            animation: none !important;
+            transition: none !important;
           }
         }
 
         @keyframes faq-timeline-slide-in {
           from {
             opacity: 0;
-            transform: translateX(-16px);
+            transform: translateX(${SLIDE_IN_OFFSET});
           }
           to {
             opacity: 1;

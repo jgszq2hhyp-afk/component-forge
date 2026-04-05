@@ -1,9 +1,18 @@
-// @version 1.0.0 // @category faq // @name faq-accordion // @source custom
+// @version 2.0.0 // @category faq // @name faq-accordion // @source custom
 
 'use client';
 
 import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HEADING_CLAMP = 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)';
+const PANEL_MAX_HEIGHT = '500px';
+const ICON_SIZE = 20;
+const SECTION_MAX_WIDTH = '48rem'; // max-w-3xl
 
 // ---------------------------------------------------------------------------
 // Types
@@ -29,12 +38,12 @@ interface FaqAccordionProps {
 function ChevronIcon({ open }: { open: boolean }) {
   return (
     <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
+      width={ICON_SIZE}
+      height={ICON_SIZE}
+      viewBox={`0 0 ${ICON_SIZE} ${ICON_SIZE}`}
       fill="none"
       aria-hidden="true"
-      className="shrink-0 transition-transform duration-200"
+      className="shrink-0 motion-safe:transition-transform motion-safe:duration-200"
       style={{
         transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
       }}
@@ -80,16 +89,17 @@ export default function FaqAccordion({
 
   return (
     <section
+      aria-label={headline}
       className={cn('px-6 py-20 md:px-12 md:py-28 lg:px-20', className)}
       style={{ backgroundColor: 'var(--background)' }}
     >
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto" style={{ maxWidth: SECTION_MAX_WIDTH }}>
         {/* Header */}
-        <div className="mb-12 text-center">
+        <header className="mb-12 text-center">
           <h2
             className="font-bold tracking-tight"
             style={{
-              fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)',
+              fontSize: HEADING_CLAMP,
               color: 'var(--foreground)',
             }}
           >
@@ -103,18 +113,18 @@ export default function FaqAccordion({
               {description}
             </p>
           )}
-        </div>
+        </header>
 
-        {/* Accordion */}
-        <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+        {/* Accordion as definition list */}
+        <dl className="divide-y" style={{ borderColor: 'var(--border)' }}>
           {items.map((item, index) => {
             const isOpen = openIndices.has(index);
             const panelId = `faq-panel-${index}`;
             const triggerId = `faq-trigger-${index}`;
 
             return (
-              <div key={triggerId}>
-                <h3>
+              <div key={triggerId} className="group">
+                <dt>
                   <button
                     id={triggerId}
                     type="button"
@@ -124,7 +134,7 @@ export default function FaqAccordion({
                     className={cn(
                       'flex w-full items-center justify-between gap-4 py-5 text-left',
                       'text-base font-medium',
-                      'transition-colors duration-200',
+                      'motion-safe:transition-colors motion-safe:duration-200',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-sm',
                     )}
                     style={{
@@ -136,14 +146,14 @@ export default function FaqAccordion({
                     <span>{item.question}</span>
                     <ChevronIcon open={isOpen} />
                   </button>
-                </h3>
-                <div
+                </dt>
+                <dd
                   id={panelId}
                   role="region"
                   aria-labelledby={triggerId}
-                  className="overflow-hidden transition-all duration-200"
+                  className="overflow-hidden motion-safe:transition-all motion-safe:duration-200"
                   style={{
-                    maxHeight: isOpen ? '500px' : '0',
+                    maxHeight: isOpen ? PANEL_MAX_HEIGHT : '0',
                     opacity: isOpen ? 1 : 0,
                   }}
                 >
@@ -153,11 +163,11 @@ export default function FaqAccordion({
                   >
                     {item.answer}
                   </p>
-                </div>
+                </dd>
               </div>
             );
           })}
-        </div>
+        </dl>
       </div>
     </section>
   );

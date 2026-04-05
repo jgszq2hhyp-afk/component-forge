@@ -1,9 +1,23 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category error
 // @name error-404-minimal
 // @source custom
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const ERROR_CODE_FONT_SIZE = 'clamp(7rem, 18vw, 14rem)';
+const ERROR_CODE_OPACITY = 0.06;
+const HEADING_CLAMP = 'clamp(1.5rem, 4vw, 2.25rem)';
+const CONTENT_MAX_WIDTH = 'max-w-lg';
+const DESCRIPTION_MAX_WIDTH = 'max-w-md';
+const BUTTON_PADDING_X = 'px-7';
+const BUTTON_PADDING_Y = 'py-3';
+const FADE_DURATION = '0.8s';
+const TRANSLATE_OFFSET = '20px';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,6 +42,7 @@ export default function Error404Minimal({
 }: ErrorPageProps) {
   return (
     <main
+      aria-label="404 error page"
       className={cn(
         'flex min-h-svh flex-col items-center justify-center',
         'px-6 py-20 md:px-12 md:py-28',
@@ -43,9 +58,9 @@ export default function Error404Minimal({
           'error-404-number',
         )}
         style={{
-          fontSize: 'clamp(7rem, 18vw, 14rem)',
+          fontSize: ERROR_CODE_FONT_SIZE,
           color: 'var(--foreground)',
-          opacity: 0.06,
+          opacity: ERROR_CODE_OPACITY,
         }}
         aria-hidden="true"
       >
@@ -53,31 +68,36 @@ export default function Error404Minimal({
       </p>
 
       {/* Content */}
-      <div className="-mt-10 md:-mt-14 relative z-10 max-w-lg">
+      <div className={cn('-mt-10 md:-mt-14 relative z-10', CONTENT_MAX_WIDTH)}>
         <h1
-          className="text-2xl font-bold tracking-tight md:text-3xl lg:text-4xl"
-          style={{ color: 'var(--foreground)' }}
+          className="font-bold tracking-tight"
+          style={{
+            color: 'var(--foreground)',
+            fontSize: HEADING_CLAMP,
+          }}
         >
           {title}
         </h1>
 
         <p
-          className="mx-auto mt-4 max-w-md text-base leading-relaxed md:text-lg"
+          className={cn('mx-auto mt-4 text-base leading-relaxed md:text-lg', DESCRIPTION_MAX_WIDTH)}
           style={{ color: 'var(--muted-foreground)' }}
         >
           {message}
         </p>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+        <nav aria-label="Error page navigation" className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <a
             href={homeHref}
             className={cn(
               'inline-flex items-center justify-center',
-              'rounded-lg px-7 py-3 text-sm font-semibold',
-              'transition-all duration-200',
+              'rounded-lg text-sm font-semibold',
+              BUTTON_PADDING_X,
+              BUTTON_PADDING_Y,
+              'transition-all duration-200 motion-reduce:transition-none',
               'hover:brightness-110 hover:shadow-lg',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-              'active:scale-[0.98]',
+              'active:scale-[0.98] motion-reduce:active:scale-100',
             )}
             style={{
               backgroundColor: 'var(--primary)',
@@ -88,24 +108,25 @@ export default function Error404Minimal({
           >
             Back to home
           </a>
-        </div>
+        </nav>
       </div>
 
-      {/* Reduced motion: disable fade-in animation */}
+      {/* Reduced motion: disable ALL animations */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
             .error-404-number {
-              animation: error404FadeUp 0.8s ease-out both;
+              animation: error404FadeUp ${FADE_DURATION} ease-out both;
             }
             @keyframes error404FadeUp {
-              from { opacity: 0; transform: translateY(20px); }
-              to   { opacity: 0.06; transform: translateY(0); }
+              from { opacity: 0; transform: translateY(${TRANSLATE_OFFSET}); }
+              to   { opacity: ${ERROR_CODE_OPACITY}; transform: translateY(0); }
             }
             @media (prefers-reduced-motion: reduce) {
               .error-404-number {
-                animation: none;
-                opacity: 0.06;
+                animation: none !important;
+                transition: none !important;
+                opacity: ${ERROR_CODE_OPACITY};
               }
             }
           `,
