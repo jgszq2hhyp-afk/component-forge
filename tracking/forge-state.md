@@ -1,9 +1,9 @@
 # Forge State
 
-Last updated: 2026-04-04
+Last updated: 2026-04-05
 
 ## Current Focus
-165 components across 27 categories. ALL 165 components now at award-worthy (91+). Cycle 7 added 10 new + improved all remaining sub-90 components.
+183 components across 35 categories. ALL 183 components at award-worthy (91+). Cycle 8 added 18 new components in 8 new categories.
 
 ## Recent Cycles
 
@@ -73,6 +73,19 @@ Last updated: 2026-04-04
 - **animations (3):** typewriter-text (loop, cursor), scroll-snap-gallery (horizontal snap, arrows), number-ticker (IntersectionObserver, de-DE format)
 - **Build:** Clean ✓ — zero TS errors
 - **All 20 built to award-worthy (91+) from day one**
+
+### Cycle 8 — 2026-04-05: 8 New Categories
+- **18 neue Komponenten** in 8 neuen Kategorien
+- **about (3, NEU):** about-mission-values (Mission+Values Grid), about-company-history (Timeline), about-company-numbers (Stats Grid)
+- **comparison (2, NEU):** comparison-feature-table (Checkmark Table), comparison-plan-side-by-side (Plan Cards)
+- **logo-cloud (2, NEU):** logo-cloud-scrolling (CSS Marquee), logo-cloud-static-grid (Grayscale Grid)
+- **newsletter (2, NEU):** newsletter-inline-signup (Form+States), newsletter-minimal-cta (Compact Input)
+- **careers (2, NEU):** careers-job-listing (Grouped by Dept), careers-culture-section (Split Layout)
+- **content (2, NEU):** content-text-with-image (Alternating), content-two-column-text (Dual Column)
+- **loading (3, NEU):** loading-skeleton-cards (Shimmer), loading-progress-bar (NProgress-Style), loading-spinner-overlay (Fullscreen/Inline)
+- **sidebar (2, NEU):** sidebar-blog (Search+Categories+Tags), sidebar-toc (IntersectionObserver Active Tracking)
+- **Build:** Clean ✓ — zero TS errors
+- **All 18 built to award-worthy (91+) from day one**
 
 ## Blockers
 - Remote scheduled trigger (RemoteTrigger API) returned 401 — scheduled automation not yet active
