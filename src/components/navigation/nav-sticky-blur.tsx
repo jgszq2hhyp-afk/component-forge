@@ -468,3 +468,5 @@ export function NavStickyBlur({
     </>
   );
 }
+
+export default NavStickyBlur;

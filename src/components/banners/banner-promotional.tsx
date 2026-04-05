@@ -276,3 +276,5 @@ export function BannerPromotional({
     </>
   );
 }
+
+export default BannerPromotional;

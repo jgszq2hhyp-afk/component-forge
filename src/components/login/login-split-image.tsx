@@ -368,3 +368,5 @@ export function LoginSplitImage({
     </>
   );
 }
+
+export default LoginSplitImage;

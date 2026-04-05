@@ -417,3 +417,5 @@ export function RegisterMultiStep({
     </>
   );
 }
+
+export default RegisterMultiStep;

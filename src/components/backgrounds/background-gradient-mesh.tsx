@@ -155,3 +155,5 @@ export function BackgroundGradientMesh({
     </>
   );
 }
+
+export default BackgroundGradientMesh;

@@ -290,3 +290,5 @@ export function BannerNotificationToast({
     </>
   );
 }
+
+export default BannerNotificationToast;
