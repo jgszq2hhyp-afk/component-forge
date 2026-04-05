@@ -1,306 +1,271 @@
-import HeroTypographyOnly from "@/components/heroes/hero-typography-only";
-import { NavStickyBlur } from "@/components/navigation/nav-sticky-blur";
-import { SectionWrapper } from "@/layouts/section-wrapper";
+import Link from "next/link";
+import fs from "fs";
+import path from "path";
 
 /* ------------------------------------------------------------------ */
-/*  Sample data                                                        */
+/*  Constants                                                          */
 /* ------------------------------------------------------------------ */
 
-const navLinks = [
-  { label: "Heroes", href: "#heroes" },
-  { label: "Navigation", href: "#navigation" },
-  { label: "Layouts", href: "#layouts" },
-  { label: "Hooks", href: "#hooks" },
-];
+const COMPONENTS_DIR = path.join(process.cwd(), "src/components");
+const ANIMATIONS_DIR = path.join(process.cwd(), "src/animations");
 
-const categories = [
-  {
-    title: "Heroes",
-    count: 2,
-    description:
-      "Full-screen hero sections with typography, split-image layouts, and animated entrances.",
-    components: ["HeroTypographyOnly", "HeroSplitImage"],
-    href: "#heroes",
-    icon: (
-      <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2" />
-        <path d="M3 9h18" />
-      </svg>
-    ),
-  },
-  {
-    title: "Navigation",
-    count: 1,
-    description:
-      "Sticky nav bars with blur backdrop, mobile slide-out menu, and scroll-aware state.",
-    components: ["NavStickyBlur"],
-    href: "#navigation",
-    icon: (
-      <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 6h16M4 12h16M4 18h16" />
-      </svg>
-    ),
-  },
-  {
-    title: "Layouts",
-    count: 3,
-    description:
-      "Reusable layout primitives: section wrappers, split grids, and full-bleed containers.",
-    components: ["SectionWrapper", "SplitLayout", "FullBleed"],
-    href: "#layouts",
-    icon: (
-      <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="7" height="7" rx="1" />
-        <rect x="14" y="3" width="7" height="7" rx="1" />
-        <rect x="3" y="14" width="7" height="7" rx="1" />
-        <rect x="14" y="14" width="7" height="7" rx="1" />
-      </svg>
-    ),
-  },
-  {
-    title: "Hooks",
-    count: 4,
-    description:
-      "Utility hooks for scroll progress, intersection reveals, magnetic cursors, and reduced motion.",
-    components: [
-      "useIntersectionReveal",
-      "useMagneticCursor",
-      "useReducedMotion",
-      "useScrollProgress",
-    ],
-    href: "#hooks",
-    icon: (
-      <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 18a4 4 0 0 0-8 0" />
-        <circle cx="12" cy="11" r="3" />
-        <path d="M12 2v1M4.22 4.22l.7.7M2 12h1M4.22 19.78l.7-.7M20 12h1M19.08 4.92l-.7.7M19.08 19.08l-.7-.7" />
-      </svg>
-    ),
-  },
-];
+const CATEGORY_META: Record<string, { description: string; icon: string }> = {
+  about: { description: "Company mission, history & values sections", icon: "🏢" },
+  animations: { description: "Text marquee and motion components", icon: "✨" },
+  avatar: { description: "Avatar groups and profile cards", icon: "👤" },
+  backgrounds: { description: "Aurora, particles, gradient mesh & dot grid", icon: "🎨" },
+  banners: { description: "Announcements, notifications & promotions", icon: "📢" },
+  blog: { description: "Blog grids, featured posts & layouts", icon: "📝" },
+  breadcrumbs: { description: "Navigation breadcrumb trails", icon: "🔗" },
+  cards: { description: "Bento grids, glassmorphism & hover reveals", icon: "🃏" },
+  careers: { description: "Job listings and culture sections", icon: "💼" },
+  comparison: { description: "Feature tables and plan comparisons", icon: "⚖️" },
+  contact: { description: "Contact forms and info cards", icon: "📬" },
+  content: { description: "Text+image and two-column layouts", icon: "📄" },
+  "cookie-consent": { description: "GDPR cookie banners & preference modals", icon: "🍪" },
+  countdown: { description: "Launch countdown timers", icon: "⏱️" },
+  cta: { description: "Call-to-action sections and floating bars", icon: "🎯" },
+  dashboard: { description: "Stats overview, activity feed & charts", icon: "📊" },
+  dividers: { description: "Wave, diagonal & curved section separators", icon: "〰️" },
+  ecommerce: { description: "Product grids, detail pages & collections", icon: "🛒" },
+  "empty-state": { description: "No data and no results placeholders", icon: "📭" },
+  error: { description: "404, 500 and maintenance pages", icon: "⚠️" },
+  faq: { description: "Accordions, timelines & searchable FAQs", icon: "❓" },
+  features: { description: "Feature grids, bento layouts & comparisons", icon: "⭐" },
+  footers: { description: "Footer layouts with CTAs and newsletters", icon: "🦶" },
+  forms: { description: "Multi-step wizards, surveys & advanced forms", icon: "📋" },
+  gallery: { description: "Masonry, lightbox, carousel & filterable", icon: "🖼️" },
+  heroes: { description: "Hero sections with video, parallax & scroll", icon: "🦸" },
+  integrations: { description: "Integration logos and showcase grids", icon: "🔌" },
+  loading: { description: "Skeletons, spinners & progress bars", icon: "⏳" },
+  login: { description: "Login and registration forms", icon: "🔐" },
+  "logo-cloud": { description: "Scrolling and static logo displays", icon: "🏷️" },
+  map: { description: "Location sections and store finders", icon: "📍" },
+  "mobile-menu": { description: "Fullscreen overlays and drawer menus", icon: "📱" },
+  modal: { description: "Lightbox, dialogs & command palette", icon: "🪟" },
+  navigation: { description: "Navbars, mega menus & sidebars", icon: "🧭" },
+  newsletter: { description: "Email signup sections", icon: "✉️" },
+  notification: { description: "Toast stacks and inline alerts", icon: "🔔" },
+  onboarding: { description: "Welcome wizards, tours & checklists", icon: "🚀" },
+  pagination: { description: "Numbered pages and load more buttons", icon: "📖" },
+  portfolio: { description: "Case studies and filterable project grids", icon: "💎" },
+  pricing: { description: "Pricing cards, tables & sliders", icon: "💰" },
+  process: { description: "Horizontal steps and vertical timelines", icon: "🔄" },
+  ratings: { description: "Star ratings and review card grids", icon: "⭐" },
+  search: { description: "Search heroes and results sections", icon: "🔍" },
+  services: { description: "Service grids and pricing cards", icon: "🛠️" },
+  sidebar: { description: "Blog sidebars and table of contents", icon: "📑" },
+  "social-proof": { description: "Trust badges, logo carousels & banners", icon: "🏆" },
+  stats: { description: "Animated counters, radial progress & grids", icon: "📈" },
+  tables: { description: "Data tables and comparison matrices", icon: "📊" },
+  tabs: { description: "Animated underline, vertical & pill tabs", icon: "🗂️" },
+  team: { description: "Team grids, carousels & story timelines", icon: "👥" },
+  testimonials: { description: "Quotes, carousels, video walls & marquees", icon: "💬" },
+  video: { description: "Video heroes, showcases & testimonials", icon: "🎬" },
+};
+
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
+interface CategoryInfo {
+  name: string;
+  count: number;
+  description: string;
+  icon: string;
+}
+
+function getCategories(): CategoryInfo[] {
+  const categories: CategoryInfo[] = [];
+
+  // Components
+  if (fs.existsSync(COMPONENTS_DIR)) {
+    const dirs = fs.readdirSync(COMPONENTS_DIR, { withFileTypes: true });
+    for (const dir of dirs) {
+      if (!dir.isDirectory() || dir.name.startsWith("_") || dir.name === "ui") continue;
+      const files = fs.readdirSync(path.join(COMPONENTS_DIR, dir.name)).filter(f => f.endsWith(".tsx"));
+      const meta = CATEGORY_META[dir.name] ?? { description: `${dir.name} components`, icon: "📦" };
+      categories.push({ name: dir.name, count: files.length, ...meta });
+    }
+  }
+
+  // Animations (subfolders)
+  if (fs.existsSync(ANIMATIONS_DIR)) {
+    const dirs = fs.readdirSync(ANIMATIONS_DIR, { withFileTypes: true });
+    let totalAnimations = 0;
+    for (const dir of dirs) {
+      if (!dir.isDirectory()) continue;
+      const files = fs.readdirSync(path.join(ANIMATIONS_DIR, dir.name)).filter(f => f.endsWith(".tsx"));
+      totalAnimations += files.length;
+    }
+    if (totalAnimations > 0) {
+      categories.push({
+        name: "animations-lib",
+        count: totalAnimations,
+        description: "Entrance, hover, micro & scroll-driven animations",
+        icon: "🎭",
+      });
+    }
+  }
+
+  return categories.sort((a, b) => a.name.localeCompare(b.name));
+}
 
 /* ------------------------------------------------------------------ */
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
 export default function HomePage() {
+  const categories = getCategories();
+  const totalComponents = categories.reduce((sum, c) => sum + c.count, 0);
+
   return (
     <>
       {/* -- Nav -- */}
-      <NavStickyBlur
-        logoText="Component Forge"
-        links={navLinks}
-        ctaText="GitHub"
-        ctaHref="#"
-      />
-
-      {/* -- Hero -- */}
-      <HeroTypographyOnly
-        headline="Component Forge"
-        subheadline="Award-winning components. Continuously improved."
-        ctaText="Explore Components"
-        ctaHref="#components"
-        secondaryCtaText="View Source"
-        secondaryCtaHref="#"
-      />
-
-      {/* -- Component Grid -- */}
-      <SectionWrapper id="components" className="scroll-mt-20">
-        <div className="mb-12">
-          <p
-            className="text-sm font-semibold uppercase tracking-widest"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            Library
-          </p>
-          <h2
-            className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl"
-            style={{ color: "var(--foreground)" }}
-          >
-            Component Categories
-          </h2>
-          <p
-            className="mt-3 max-w-2xl text-lg leading-relaxed"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            Every component is built for production: accessible, responsive, and
-            performant out of the box.
-          </p>
-        </div>
-
-        <div className="grid gap-6 sm:grid-cols-2">
-          {categories.map((cat) => (
-            <a
-              key={cat.title}
-              href={cat.href}
-              className="group relative flex flex-col gap-4 rounded-2xl border p-6 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-              style={{
-                borderColor: "var(--border)",
-                backgroundColor: "var(--card)",
-              }}
-            >
-              {/* icon + count badge */}
-              <div className="flex items-center justify-between">
-                <div
-                  className="flex size-10 items-center justify-center rounded-lg"
-                  style={{
-                    backgroundColor:
-                      "color-mix(in srgb, var(--primary) 8%, transparent)",
-                    color: "var(--primary)",
-                  }}
-                >
-                  {cat.icon}
-                </div>
-                <span
-                  className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  style={{
-                    backgroundColor:
-                      "color-mix(in srgb, var(--foreground) 6%, transparent)",
-                    color: "var(--muted-foreground)",
-                  }}
-                >
-                  {cat.count} {cat.count === 1 ? "component" : "components"}
-                </span>
-              </div>
-
-              {/* title + description */}
-              <div>
-                <h3
-                  className="text-lg font-semibold tracking-tight"
-                  style={{ color: "var(--foreground)" }}
-                >
-                  {cat.title}
-                </h3>
-                <p
-                  className="mt-1 text-sm leading-relaxed"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  {cat.description}
-                </p>
-              </div>
-
-              {/* component list */}
-              <div className="mt-auto flex flex-wrap gap-1.5">
-                {cat.components.map((name) => (
-                  <span
-                    key={name}
-                    className="rounded-md px-2 py-0.5 text-xs font-mono"
-                    style={{
-                      backgroundColor:
-                        "color-mix(in srgb, var(--foreground) 5%, transparent)",
-                      color: "var(--muted-foreground)",
-                    }}
-                  >
-                    {name}
-                  </span>
-                ))}
-              </div>
-
-              {/* arrow indicator */}
-              <svg
-                className="absolute right-5 top-6 size-5 opacity-0 transition-all duration-200 group-hover:opacity-60 group-hover:translate-x-0.5"
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ color: "var(--muted-foreground)" }}
-              >
-                <path d="M5 10h10M11 6l4 4-4 4" />
-              </svg>
-            </a>
-          ))}
-        </div>
-      </SectionWrapper>
-
-      {/* -- Stats / CTA -- */}
-      <section
-        className="border-t"
+      <nav
+        className="sticky top-0 z-50 border-b backdrop-blur-xl"
         style={{
           borderColor: "var(--border)",
-          backgroundColor:
-            "color-mix(in srgb, var(--foreground) 2%, var(--background))",
+          backgroundColor: "color-mix(in srgb, var(--background) 80%, transparent)",
         }}
       >
-        <SectionWrapper>
-          <div className="flex flex-col items-center text-center">
-            <h2
-              className="text-2xl font-bold tracking-tight sm:text-3xl"
-              style={{ color: "var(--foreground)" }}
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+          <Link href="/" className="text-lg font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
+            Component Forge
+          </Link>
+          <div className="flex items-center gap-4">
+            <span
+              className="hidden rounded-full px-3 py-1 text-xs font-medium sm:inline-flex"
+              style={{
+                backgroundColor: "color-mix(in srgb, var(--primary) 10%, transparent)",
+                color: "var(--primary)",
+              }}
             >
-              Built for production
-            </h2>
-            <p
-              className="mt-3 max-w-xl text-base leading-relaxed"
-              style={{ color: "var(--muted-foreground)" }}
+              {totalComponents} components
+            </span>
+            <a
+              href="https://github.com/jgszq2hhyp-afk/component-forge"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_5%,transparent)]"
+              style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
             >
-              Every component is accessibility-tested, responsive, and ships
-              with reduced-motion support. Drop them into any Next.js project.
-            </p>
-
-            {/* stat row */}
-            <div className="mt-10 grid w-full max-w-md grid-cols-3 gap-6">
-              {[
-                { value: "10", label: "Components" },
-                { value: "4", label: "Hooks" },
-                { value: "A11y", label: "Compliant" },
-              ].map((stat) => (
-                <div key={stat.label} className="flex flex-col items-center">
-                  <span
-                    className="text-3xl font-bold tracking-tight"
-                    style={{ color: "var(--foreground)" }}
-                  >
-                    {stat.value}
-                  </span>
-                  <span
-                    className="mt-1 text-sm"
-                    style={{ color: "var(--muted-foreground)" }}
-                  >
-                    {stat.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              <a
-                href="#"
-                className="inline-flex items-center justify-center rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold transition-all duration-200 hover:brightness-110 hover:shadow-lg active:scale-[0.98]"
-                style={{
-                  backgroundColor: "var(--primary)",
-                  color: "var(--primary-foreground)",
-                }}
-              >
-                Get Started
-              </a>
-              <a
-                href="#"
-                className="inline-flex items-center justify-center rounded-lg border px-7 py-3.5 text-[0.9375rem] font-semibold transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
-                style={{
-                  color: "var(--foreground)",
-                  borderColor: "var(--border)",
-                }}
-              >
-                View on GitHub
-              </a>
-            </div>
+              GitHub
+            </a>
           </div>
-        </SectionWrapper>
+        </div>
+      </nav>
+
+      {/* -- Hero -- */}
+      <section className="relative overflow-hidden py-[clamp(3rem,10vw,8rem)]">
+        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+          <h1
+            className="text-[clamp(2rem,5vw,4rem)] font-bold tracking-tight leading-tight"
+            style={{ color: "var(--foreground)" }}
+          >
+            Component Forge
+          </h1>
+          <p
+            className="mx-auto mt-4 max-w-2xl text-[clamp(1rem,2vw,1.25rem)] leading-relaxed"
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            {totalComponents} award-winning components across {categories.length} categories.
+            Built for Next.js 15, TypeScript strict, fully accessible.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+            {[
+              { value: totalComponents.toString(), label: "Components" },
+              { value: categories.length.toString(), label: "Categories" },
+              { value: "91+", label: "Quality Score" },
+              { value: "A11y", label: "Compliant" },
+            ].map((stat) => (
+              <div key={stat.label} className="flex flex-col items-center">
+                <span className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+                  {stat.value}
+                </span>
+                <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  {stat.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* -- Footer -- */}
-      <footer
-        className="border-t py-8"
+      {/* -- Category Grid -- */}
+      <section
+        className="border-t py-[clamp(2rem,6vw,4rem)]"
         style={{ borderColor: "var(--border)" }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p
-            className="text-center text-sm"
-            style={{ color: "var(--muted-foreground)" }}
+          <h2
+            className="mb-8 text-[clamp(1.25rem,2.5vw,2rem)] font-bold tracking-tight"
+            style={{ color: "var(--foreground)" }}
           >
-            Component Forge &mdash; Continuously improved.
+            All Categories
+          </h2>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {categories.map((cat) => (
+              <Link
+                key={cat.name}
+                href={`/components/${cat.name}`}
+                className="group flex flex-col gap-3 rounded-xl border p-5 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 motion-reduce:transition-none"
+                style={{
+                  borderColor: "var(--border)",
+                  backgroundColor: "var(--card)",
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl" aria-hidden="true">{cat.icon}</span>
+                  <span
+                    className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                    style={{
+                      backgroundColor: "color-mix(in srgb, var(--foreground) 6%, transparent)",
+                      color: "var(--muted-foreground)",
+                    }}
+                  >
+                    {cat.count}
+                  </span>
+                </div>
+                <div>
+                  <h3
+                    className="font-semibold capitalize tracking-tight"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    {cat.name.replace(/-/g, " ")}
+                  </h3>
+                  <p
+                    className="mt-1 text-sm leading-relaxed"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    {cat.description}
+                  </p>
+                </div>
+                <svg
+                  className="ml-auto size-4 opacity-0 transition-opacity group-hover:opacity-60"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ color: "var(--muted-foreground)" }}
+                  aria-hidden="true"
+                >
+                  <path d="M5 10h10M11 6l4 4-4 4" />
+                </svg>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* -- Footer -- */}
+      <footer className="border-t py-8" style={{ borderColor: "var(--border)" }}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm" style={{ color: "var(--muted-foreground)" }}>
+            Component Forge &mdash; {totalComponents} components, continuously improved.
           </p>
         </div>
       </footer>
