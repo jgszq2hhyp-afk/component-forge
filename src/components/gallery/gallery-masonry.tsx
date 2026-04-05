@@ -19,8 +19,11 @@ const SPACING_UNIT_PX = 4;
 /** Responsive image sizes for srcset */
 const IMAGE_SIZES = "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw";
 
-/** Scale factor on hover */
-const HOVER_SCALE_CLASS = "motion-safe:group-hover:scale-105";
+/** Section max width */
+const SECTION_MAX_WIDTH = "80rem";
+
+/** Heading clamp */
+const HEADING_CLAMP = "clamp(1.75rem, 3vw + 0.5rem, 2.75rem)";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -111,12 +114,12 @@ export default function GalleryMasonry({
     <section
       className={cn(
         "py-16 sm:py-24",
-        "bg-[var(--gallery-bg,hsl(0_0%_100%))]",
         className,
       )}
+      style={{ backgroundColor: "var(--background)" }}
       aria-label="Masonry image gallery"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: SECTION_MAX_WIDTH }}>
         <div
           className={cn("grid", responsiveGridClasses[columns])}
           style={{ gap: gapPx }}
@@ -143,22 +146,24 @@ export default function GalleryMasonry({
                       onClick={() => onImageClick?.(image, globalIndex)}
                       className={cn(
                         "group relative w-full overflow-hidden rounded-xl",
-                        "transition-shadow duration-300",
+                        "transition-shadow duration-300 motion-reduce:transition-none",
                         "motion-safe:hover:shadow-xl",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gallery-ring,hsl(220_90%_56%))] focus-visible:ring-offset-2",
-                        "motion-reduce:transition-none motion-reduce:shadow-none",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                       )}
-                      style={{ aspectRatio: `${image.width}/${image.height}` }}
+                      style={{
+                        aspectRatio: `${image.width}/${image.height}`,
+                        ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                      }}
                       aria-label={`View ${image.alt}${image.category ? ` — ${image.category}` : ""}`}
                     >
                       {/* Skeleton placeholder */}
                       <div
                         className={cn(
-                          "absolute inset-0 bg-[var(--gallery-placeholder,hsl(0_0%_92%))]",
-                          "transition-opacity duration-500",
-                          "motion-reduce:transition-none",
+                          "absolute inset-0",
+                          "transition-opacity duration-500 motion-reduce:transition-none",
                           isLoaded ? "opacity-0" : "opacity-100",
                         )}
+                        style={{ backgroundColor: "var(--muted)" }}
                         aria-hidden="true"
                       />
 
@@ -173,7 +178,7 @@ export default function GalleryMasonry({
                         className={cn(
                           "h-full w-full object-cover",
                           "motion-safe:transition-transform motion-safe:duration-500",
-                          HOVER_SCALE_CLASS,
+                          "motion-safe:group-hover:scale-105",
                           "motion-reduce:transform-none motion-reduce:transition-none",
                         )}
                       />
@@ -191,11 +196,17 @@ export default function GalleryMasonry({
                         aria-hidden="true"
                       >
                         <figcaption>
-                          <p className="text-sm font-medium text-[var(--gallery-overlay-text,hsl(0_0%_100%))]">
+                          <p
+                            className="text-sm font-medium"
+                            style={{ color: "var(--gallery-overlay-text, hsl(0 0% 100%))" }}
+                          >
                             {image.alt}
                           </p>
                           {image.category && (
-                            <p className="mt-0.5 text-xs text-[var(--gallery-overlay-muted,hsl(0_0%_100%/0.7))]">
+                            <p
+                              className="mt-0.5 text-xs"
+                              style={{ color: "var(--gallery-overlay-muted, hsl(0 0% 100% / 0.7))" }}
+                            >
                               {image.category}
                             </p>
                           )}

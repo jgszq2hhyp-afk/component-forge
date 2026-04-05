@@ -1,9 +1,26 @@
-// @version 1.0.0 // @category faq // @name faq-expandable-grid // @source custom
+// @version 2.0.0
+// @category faq
+// @name faq-expandable-grid
+// @source custom
 
 'use client';
 
 import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HEADING_CLAMP = 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)';
+const SUBHEADING_CLAMP = 'clamp(1rem, 0.9rem + 0.4vw, 1.125rem)';
+const SECTION_MAX_WIDTH = '64rem';
+const ICON_SIZE = 20;
+const ICON_STROKE_WIDTH = 1.5;
+const ANSWER_MAX_HEIGHT_PX = '500px';
+const ANSWER_MIN_HEIGHT_PX = '0px';
+const STAGGER_DELAY_MS = 60;
+const MAX_STAGGER_ITEMS = 8;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -29,8 +46,8 @@ interface FaqExpandableGridProps {
 function PlusMinusIcon({ open }: { open: boolean }) {
   return (
     <svg
-      width="20"
-      height="20"
+      width={ICON_SIZE}
+      height={ICON_SIZE}
       viewBox="0 0 20 20"
       fill="none"
       aria-hidden="true"
@@ -43,7 +60,7 @@ function PlusMinusIcon({ open }: { open: boolean }) {
         x2="16"
         y2="10"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
       />
       {/* Vertical line (hidden when open) */}
@@ -53,7 +70,7 @@ function PlusMinusIcon({ open }: { open: boolean }) {
         x2="10"
         y2="16"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         className="faq-grid-plus-vertical"
         style={{
@@ -84,33 +101,37 @@ export default function FaqExpandableGrid({
 
   return (
     <section
-      className={cn(
-        'w-full px-4 py-16 sm:px-6 lg:px-8',
-        className,
-      )}
+      aria-label={title}
+      className={cn('w-full px-4 py-16 sm:px-6 lg:px-8', className)}
       style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
     >
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto" style={{ maxWidth: SECTION_MAX_WIDTH }}>
         {/* Header */}
-        <div className="mb-12 text-center">
+        <header className="mb-12 text-center">
           <h2
-            className="text-3xl font-bold tracking-tight sm:text-4xl"
-            style={{ color: 'var(--foreground)' }}
+            className="font-bold tracking-tight"
+            style={{
+              fontSize: HEADING_CLAMP,
+              color: 'var(--foreground)',
+            }}
           >
             {title}
           </h2>
           {description && (
             <p
-              className="mt-4 text-lg"
-              style={{ color: 'var(--muted-foreground)' }}
+              className="mt-4 leading-relaxed"
+              style={{
+                color: 'var(--muted-foreground)',
+                fontSize: SUBHEADING_CLAMP,
+              }}
             >
               {description}
             </p>
           )}
-        </div>
+        </header>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <dl className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {items.map((item, index) => {
             const isOpen = openIndex === index;
 
@@ -123,33 +144,42 @@ export default function FaqExpandableGrid({
                   borderColor: isOpen ? 'var(--primary)' : 'var(--border)',
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => toggleItem(index)}
-                  aria-expanded={isOpen}
-                  className={cn(
-                    'flex w-full items-start justify-between gap-3 p-5 text-left',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    'rounded-xl',
-                  )}
-                  style={{
-                    cursor: 'pointer',
-                    color: 'var(--card-foreground)',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                  }}
-                >
-                  <span className="text-base font-semibold leading-snug">
-                    {item.question}
-                  </span>
-                  <PlusMinusIcon open={isOpen} />
-                </button>
+                <dt>
+                  <button
+                    type="button"
+                    onClick={() => toggleItem(index)}
+                    aria-expanded={isOpen}
+                    aria-controls={`faq-answer-${index}`}
+                    id={`faq-question-${index}`}
+                    className={cn(
+                      'flex w-full items-start justify-between gap-3 p-5 text-left',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                      'rounded-xl',
+                    )}
+                    style={{
+                      cursor: 'pointer',
+                      color: 'var(--card-foreground)',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                      ['--tw-ring-offset-color' as string]: 'var(--card)',
+                    }}
+                  >
+                    <span className="text-base font-semibold leading-snug">
+                      {item.question}
+                    </span>
+                    <PlusMinusIcon open={isOpen} />
+                  </button>
+                </dt>
 
                 {/* Answer - collapsible */}
-                <div
+                <dd
+                  id={`faq-answer-${index}`}
+                  role="region"
+                  aria-labelledby={`faq-question-${index}`}
                   className="faq-grid-answer"
                   style={{
-                    maxHeight: isOpen ? '500px' : '0px',
+                    maxHeight: isOpen ? ANSWER_MAX_HEIGHT_PX : ANSWER_MIN_HEIGHT_PX,
                     overflow: 'hidden',
                   }}
                 >
@@ -173,11 +203,11 @@ export default function FaqExpandableGrid({
                       </span>
                     )}
                   </div>
-                </div>
+                </dd>
               </div>
             );
           })}
-        </div>
+        </dl>
       </div>
 
       {/* Animation with reduced-motion support */}
@@ -199,14 +229,9 @@ export default function FaqExpandableGrid({
             animation: faq-grid-fade-in 0.4s ease both;
           }
 
-          .faq-grid-card:nth-child(1) { animation-delay: 0ms; }
-          .faq-grid-card:nth-child(2) { animation-delay: 60ms; }
-          .faq-grid-card:nth-child(3) { animation-delay: 120ms; }
-          .faq-grid-card:nth-child(4) { animation-delay: 180ms; }
-          .faq-grid-card:nth-child(5) { animation-delay: 240ms; }
-          .faq-grid-card:nth-child(6) { animation-delay: 300ms; }
-          .faq-grid-card:nth-child(7) { animation-delay: 360ms; }
-          .faq-grid-card:nth-child(8) { animation-delay: 420ms; }
+          ${Array.from({ length: MAX_STAGGER_ITEMS }, (_, i) =>
+            `.faq-grid-card:nth-child(${i + 1}) { animation-delay: ${i * STAGGER_DELAY_MS}ms; }`
+          ).join('\n          ')}
         }
 
         @media (prefers-reduced-motion: reduce) {

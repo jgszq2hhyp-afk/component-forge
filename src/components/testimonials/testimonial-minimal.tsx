@@ -1,9 +1,20 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category testimonials
 // @name testimonial-minimal
 // @source self-authored
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const HEADING_CLAMP_CENTERED = 'clamp(1.25rem, 1rem + 1.5vw, 1.875rem)';
+const SECTION_MAX_WIDTH_CENTERED = '48rem';
+const SECTION_MAX_WIDTH_STACKED = '80rem';
+const DASH_WIDTH_REM = '2rem';
+const DASH_HEIGHT_PX = '1px';
+const HEADLINE_LETTER_SPACING = '0.2em';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -29,15 +40,19 @@ interface TestimonialMinimalProps {
 function Dash() {
   return (
     <span
-      className="inline-block w-8 h-px mx-auto"
-      style={{ backgroundColor: 'var(--border)' }}
+      className="inline-block mx-auto"
+      style={{
+        width: DASH_WIDTH_REM,
+        height: DASH_HEIGHT_PX,
+        backgroundColor: 'var(--border)',
+      }}
       aria-hidden="true"
     />
   );
 }
 
 // ---------------------------------------------------------------------------
-// Component
+// Component (Server Component)
 // ---------------------------------------------------------------------------
 
 export default function TestimonialMinimal({
@@ -49,53 +64,65 @@ export default function TestimonialMinimal({
   if (layout === 'centered') {
     return (
       <section
+        aria-label={headline ?? 'Testimonials'}
         className={cn(
-          'max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28',
+          'mx-auto px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28',
           className,
         )}
-        style={{ backgroundColor: 'var(--background)' }}
+        style={{
+          maxWidth: SECTION_MAX_WIDTH_CENTERED,
+          backgroundColor: 'var(--background)',
+        }}
       >
         {headline && (
           <p
-            className="text-xs uppercase tracking-[0.2em] font-medium text-center mb-10"
-            style={{ color: 'var(--muted-foreground)' }}
+            className="text-xs uppercase font-medium text-center mb-10"
+            style={{
+              letterSpacing: HEADLINE_LETTER_SPACING,
+              color: 'var(--muted-foreground)',
+            }}
           >
             {headline}
           </p>
         )}
 
-        <div className="space-y-16">
+        <ol className="list-none space-y-16 p-0 m-0">
           {testimonials.map((testimonial, index) => (
-            <figure key={index} className="text-center">
-              <blockquote
-                className="text-xl sm:text-2xl lg:text-3xl font-light leading-snug tracking-tight italic"
-                style={{ color: 'var(--foreground)' }}
-              >
-                &ldquo;{testimonial.quote}&rdquo;
-              </blockquote>
+            <li key={index}>
+              <figure className="text-center">
+                <blockquote
+                  className="font-light leading-snug tracking-tight italic"
+                  style={{
+                    fontSize: HEADING_CLAMP_CENTERED,
+                    color: 'var(--foreground)',
+                  }}
+                >
+                  &ldquo;{testimonial.quote}&rdquo;
+                </blockquote>
 
-              <div className="mt-6 flex flex-col items-center gap-2">
-                <Dash />
-                <figcaption>
-                  <p
-                    className="text-sm font-semibold"
-                    style={{ color: 'var(--foreground)' }}
-                  >
-                    {testimonial.name}
-                  </p>
-                  {testimonial.role && (
+                <div className="mt-6 flex flex-col items-center gap-2">
+                  <Dash />
+                  <figcaption>
                     <p
-                      className="text-xs"
-                      style={{ color: 'var(--muted-foreground)' }}
+                      className="text-sm font-semibold"
+                      style={{ color: 'var(--foreground)' }}
                     >
-                      {testimonial.role}
+                      {testimonial.name}
                     </p>
-                  )}
-                </figcaption>
-              </div>
-            </figure>
+                    {testimonial.role && (
+                      <p
+                        className="text-xs"
+                        style={{ color: 'var(--muted-foreground)' }}
+                      >
+                        {testimonial.role}
+                      </p>
+                    )}
+                  </figcaption>
+                </div>
+              </figure>
+            </li>
           ))}
-        </div>
+        </ol>
       </section>
     );
   }
@@ -103,50 +130,59 @@ export default function TestimonialMinimal({
   // Stacked layout
   return (
     <section
+      aria-label={headline ?? 'Testimonials'}
       className={cn(
-        'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24',
+        'mx-auto px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24',
         className,
       )}
-      style={{ backgroundColor: 'var(--background)' }}
+      style={{
+        maxWidth: SECTION_MAX_WIDTH_STACKED,
+        backgroundColor: 'var(--background)',
+      }}
     >
       {headline && (
         <p
-          className="text-xs uppercase tracking-[0.2em] font-medium mb-10"
-          style={{ color: 'var(--muted-foreground)' }}
+          className="text-xs uppercase font-medium mb-10"
+          style={{
+            letterSpacing: HEADLINE_LETTER_SPACING,
+            color: 'var(--muted-foreground)',
+          }}
         >
           {headline}
         </p>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-14">
+      <ol className="list-none grid grid-cols-1 gap-10 p-0 m-0 md:grid-cols-2 lg:grid-cols-3 lg:gap-14">
         {testimonials.map((testimonial, index) => (
-          <figure key={index}>
-            <blockquote
-              className="text-base leading-relaxed"
-              style={{ color: 'var(--foreground)' }}
-            >
-              &ldquo;{testimonial.quote}&rdquo;
-            </blockquote>
-            <figcaption className="mt-4">
-              <Dash />
-              <p
-                className="mt-3 text-sm font-semibold"
+          <li key={index}>
+            <figure>
+              <blockquote
+                className="text-base leading-relaxed"
                 style={{ color: 'var(--foreground)' }}
               >
-                {testimonial.name}
-              </p>
-              {testimonial.role && (
+                &ldquo;{testimonial.quote}&rdquo;
+              </blockquote>
+              <figcaption className="mt-4">
+                <Dash />
                 <p
-                  className="text-xs"
-                  style={{ color: 'var(--muted-foreground)' }}
+                  className="mt-3 text-sm font-semibold"
+                  style={{ color: 'var(--foreground)' }}
                 >
-                  {testimonial.role}
+                  {testimonial.name}
                 </p>
-              )}
-            </figcaption>
-          </figure>
+                {testimonial.role && (
+                  <p
+                    className="text-xs"
+                    style={{ color: 'var(--muted-foreground)' }}
+                  >
+                    {testimonial.role}
+                  </p>
+                )}
+              </figcaption>
+            </figure>
+          </li>
         ))}
-      </div>
+      </ol>
     </section>
   );
 }

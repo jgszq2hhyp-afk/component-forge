@@ -1,6 +1,27 @@
-// @version 1.0.0 // @category footers // @name footer-with-map // @source custom
+// @version 2.0.0
+// @category footers
+// @name footer-with-map
+// @source custom
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SECTION_MAX_WIDTH = 'max-w-7xl';
+const SECTION_PADDING_X = 'px-6 md:px-12';
+const SECTION_PADDING_Y = 'py-12 md:py-16';
+const MAP_ASPECT_RATIO = 'aspect-[4/3] md:aspect-auto';
+const MAP_MIN_HEIGHT = 'md:min-h-[320px]';
+const MAP_RADIUS = 'rounded-xl';
+const MAP_ICON_SIZE = 40;
+const GRID_LAYOUT = 'md:grid-cols-2';
+const GRID_GAP = 'gap-10 lg:gap-16';
+const LINK_GAP = 'gap-x-6 gap-y-2';
+const COMPANY_NAME_SIZE = 'clamp(1.125rem, 1rem + 0.5vw, 1.25rem)';
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -53,23 +74,27 @@ export default function FooterWithMap({
 
   return (
     <footer
-      className={cn(
-        'px-6 py-12 md:px-12 md:py-16',
-        className,
-      )}
+      aria-label="Site footer"
+      className={cn(SECTION_PADDING_X, SECTION_PADDING_Y, className)}
       style={{
         backgroundColor: 'var(--background)',
         borderTop: '1px solid var(--border)',
       }}
     >
-      <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-2 lg:gap-16">
-        {/* Left — Map */}
-        <div
-          className="aspect-[4/3] w-full overflow-hidden rounded-xl md:aspect-auto md:min-h-[320px]"
+      <div className={cn('mx-auto grid', SECTION_MAX_WIDTH, GRID_LAYOUT, GRID_GAP)}>
+        {/* Left -- Map */}
+        <figure
+          className={cn(
+            'w-full overflow-hidden',
+            MAP_ASPECT_RATIO,
+            MAP_MIN_HEIGHT,
+            MAP_RADIUS,
+          )}
           style={{
             backgroundColor: 'var(--muted)',
             border: '1px solid var(--border)',
           }}
+          aria-label={`${companyName} location map`}
         >
           {mapEmbedUrl ? (
             <iframe
@@ -81,16 +106,16 @@ export default function FooterWithMap({
               allowFullScreen
             />
           ) : (
-            <div
+            <figcaption
               className="flex h-full w-full items-center justify-center p-6 text-center text-sm"
               style={{ color: 'var(--muted-foreground)' }}
             >
-              {/* Map icon */}
               <div className="flex flex-col items-center gap-3">
                 <svg
-                  className="h-10 w-10"
-                  fill="none"
+                  width={MAP_ICON_SIZE}
+                  height={MAP_ICON_SIZE}
                   viewBox="0 0 24 24"
+                  fill="none"
                   strokeWidth={1.5}
                   stroke="currentColor"
                   aria-hidden="true"
@@ -108,17 +133,20 @@ export default function FooterWithMap({
                 </svg>
                 <span>{mapPlaceholderText}</span>
               </div>
-            </div>
+            </figcaption>
           )}
-        </div>
+        </figure>
 
-        {/* Right — Contact + Links */}
+        {/* Right -- Contact + Links */}
         <div className="flex flex-col justify-between gap-8">
           {/* Contact info */}
           <div className="space-y-4">
             <p
-              className="text-lg font-bold tracking-tight"
-              style={{ color: 'var(--foreground)' }}
+              className="font-bold tracking-tight"
+              style={{
+                color: 'var(--foreground)',
+                fontSize: COMPANY_NAME_SIZE,
+              }}
             >
               {companyName}
             </p>
@@ -133,9 +161,10 @@ export default function FooterWithMap({
                   <a
                     href={`tel:${contact.phone.replace(/\s/g, '')}`}
                     className={cn(
-                      'transition-colors duration-200',
+                      'rounded-sm',
+                      'transition-colors duration-200 motion-reduce:transition-none',
                       'hover:underline underline-offset-4',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-sm',
+                      FOCUS_RING,
                     )}
                     style={{
                       color: 'var(--muted-foreground)',
@@ -152,9 +181,10 @@ export default function FooterWithMap({
                   <a
                     href={`mailto:${contact.email}`}
                     className={cn(
-                      'transition-colors duration-200',
+                      'rounded-sm',
+                      'transition-colors duration-200 motion-reduce:transition-none',
                       'hover:underline underline-offset-4',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-sm',
+                      FOCUS_RING,
                     )}
                     style={{
                       color: 'var(--muted-foreground)',
@@ -169,19 +199,20 @@ export default function FooterWithMap({
             </address>
           </div>
 
-          {/* Links */}
+          {/* Navigation links */}
           <nav
             aria-label="Footer navigation"
-            className="flex flex-wrap gap-x-6 gap-y-2"
+            className={cn('flex flex-wrap', LINK_GAP)}
           >
             {links.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
                 className={cn(
-                  'text-sm transition-colors duration-200',
+                  'text-sm rounded-sm',
+                  'transition-colors duration-200 motion-reduce:transition-none',
                   'hover:underline underline-offset-4',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-sm',
+                  FOCUS_RING,
                 )}
                 style={{
                   color: 'var(--muted-foreground)',
@@ -195,26 +226,14 @@ export default function FooterWithMap({
           </nav>
 
           {/* Copyright */}
-          <p
-            className="text-xs"
+          <small
+            className="block text-xs"
             style={{ color: 'var(--muted-foreground)' }}
           >
             &copy; {currentYear} {companyName}. All rights reserved.
-          </p>
+          </small>
         </div>
       </div>
-
-      {/* Reduced-motion */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-@media (prefers-reduced-motion: reduce) {
-  footer a {
-    transition-duration: 0.01ms !important;
-  }
-}`,
-        }}
-      />
     </footer>
   );
 }

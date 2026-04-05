@@ -9,10 +9,17 @@ import { cn } from "@/lib/utils";
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
 
-const SECTION_PY = "py-10 sm:py-14";
+const SECTION_PADDING_Y = "py-10 sm:py-14";
 const MAX_WIDTH = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
-const STAT_PX = "px-6 sm:px-10";
+const STAT_PADDING_X = "px-6 sm:px-10";
 const DIVIDER_HEIGHT = "h-12";
+const HEADLINE_CLAMP = "text-[clamp(1rem,0.5rem+1vw,1.125rem)]";
+const VALUE_CLAMP = "text-[clamp(1.5rem,1rem+1.5vw,2.25rem)]";
+const HEADLINE_MARGIN_BOTTOM = "mb-8";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface Stat {
   value: string;
@@ -26,12 +33,20 @@ interface SocialProofBannerProps {
   className?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Default data
+// ---------------------------------------------------------------------------
+
 const defaultStats: Stat[] = [
   { value: "1,000+", label: "Companies" },
   { value: "50K+", label: "Users" },
   { value: "99.9%", label: "Uptime" },
   { value: "4.9/5", label: "Rating" },
 ];
+
+// ---------------------------------------------------------------------------
+// Variant styles (all CSS variables)
+// ---------------------------------------------------------------------------
 
 const variantStyles: Record<
   string,
@@ -60,6 +75,10 @@ const variantStyles: Record<
   },
 };
 
+// ---------------------------------------------------------------------------
+// Component (Server Component)
+// ---------------------------------------------------------------------------
+
 export default function SocialProofBanner({
   headline = "Trusted by 1,000+ companies worldwide",
   stats = defaultStats,
@@ -70,31 +89,32 @@ export default function SocialProofBanner({
 
   return (
     <section
-      className={cn(SECTION_PY, styles.bg, className)}
+      className={cn(SECTION_PADDING_Y, styles.bg, className)}
       aria-label="Social proof statistics"
     >
       <div className={MAX_WIDTH}>
         {headline && (
-          <p
+          <h2
             className={cn(
-              "mb-8 text-center font-medium",
-              "text-[clamp(1rem,0.5rem+1vw,1.125rem)]",
-              styles.headline
+              HEADLINE_MARGIN_BOTTOM,
+              "text-center font-medium",
+              HEADLINE_CLAMP,
+              styles.headline,
             )}
           >
             {headline}
-          </p>
+          </h2>
         )}
 
         <dl className="flex flex-wrap items-center justify-center gap-y-6">
           {stats.map((stat, i) => (
             <div key={stat.label} className="flex items-center">
-              <div className={cn(STAT_PX, "text-center")}>
+              <div className={cn(STAT_PADDING_X, "text-center")}>
                 <dt className="order-2">
                   <span
                     className={cn(
                       "mt-1 block text-sm font-medium",
-                      styles.label
+                      styles.label,
                     )}
                   >
                     {stat.label}
@@ -104,8 +124,8 @@ export default function SocialProofBanner({
                   <span
                     className={cn(
                       "font-bold tracking-tight",
-                      "text-[clamp(1.5rem,1rem+1.5vw,2.25rem)]",
-                      styles.value
+                      VALUE_CLAMP,
+                      styles.value,
                     )}
                   >
                     {stat.value}
@@ -117,7 +137,7 @@ export default function SocialProofBanner({
                   className={cn(
                     "hidden sm:block w-px",
                     DIVIDER_HEIGHT,
-                    styles.divider
+                    styles.divider,
                   )}
                   aria-hidden="true"
                 />

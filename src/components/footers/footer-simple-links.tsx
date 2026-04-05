@@ -1,6 +1,20 @@
-// @version 1.0.0 // @category footers // @name footer-simple-links // @source custom
+// @version 2.0.0
+// @category footers
+// @name footer-simple-links
+// @source custom
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const SECTION_MAX_WIDTH = 'max-w-7xl';
+const SECTION_PADDING_X = 'px-6 md:px-12';
+const SECTION_PADDING_Y = 'py-6 md:py-8';
+const LINK_GAP = 'gap-x-6 gap-y-2';
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -37,29 +51,33 @@ export default function FooterSimpleLinks({
 
   return (
     <footer
-      className={cn(
-        'px-6 py-6 md:px-12 md:py-8',
-        className,
-      )}
+      aria-label="Site footer"
+      className={cn(SECTION_PADDING_X, SECTION_PADDING_Y, className)}
       style={{
         backgroundColor: 'var(--background)',
         borderTop: '1px solid var(--border)',
       }}
     >
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 md:flex-row md:justify-between">
-        {/* Links row */}
+      <div
+        className={cn(
+          'mx-auto flex flex-col items-center gap-4 md:flex-row md:justify-between',
+          SECTION_MAX_WIDTH,
+        )}
+      >
+        {/* Navigation links */}
         <nav
           aria-label="Footer navigation"
-          className="flex flex-wrap justify-center gap-x-6 gap-y-2 md:justify-start"
+          className={cn('flex flex-wrap justify-center md:justify-start', LINK_GAP)}
         >
           {links.map((link) => (
             <a
               key={link.label}
               href={link.href}
               className={cn(
-                'text-sm transition-colors duration-200',
+                'text-sm rounded-sm',
+                'transition-colors duration-200 motion-reduce:transition-none',
                 'hover:underline underline-offset-4',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-sm',
+                FOCUS_RING,
               )}
               style={{
                 color: 'var(--muted-foreground)',
@@ -73,25 +91,13 @@ export default function FooterSimpleLinks({
         </nav>
 
         {/* Copyright */}
-        <p
-          className="whitespace-nowrap text-xs"
+        <small
+          className="block whitespace-nowrap text-xs"
           style={{ color: 'var(--muted-foreground)' }}
         >
           &copy; {currentYear} {companyName}
-        </p>
+        </small>
       </div>
-
-      {/* Reduced-motion */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-@media (prefers-reduced-motion: reduce) {
-  footer a {
-    transition-duration: 0.01ms !important;
-  }
-}`,
-        }}
-      />
     </footer>
   );
 }

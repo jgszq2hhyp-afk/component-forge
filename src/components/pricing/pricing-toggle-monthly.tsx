@@ -22,6 +22,11 @@ const SWITCH_THUMB_SIZE = 'h-5 w-5';
 const SWITCH_THUMB_OFF_PX = '4px';
 const SWITCH_THUMB_ON_PX = '22px';
 const CTA_ACTIVE_SCALE = '0.98';
+const ICON_SIZE = 16;
+const ICON_STROKE_WIDTH = 1.5;
+const SAVINGS_BADGE_MIX_PERCENT = 15;
+const FEATURE_EXCLUDED_OPACITY = 0.4;
+const SWITCH_TRACK_MIX_PERCENT = 20;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,11 +65,17 @@ interface PricingToggleMonthlyProps {
 
 function CheckIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg
+      width={ICON_SIZE}
+      height={ICON_SIZE}
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M3.5 8.5L6.5 11.5L12.5 4.5"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -125,7 +136,9 @@ export default function PricingToggleMonthly({
             className="text-sm font-medium"
             id="toggle-monthly-label"
             style={{
-              color: !isYearly ? 'var(--foreground)' : 'var(--muted-foreground)',
+              color: !isYearly
+                ? 'var(--foreground)'
+                : 'var(--muted-foreground)',
             }}
           >
             {monthlyLabel}
@@ -146,8 +159,8 @@ export default function PricingToggleMonthly({
             style={{
               backgroundColor: isYearly
                 ? 'var(--primary)'
-                : 'color-mix(in oklch, var(--foreground) 20%, transparent)',
-              ['--tw-ring-color' as string]: 'var(--primary)',
+                : `color-mix(in oklch, var(--foreground) ${SWITCH_TRACK_MIX_PERCENT}%, transparent)`,
+              ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
               ['--tw-ring-offset-color' as string]: 'var(--background)',
             }}
           >
@@ -157,6 +170,7 @@ export default function PricingToggleMonthly({
                 SWITCH_THUMB_SIZE,
                 'transition-transform duration-200 motion-reduce:transition-none',
               )}
+              aria-hidden="true"
               style={{
                 backgroundColor: 'var(--background)',
                 transform: isYearly
@@ -169,7 +183,9 @@ export default function PricingToggleMonthly({
             className="flex items-center gap-1.5 text-sm font-medium"
             id="toggle-yearly-label"
             style={{
-              color: isYearly ? 'var(--foreground)' : 'var(--muted-foreground)',
+              color: isYearly
+                ? 'var(--foreground)'
+                : 'var(--muted-foreground)',
             }}
           >
             {yearlyLabel}
@@ -177,7 +193,7 @@ export default function PricingToggleMonthly({
               <mark
                 className="rounded-full px-2 py-0.5 text-xs font-semibold"
                 style={{
-                  backgroundColor: 'color-mix(in oklch, var(--primary) 15%, transparent)',
+                  backgroundColor: `color-mix(in oklch, var(--primary) ${SAVINGS_BADGE_MIX_PERCENT}%, transparent)`,
                   color: 'var(--primary)',
                 }}
               >
@@ -195,10 +211,13 @@ export default function PricingToggleMonthly({
               role="listitem"
               className={cn(
                 'relative flex flex-col rounded-2xl border p-8',
+                'transition-shadow duration-200 motion-reduce:transition-none',
                 plan.highlighted && 'shadow-lg',
               )}
               style={{
-                borderColor: plan.highlighted ? 'var(--primary)' : 'var(--border)',
+                borderColor: plan.highlighted
+                  ? 'var(--primary)'
+                  : 'var(--border)',
                 backgroundColor: 'var(--background)',
               }}
             >
@@ -221,7 +240,10 @@ export default function PricingToggleMonthly({
                 {plan.name}
               </h3>
               {plan.description && (
-                <p className="mt-1 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                <p
+                  className="mt-1 text-sm"
+                  style={{ color: 'var(--muted-foreground)' }}
+                >
                   {plan.description}
                 </p>
               )}
@@ -237,21 +259,31 @@ export default function PricingToggleMonthly({
                 >
                   {isYearly ? plan.yearlyPrice : plan.monthlyPrice}
                 </span>
-                <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                <span
+                  className="text-sm"
+                  style={{ color: 'var(--muted-foreground)' }}
+                >
                   /{isYearly ? 'year' : 'month'}
                 </span>
               </div>
 
               {/* Features */}
-              <ul className="mt-8 flex-1 space-y-3" aria-label={`${plan.name} features`}>
+              <ul
+                className="mt-8 flex-1 space-y-3"
+                aria-label={`${plan.name} features`}
+              >
                 {plan.features.map((feature) => (
                   <li key={feature.text} className="flex items-start gap-2.5">
                     <span
                       className="mt-0.5 shrink-0"
                       aria-hidden="true"
                       style={{
-                        color: feature.included ? 'var(--primary)' : 'var(--muted-foreground)',
-                        opacity: feature.included ? 1 : 0.4,
+                        color: feature.included
+                          ? 'var(--primary)'
+                          : 'var(--muted-foreground)',
+                        opacity: feature.included
+                          ? 1
+                          : FEATURE_EXCLUDED_OPACITY,
                       }}
                     >
                       <CheckIcon />
@@ -259,7 +291,9 @@ export default function PricingToggleMonthly({
                     <span
                       className="text-sm"
                       style={{
-                        color: feature.included ? 'var(--foreground)' : 'var(--muted-foreground)',
+                        color: feature.included
+                          ? 'var(--foreground)'
+                          : 'var(--muted-foreground)',
                       }}
                     >
                       {feature.text}
@@ -277,21 +311,24 @@ export default function PricingToggleMonthly({
                   'transition-all duration-200 motion-reduce:transition-none',
                   'hover:brightness-110',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                  `active:scale-[${CTA_ACTIVE_SCALE}]`,
                 )}
                 style={
                   plan.highlighted
                     ? {
                         backgroundColor: 'var(--primary)',
                         color: 'var(--primary-foreground)',
-                        ['--tw-ring-color' as string]: 'var(--primary)',
-                        ['--tw-ring-offset-color' as string]: 'var(--background)',
+                        ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                        ['--tw-ring-offset-color' as string]:
+                          'var(--background)',
                       }
                     : {
                         backgroundColor: 'transparent',
                         color: 'var(--foreground)',
                         border: '1px solid var(--border)',
-                        ['--tw-ring-color' as string]: 'var(--foreground)',
-                        ['--tw-ring-offset-color' as string]: 'var(--background)',
+                        ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                        ['--tw-ring-offset-color' as string]:
+                          'var(--background)',
                       }
                 }
               >

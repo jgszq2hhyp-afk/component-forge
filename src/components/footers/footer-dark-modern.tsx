@@ -155,14 +155,15 @@ export default function FooterDarkModern({
                         <a
                           href={link.href}
                           className={cn(
-                            'text-sm transition-colors duration-200',
+                            'text-sm rounded-sm',
+                            'transition-colors duration-200 motion-reduce:transition-none',
                             'hover:underline underline-offset-4',
                             FOCUS_RING,
-                            'rounded-sm',
                           )}
                           style={{
                             ...linkColor,
                             ['--tw-ring-color' as string]: 'var(--primary)',
+                            ['--tw-ring-offset-color' as string]: sectionStyles.backgroundColor,
                           }}
                         >
                           {link.label}
@@ -197,11 +198,16 @@ export default function FooterDarkModern({
                   key={link.label}
                   href={link.href}
                   className={cn(
-                    'text-xs transition-colors duration-200 hover:underline underline-offset-4',
+                    'text-xs rounded-sm',
+                    'transition-colors duration-200 motion-reduce:transition-none',
+                    'hover:underline underline-offset-4',
                     FOCUS_RING,
-                    'rounded-sm',
                   )}
-                  style={mutedText}
+                  style={{
+                    ...mutedText,
+                    ['--tw-ring-color' as string]: 'var(--primary)',
+                    ['--tw-ring-offset-color' as string]: sectionStyles.backgroundColor,
+                  }}
                 >
                   {link.label}
                 </a>

@@ -18,9 +18,20 @@ const BORDERED_AVATAR_SIZE = "h-24 w-24";
 /** Simple variant avatar size */
 const SIMPLE_AVATAR_SIZE = "h-40 w-40";
 
+/** Section layout */
+const SECTION_PADDING_Y = "py-16 sm:py-24";
+const MAX_WIDTH = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
+const HEADER_MARGIN_BOTTOM = "mb-12";
+const GRID_GAP = "gap-8";
+const CARD_PADDING = "p-6";
+const CARD_RADIUS = "rounded-2xl";
+const OVERLAY_ASPECT = "aspect-[3/4]";
+const HEADING_CLAMP = "clamp(1.5rem, 2.5vw + 0.5rem, 1.875rem)";
+const RING_COLOR_VALUE = "var(--ring, hsl(215 20% 65%))";
+
 /** Focus ring class applied to all interactive elements */
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--team-ring,hsl(220_90%_56%))]";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -160,6 +171,9 @@ function SocialLinks({
             FOCUS_RING,
             linkClassName,
           )}
+          style={{
+            ['--tw-ring-color' as string]: RING_COLOR_VALUE,
+          }}
           aria-label={`${member.name} on ${s.platform}`}
         >
           <SocialIcon platform={s.platform} className={SOCIAL_ICON_SIZE} />
@@ -183,16 +197,16 @@ export default function TeamGridCards({
 }: TeamGridCardsProps) {
   return (
     <section
-      className={cn("py-16 sm:py-24 bg-[var(--team-bg,transparent)]", className)}
+      className={cn(SECTION_PADDING_Y, "bg-[var(--team-bg,transparent)]", className)}
       aria-label="Our team"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className={MAX_WIDTH}>
         {(heading || subheading) && (
-          <header className="mb-12 text-center">
+          <header className={cn(HEADER_MARGIN_BOTTOM, "text-center")}>
             {heading && (
               <h2
                 className="font-bold text-[var(--team-heading-color,hsl(0_0%_9%))]"
-                style={{ fontSize: "clamp(1.5rem, 2.5vw + 0.5rem, 1.875rem)" }}
+                style={{ fontSize: HEADING_CLAMP }}
               >
                 {heading}
               </h2>
@@ -205,13 +219,13 @@ export default function TeamGridCards({
           </header>
         )}
 
-        <div className={cn("grid gap-8", columnClasses[columns])}>
+        <div className={cn("grid", GRID_GAP, columnClasses[columns])}>
           {members.map((member) => {
             if (variant === "overlay") {
               return (
                 <article
                   key={member.name}
-                  className="group relative overflow-hidden rounded-2xl aspect-[3/4]"
+                  className={cn("group relative overflow-hidden", CARD_RADIUS, OVERLAY_ASPECT)}
                 >
                   <img
                     src={member.imageSrc}
@@ -219,7 +233,10 @@ export default function TeamGridCards({
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:transform-none"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" aria-hidden="true" />
+                  <div
+                    className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+                    aria-hidden="true"
+                  />
                   <div className="absolute bottom-0 left-0 right-0 p-6">
                     <p className="text-lg font-semibold text-white">{member.name}</p>
                     <p className="text-sm text-white/70">{member.role}</p>
@@ -235,6 +252,9 @@ export default function TeamGridCards({
                               "text-white/80 hover:text-white transition-colors motion-reduce:transition-none rounded-sm",
                               FOCUS_RING,
                             )}
+                            style={{
+                              ['--tw-ring-color' as string]: RING_COLOR_VALUE,
+                            }}
                             aria-label={`${member.name} on ${s.platform}`}
                           >
                             <SocialIcon platform={s.platform} className={SOCIAL_ICON_SIZE} />
@@ -252,15 +272,17 @@ export default function TeamGridCards({
                 <article
                   key={member.name}
                   className={cn(
-                    "rounded-2xl p-6 text-center",
+                    CARD_RADIUS,
+                    CARD_PADDING,
+                    "text-center",
                     "border border-[var(--team-card-border,hsl(0_0%_0%/0.08))]",
-                    "bg-[var(--team-card-bg,transparent)]"
+                    "bg-[var(--team-card-bg,transparent)]",
                   )}
                 >
                   <img
                     src={member.imageSrc}
                     alt={member.name}
-                    className={`mx-auto ${BORDERED_AVATAR_SIZE} rounded-full object-cover`}
+                    className={cn("mx-auto rounded-full object-cover", BORDERED_AVATAR_SIZE)}
                     loading="lazy"
                   />
                   <p className="mt-4 text-base font-semibold text-[var(--team-name-color,hsl(0_0%_9%))]">
@@ -290,7 +312,7 @@ export default function TeamGridCards({
                 <img
                   src={member.imageSrc}
                   alt={member.name}
-                  className={`mx-auto ${SIMPLE_AVATAR_SIZE} rounded-2xl object-cover`}
+                  className={cn("mx-auto rounded-2xl object-cover", SIMPLE_AVATAR_SIZE)}
                   loading="lazy"
                 />
                 <p className="mt-4 text-base font-semibold text-[var(--team-name-color,hsl(0_0%_9%))]">

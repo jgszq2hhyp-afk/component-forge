@@ -18,6 +18,9 @@ const GRADIENT_MIX_PERCENT = 80;
 const HIGHLIGHTED_MUTED_MIX_PERCENT = 75;
 const BADGE_OFFSET_TOP = '-top-3';
 const BADGE_OFFSET_LEFT = 'left-6';
+const CTA_ACTIVE_SCALE = '0.98';
+const ICON_SIZE = 16;
+const ICON_STROKE_WIDTH = 1.5;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,11 +55,17 @@ interface PricingCardsGradientProps {
 
 function CheckIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg
+      width={ICON_SIZE}
+      height={ICON_SIZE}
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M3.5 8.5L6.5 11.5L12.5 4.5"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth={ICON_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -137,6 +146,7 @@ export default function PricingCardsGradient({
                 role="listitem"
                 className={cn(
                   'relative flex flex-col rounded-2xl p-8',
+                  'transition-shadow duration-200 motion-reduce:transition-none',
                   isHighlighted && 'shadow-xl',
                 )}
                 style={cardBg}
@@ -196,10 +206,20 @@ export default function PricingCardsGradient({
                 </div>
 
                 {/* Features */}
-                <ul className="mt-8 flex-1 space-y-3" aria-label={`${plan.name} features`}>
+                <ul
+                  className="mt-8 flex-1 space-y-3"
+                  aria-label={`${plan.name} features`}
+                >
                   {plan.features.map((feature) => (
-                    <li key={feature.text} className="flex items-start gap-2.5">
-                      <span className="mt-0.5 shrink-0" style={{ color: checkColor }} aria-hidden="true">
+                    <li
+                      key={feature.text}
+                      className="flex items-start gap-2.5"
+                    >
+                      <span
+                        className="mt-0.5 shrink-0"
+                        style={{ color: checkColor }}
+                        aria-hidden="true"
+                      >
                         <CheckIcon />
                       </span>
                       <span className="text-sm" style={{ color: textColor }}>
@@ -218,20 +238,25 @@ export default function PricingCardsGradient({
                     'transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110 hover:shadow-lg motion-reduce:hover:shadow-none',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    `active:scale-[${CTA_ACTIVE_SCALE}]`,
                   )}
                   style={
                     isHighlighted
                       ? {
                           backgroundColor: 'var(--primary-foreground)',
                           color: 'var(--primary)',
-                          ['--tw-ring-color' as string]: 'var(--primary-foreground)',
-                          ['--tw-ring-offset-color' as string]: 'var(--primary)',
+                          ['--tw-ring-color' as string]:
+                            'var(--ring, hsl(215 20% 65%))',
+                          ['--tw-ring-offset-color' as string]:
+                            'var(--primary)',
                         }
                       : {
                           backgroundColor: 'var(--primary)',
                           color: 'var(--primary-foreground)',
-                          ['--tw-ring-color' as string]: 'var(--primary)',
-                          ['--tw-ring-offset-color' as string]: 'var(--background)',
+                          ['--tw-ring-color' as string]:
+                            'var(--ring, hsl(215 20% 65%))',
+                          ['--tw-ring-offset-color' as string]:
+                            'var(--background)',
                         }
                   }
                 >

@@ -12,12 +12,15 @@ import { cn } from "@/lib/utils";
 /*  Constants                                                         */
 /* ------------------------------------------------------------------ */
 
-const OVERLAY_ICON_SIZE = 40; // px
-const LIGHTBOX_CLOSE_ICON_SIZE = 24; // px
-const LIGHTBOX_NAV_ICON_SIZE = 32; // px
+const OVERLAY_ICON_SIZE = 40;
+const LIGHTBOX_CLOSE_ICON_SIZE = 24;
+const LIGHTBOX_NAV_ICON_SIZE = 32;
 const LIGHTBOX_MAX_IMAGE_VH = 85;
 const LIGHTBOX_MAX_IMAGE_VW = 90;
 const LIGHTBOX_Z_INDEX = 100;
+const HEADING_CLAMP = "clamp(1.75rem, 4vw, 2.5rem)";
+const SECTION_MAX_WIDTH = "80rem";
+const HOVER_SCALE_CLASS = "group-hover:scale-110";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -73,15 +76,22 @@ export default function GalleryLightboxGrid({
 }: GalleryLightboxGridProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (lightboxIndex === null) return;
       if (e.key === "Escape") setLightboxIndex(null);
-      if (e.key === "ArrowRight") setLightboxIndex((prev) => (prev !== null ? (prev + 1) % images.length : null));
-      if (e.key === "ArrowLeft") setLightboxIndex((prev) => (prev !== null ? (prev - 1 + images.length) % images.length : null));
+      if (e.key === "ArrowRight")
+        setLightboxIndex((prev) =>
+          prev !== null ? (prev + 1) % images.length : null,
+        );
+      if (e.key === "ArrowLeft")
+        setLightboxIndex((prev) =>
+          prev !== null ? (prev - 1 + images.length) % images.length : null,
+        );
     },
-    [lightboxIndex, images.length]
+    [lightboxIndex, images.length],
   );
 
   useEffect(() => {
@@ -95,6 +105,7 @@ export default function GalleryLightboxGrid({
       closeBtnRef.current?.focus();
     } else {
       document.body.style.overflow = "";
+      triggerRef.current?.focus();
     }
     return () => {
       document.body.style.overflow = "";
@@ -103,20 +114,30 @@ export default function GalleryLightboxGrid({
 
   return (
     <section
-      className={cn("py-16 sm:py-24 bg-[var(--gallery-bg,hsl(0_0%_100%))]", className)}
+      className={cn("py-16 sm:py-24", className)}
+      style={{ backgroundColor: "var(--background)" }}
       aria-label="Image gallery"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: SECTION_MAX_WIDTH }}>
         {/* Header */}
         {(title || subtitle) && (
-          <header className="text-center max-w-2xl mx-auto mb-12">
+          <header className="mx-auto mb-12 max-w-2xl text-center">
             {title && (
-              <h2 className="font-bold tracking-tight text-[clamp(1.75rem,4vw,2.5rem)] text-[var(--gallery-title,hsl(0_0%_9%))]">
+              <h2
+                className="font-bold tracking-tight"
+                style={{
+                  fontSize: HEADING_CLAMP,
+                  color: "var(--foreground)",
+                }}
+              >
                 {title}
               </h2>
             )}
             {subtitle && (
-              <p className="mt-3 text-base text-[var(--gallery-subtitle,hsl(0_0%_40%))]">
+              <p
+                className="mt-3 text-base"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 {subtitle}
               </p>
             )}
@@ -128,13 +149,20 @@ export default function GalleryLightboxGrid({
           {images.map((image, index) => (
             <div key={index} role="listitem">
               <button
-                onClick={() => setLightboxIndex(index)}
+                ref={lightboxIndex === index ? triggerRef : undefined}
+                onClick={() => {
+                  triggerRef.current = document.activeElement as HTMLButtonElement;
+                  setLightboxIndex(index);
+                }}
                 className={cn(
                   "group relative aspect-[4/3] w-full overflow-hidden rounded-xl",
-                  "hover:shadow-xl",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gallery-ring,hsl(220_90%_56%))] focus-visible:ring-offset-2",
-                  "motion-reduce:!transition-none motion-reduce:!transform-none"
+                  "transition-shadow duration-300 motion-reduce:transition-none",
+                  "hover:shadow-xl motion-reduce:hover:shadow-none",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                 )}
+                style={{
+                  ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                }}
                 aria-label={`View ${image.alt}`}
               >
                 <img
@@ -142,31 +170,36 @@ export default function GalleryLightboxGrid({
                   alt={image.alt}
                   loading="lazy"
                   className={cn(
-                    "h-full w-full object-cover transition-transform duration-500",
-                    "group-hover:scale-110",
-                    "motion-reduce:!scale-100 motion-reduce:!transition-none"
+                    "h-full w-full object-cover",
+                    "transition-transform duration-500 motion-reduce:transition-none",
+                    HOVER_SCALE_CLASS,
+                    "motion-reduce:transform-none",
                   )}
                 />
                 <div
                   className={cn(
-                    "absolute inset-0 flex items-center justify-center transition-opacity duration-300",
-                    "bg-[var(--gallery-overlay,hsl(0_0%_0%/0.4))]",
+                    "absolute inset-0 flex items-center justify-center",
+                    "transition-opacity duration-300 motion-reduce:transition-none",
                     "opacity-0 group-hover:opacity-100",
-                    "motion-reduce:!transition-none"
                   )}
+                  style={{ backgroundColor: "var(--gallery-overlay, hsl(0 0% 0% / 0.4))" }}
                   aria-hidden="true"
                 >
                   <svg
                     width={OVERLAY_ICON_SIZE}
                     height={OVERLAY_ICON_SIZE}
-                    className="text-[var(--gallery-overlay-icon,hsl(0_0%_100%))]"
+                    style={{ color: "var(--gallery-overlay-icon, hsl(0 0% 100%))" }}
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
                     aria-hidden="true"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"
+                    />
                   </svg>
                 </div>
               </button>
@@ -178,8 +211,11 @@ export default function GalleryLightboxGrid({
       {/* Lightbox */}
       {lightboxIndex !== null && (
         <div
-          className="fixed inset-0 flex items-center justify-center bg-[var(--gallery-lightbox-bg,hsl(0_0%_0%/0.9))] p-4"
-          style={{ zIndex: LIGHTBOX_Z_INDEX }}
+          className="fixed inset-0 flex items-center justify-center p-4"
+          style={{
+            zIndex: LIGHTBOX_Z_INDEX,
+            backgroundColor: "var(--gallery-lightbox-bg, hsl(0 0% 0% / 0.9))",
+          }}
           onClick={() => setLightboxIndex(null)}
           role="dialog"
           aria-modal="true"
@@ -190,13 +226,15 @@ export default function GalleryLightboxGrid({
             ref={closeBtnRef}
             onClick={() => setLightboxIndex(null)}
             className={cn(
-              "absolute top-4 right-4 z-10 p-2 rounded-full",
-              "text-[var(--gallery-lightbox-control,hsl(0_0%_100%/0.8))]",
-              "hover:text-[var(--gallery-lightbox-control-hover,hsl(0_0%_100%))]",
-              "hover:bg-[var(--gallery-lightbox-control-bg,hsl(0_0%_100%/0.1))]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-              "transition-colors motion-reduce:!transition-none"
+              "absolute top-4 right-4 z-10 rounded-full p-2",
+              "transition-colors motion-reduce:transition-none",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
             )}
+            style={{
+              color: "var(--gallery-lightbox-control, hsl(0 0% 100% / 0.8))",
+              ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+              ['--tw-ring-offset-color' as string]: 'hsl(0 0% 0%)',
+            }}
             aria-label="Close lightbox"
           >
             <svg
@@ -219,13 +257,15 @@ export default function GalleryLightboxGrid({
               setLightboxIndex((lightboxIndex - 1 + images.length) % images.length);
             }}
             className={cn(
-              "absolute left-4 z-10 p-2 rounded-full",
-              "text-[var(--gallery-lightbox-control,hsl(0_0%_100%/0.8))]",
-              "hover:text-[var(--gallery-lightbox-control-hover,hsl(0_0%_100%))]",
-              "hover:bg-[var(--gallery-lightbox-control-bg,hsl(0_0%_100%/0.1))]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-              "transition-colors motion-reduce:!transition-none"
+              "absolute left-4 z-10 rounded-full p-2",
+              "transition-colors motion-reduce:transition-none",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
             )}
+            style={{
+              color: "var(--gallery-lightbox-control, hsl(0 0% 100% / 0.8))",
+              ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+              ['--tw-ring-offset-color' as string]: 'hsl(0 0% 0%)',
+            }}
             aria-label="Previous image"
           >
             <svg
@@ -244,21 +284,34 @@ export default function GalleryLightboxGrid({
           {/* Image */}
           <figure
             className="relative"
-            style={{ maxHeight: `${LIGHTBOX_MAX_IMAGE_VH}vh`, maxWidth: `${LIGHTBOX_MAX_IMAGE_VW}vw` }}
+            style={{
+              maxHeight: `${LIGHTBOX_MAX_IMAGE_VH}vh`,
+              maxWidth: `${LIGHTBOX_MAX_IMAGE_VW}vw`,
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <img
               src={images[lightboxIndex].src}
               alt={images[lightboxIndex].alt}
               className="rounded-lg object-contain"
-              style={{ maxHeight: `${LIGHTBOX_MAX_IMAGE_VH}vh`, maxWidth: `${LIGHTBOX_MAX_IMAGE_VW}vw` }}
+              style={{
+                maxHeight: `${LIGHTBOX_MAX_IMAGE_VH}vh`,
+                maxWidth: `${LIGHTBOX_MAX_IMAGE_VW}vw`,
+              }}
             />
             {images[lightboxIndex].caption && (
-              <figcaption className="mt-3 text-center text-sm text-[var(--gallery-lightbox-caption,hsl(0_0%_100%/0.7))]">
+              <figcaption
+                className="mt-3 text-center text-sm"
+                style={{ color: "var(--gallery-lightbox-caption, hsl(0 0% 100% / 0.7))" }}
+              >
                 {images[lightboxIndex].caption}
               </figcaption>
             )}
-            <p className="mt-1 text-center text-xs text-[var(--gallery-lightbox-counter,hsl(0_0%_100%/0.4))]" aria-live="polite">
+            <p
+              className="mt-1 text-center text-xs"
+              style={{ color: "var(--gallery-lightbox-counter, hsl(0 0% 100% / 0.4))" }}
+              aria-live="polite"
+            >
               {lightboxIndex + 1} / {images.length}
             </p>
           </figure>
@@ -270,13 +323,15 @@ export default function GalleryLightboxGrid({
               setLightboxIndex((lightboxIndex + 1) % images.length);
             }}
             className={cn(
-              "absolute right-4 z-10 p-2 rounded-full",
-              "text-[var(--gallery-lightbox-control,hsl(0_0%_100%/0.8))]",
-              "hover:text-[var(--gallery-lightbox-control-hover,hsl(0_0%_100%))]",
-              "hover:bg-[var(--gallery-lightbox-control-bg,hsl(0_0%_100%/0.1))]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-              "transition-colors motion-reduce:!transition-none"
+              "absolute right-4 z-10 rounded-full p-2",
+              "transition-colors motion-reduce:transition-none",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
             )}
+            style={{
+              color: "var(--gallery-lightbox-control, hsl(0 0% 100% / 0.8))",
+              ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+              ['--tw-ring-offset-color' as string]: 'hsl(0 0% 0%)',
+            }}
             aria-label="Next image"
           >
             <svg

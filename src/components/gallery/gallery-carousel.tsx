@@ -9,7 +9,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
-// Constants — no magic numbers
+// Constants
 // ---------------------------------------------------------------------------
 
 /** Scroll threshold in px to decide if arrow should be enabled */
@@ -35,6 +35,15 @@ const NAV_BUTTON_SIZE = "h-10 w-10";
 
 /** Icon size inside nav buttons */
 const NAV_ICON_SIZE = "h-5 w-5";
+
+/** Heading font size clamp */
+const HEADING_CLAMP = "clamp(1.5rem, 3vw + 0.5rem, 2.25rem)";
+
+/** Section max width */
+const SECTION_MAX_WIDTH = "80rem";
+
+/** Disabled button opacity */
+const DISABLED_OPACITY = "disabled:opacity-30";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -94,21 +103,26 @@ export default function GalleryCarousel({
     const el = scrollRef.current;
     if (!el) return;
     setCanScrollLeft(el.scrollLeft > SCROLL_EDGE_THRESHOLD);
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - SCROLL_EDGE_THRESHOLD);
+    setCanScrollRight(
+      el.scrollLeft < el.scrollWidth - el.clientWidth - SCROLL_EDGE_THRESHOLD,
+    );
 
     const cardWidth = getCardWidth(el);
     setActiveIndex(Math.round(el.scrollLeft / cardWidth));
   }, [getCardWidth]);
 
-  const scroll = useCallback((direction: "left" | "right") => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const cardWidth = getCardWidth(el);
-    el.scrollBy({
-      left: direction === "left" ? -cardWidth : cardWidth,
-      behavior: "smooth",
-    });
-  }, [getCardWidth]);
+  const scroll = useCallback(
+    (direction: "left" | "right") => {
+      const el = scrollRef.current;
+      if (!el) return;
+      const cardWidth = getCardWidth(el);
+      el.scrollBy({
+        left: direction === "left" ? -cardWidth : cardWidth,
+        behavior: "smooth",
+      });
+    },
+    [getCardWidth],
+  );
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -120,7 +134,9 @@ export default function GalleryCarousel({
 
   useEffect(() => {
     if (!autoPlay) return;
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (prefersReducedMotion) return;
 
     const interval = setInterval(() => {
@@ -136,23 +152,33 @@ export default function GalleryCarousel({
 
   return (
     <section
-      className={cn("py-16 sm:py-24 bg-[var(--gallery-bg,hsl(0_0%_100%))]", className)}
+      className={cn("py-16 sm:py-24", className)}
+      style={{ backgroundColor: "var(--background)" }}
       aria-label="Gallery carousel"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div
+        className="mx-auto px-4 sm:px-6 lg:px-8"
+        style={{ maxWidth: SECTION_MAX_WIDTH }}
+      >
         {/* Header */}
-        <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
+        <header className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             {title && (
               <h2
-                className="font-bold tracking-tight text-[var(--gallery-title,hsl(0_0%_9%))]"
-                style={{ fontSize: "clamp(1.5rem, 3vw + 0.5rem, 2.25rem)" }}
+                className="font-bold tracking-tight"
+                style={{
+                  fontSize: HEADING_CLAMP,
+                  color: "var(--foreground)",
+                }}
               >
                 {title}
               </h2>
             )}
             {subtitle && (
-              <p className="mt-2 text-base text-[var(--gallery-subtitle,hsl(0_0%_40%))]">
+              <p
+                className="mt-2 text-base"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 {subtitle}
               </p>
             )}
@@ -164,36 +190,66 @@ export default function GalleryCarousel({
               onClick={() => scroll("left")}
               disabled={!canScrollLeft}
               className={cn(
-                `flex ${NAV_BUTTON_SIZE} items-center justify-center rounded-full border`,
+                "flex items-center justify-center rounded-full border",
+                NAV_BUTTON_SIZE,
                 "transition-colors motion-reduce:transition-none",
-                "border-[var(--gallery-control-border,hsl(0_0%_0%/0.12))]",
-                "text-[var(--gallery-control,hsl(0_0%_9%))]",
-                "hover:bg-[var(--gallery-control-hover,hsl(0_0%_0%/0.05))]",
-                "disabled:opacity-30 disabled:cursor-not-allowed",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--gallery-ring,hsl(220_90%_56%))]"
+                DISABLED_OPACITY,
+                "disabled:cursor-not-allowed",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
               )}
+              style={{
+                borderColor: "var(--border)",
+                color: "var(--foreground)",
+                ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+              }}
               aria-label="Previous slide"
             >
-              <svg className={NAV_ICON_SIZE} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              <svg
+                className={NAV_ICON_SIZE}
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 19.5L8.25 12l7.5-7.5"
+                />
               </svg>
             </button>
             <button
               onClick={() => scroll("right")}
               disabled={!canScrollRight}
               className={cn(
-                `flex ${NAV_BUTTON_SIZE} items-center justify-center rounded-full border`,
+                "flex items-center justify-center rounded-full border",
+                NAV_BUTTON_SIZE,
                 "transition-colors motion-reduce:transition-none",
-                "border-[var(--gallery-control-border,hsl(0_0%_0%/0.12))]",
-                "text-[var(--gallery-control,hsl(0_0%_9%))]",
-                "hover:bg-[var(--gallery-control-hover,hsl(0_0%_0%/0.05))]",
-                "disabled:opacity-30 disabled:cursor-not-allowed",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--gallery-ring,hsl(220_90%_56%))]"
+                DISABLED_OPACITY,
+                "disabled:cursor-not-allowed",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
               )}
+              style={{
+                borderColor: "var(--border)",
+                color: "var(--foreground)",
+                ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+              }}
               aria-label="Next slide"
             >
-              <svg className={NAV_ICON_SIZE} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              <svg
+                className={NAV_ICON_SIZE}
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                />
               </svg>
             </button>
           </nav>
@@ -203,17 +259,21 @@ export default function GalleryCarousel({
         <div
           ref={scrollRef}
           role="list"
-          className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden motion-reduce:scroll-auto"
+          className={cn(
+            "flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4",
+            "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+            "motion-reduce:scroll-auto",
+          )}
         >
           {images.map((image, index) => (
             <article
               key={index}
               role="listitem"
               className={cn(
-                "flex-shrink-0 w-[280px] sm:w-[340px] lg:w-[400px] snap-start",
+                "w-[280px] flex-shrink-0 snap-start sm:w-[340px] lg:w-[400px]",
                 "group relative overflow-hidden rounded-xl",
-                "bg-[var(--gallery-card-bg,hsl(0_0%_96%))]"
               )}
+              style={{ backgroundColor: "var(--muted)" }}
             >
               <figure className="aspect-[4/3] overflow-hidden">
                 <img
@@ -222,20 +282,26 @@ export default function GalleryCarousel({
                   loading="lazy"
                   className={cn(
                     "h-full w-full object-cover",
-                    "transition-transform duration-500 group-hover:scale-105",
-                    "motion-reduce:transform-none motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                    "transition-transform duration-500 motion-reduce:transition-none",
+                    "group-hover:scale-105 motion-reduce:transform-none",
                   )}
                 />
               </figure>
               {(image.title || image.description) && (
                 <div className="p-4">
                   {image.title && (
-                    <h3 className="text-base font-semibold text-[var(--gallery-card-title,hsl(0_0%_9%))]">
+                    <h3
+                      className="text-base font-semibold"
+                      style={{ color: "var(--foreground)" }}
+                    >
                       {image.title}
                     </h3>
                   )}
                   {image.description && (
-                    <p className="mt-1 text-sm text-[var(--gallery-card-desc,hsl(0_0%_40%))]">
+                    <p
+                      className="mt-1 text-sm"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
                       {image.description}
                     </p>
                   )}
@@ -246,7 +312,10 @@ export default function GalleryCarousel({
         </div>
 
         {/* Dots */}
-        <nav className="mt-6 flex justify-center gap-2" aria-label="Slide indicators">
+        <nav
+          className="mt-6 flex justify-center gap-2"
+          aria-label="Slide indicators"
+        >
           {images.map((_, index) => (
             <button
               key={index}
@@ -257,13 +326,21 @@ export default function GalleryCarousel({
                 el.scrollTo({ left: cardWidth * index, behavior: "smooth" });
               }}
               className={cn(
-                `${DOT_HEIGHT} rounded-full`,
+                DOT_HEIGHT,
+                "rounded-full",
                 "transition-all duration-300 motion-reduce:transition-none",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--gallery-ring,hsl(220_90%_56%))]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                 index === activeIndex
-                  ? `${DOT_ACTIVE_WIDTH} bg-[var(--gallery-dot-active,hsl(0_0%_9%))]`
-                  : `${DOT_INACTIVE_WIDTH} bg-[var(--gallery-dot,hsl(0_0%_0%/0.2))]`
+                  ? DOT_ACTIVE_WIDTH
+                  : DOT_INACTIVE_WIDTH,
               )}
+              style={{
+                backgroundColor:
+                  index === activeIndex
+                    ? "var(--foreground)"
+                    : "var(--border)",
+                ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+              }}
               aria-label={`Go to slide ${index + 1}`}
               aria-current={index === activeIndex ? "true" : undefined}
             />

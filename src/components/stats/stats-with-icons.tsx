@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
 
-const SECTION_PY = "py-16 sm:py-24";
+const SECTION_PADDING_Y = "py-16 sm:py-24";
 const MAX_WIDTH = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
 const CARD_RADIUS = "rounded-2xl";
 const CARD_PADDING = "p-6";
@@ -18,6 +18,16 @@ const ICON_BADGE_SIZE_LG = "h-14 w-14";
 const ICON_BADGE_RADIUS = "rounded-xl";
 const ICON_BADGE_RADIUS_LG = "rounded-2xl";
 const ICON_SIZE = "h-6 w-6";
+const HEADING_CLAMP = "text-[clamp(1.5rem,1rem+1.5vw,1.875rem)]";
+const VALUE_CLAMP_CARD = "text-[clamp(1.5rem,1rem+1vw,1.875rem)]";
+const HEADER_MARGIN_BOTTOM = "mb-12";
+const GRID_GAP = "gap-6 sm:gap-8";
+const BADGE_MARGIN_BOTTOM = "mb-4";
+const RING_COLOR_VALUE = "var(--ring, hsl(215 20% 65%))";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface IconStat {
   icon: React.ReactNode;
@@ -34,6 +44,10 @@ interface StatsWithIconsProps {
   variant?: "minimal" | "card" | "icon-top";
   className?: string;
 }
+
+// ---------------------------------------------------------------------------
+// Icons
+// ---------------------------------------------------------------------------
 
 function UsersIcon({ className }: { className?: string }) {
   return (
@@ -111,6 +125,10 @@ function ClockIcon({ className }: { className?: string }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Default data
+// ---------------------------------------------------------------------------
+
 const defaultStats: IconStat[] = [
   {
     icon: <UsersIcon className={ICON_SIZE} />,
@@ -138,11 +156,19 @@ const defaultStats: IconStat[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Column classes
+// ---------------------------------------------------------------------------
+
 const columnClasses: Record<2 | 3 | 4, string> = {
   2: "grid-cols-1 sm:grid-cols-2",
   3: "grid-cols-1 sm:grid-cols-3",
   4: "grid-cols-2 lg:grid-cols-4",
 };
+
+// ---------------------------------------------------------------------------
+// Component (Server Component)
+// ---------------------------------------------------------------------------
 
 export default function StatsWithIcons({
   stats = defaultStats,
@@ -155,21 +181,21 @@ export default function StatsWithIcons({
   return (
     <section
       className={cn(
-        SECTION_PY,
+        SECTION_PADDING_Y,
         "bg-[var(--stats-icon-bg,transparent)]",
-        className
+        className,
       )}
       aria-label="Key metrics with icons"
     >
       <div className={MAX_WIDTH}>
         {(heading || subheading) && (
-          <header className="mb-12 text-center">
+          <header className={cn(HEADER_MARGIN_BOTTOM, "text-center")}>
             {heading && (
               <h2
                 className={cn(
                   "font-bold",
-                  "text-[clamp(1.5rem,1rem+1.5vw,1.875rem)]",
-                  "text-[var(--stats-icon-heading-color,hsl(0_0%_9%))]"
+                  HEADING_CLAMP,
+                  "text-[var(--stats-icon-heading-color,hsl(0_0%_9%))]",
                 )}
               >
                 {heading}
@@ -183,7 +209,7 @@ export default function StatsWithIcons({
           </header>
         )}
 
-        <dl className={cn("grid gap-6 sm:gap-8", columnClasses[columns])}>
+        <dl className={cn("grid", GRID_GAP, columnClasses[columns])}>
           {stats.map((stat) => {
             if (variant === "minimal") {
               return (
@@ -211,11 +237,12 @@ export default function StatsWithIcons({
                 <div key={stat.label} className="text-center">
                   <div
                     className={cn(
-                      "mx-auto mb-4 flex items-center justify-center",
+                      "mx-auto flex items-center justify-center",
+                      BADGE_MARGIN_BOTTOM,
                       ICON_BADGE_SIZE_LG,
                       ICON_BADGE_RADIUS_LG,
                       "bg-[var(--stats-icon-badge-bg,hsl(220_80%_55%/0.1))]",
-                      "text-[var(--stats-icon-accent,hsl(220_80%_55%))]"
+                      "text-[var(--stats-icon-accent,hsl(220_80%_55%))]",
                     )}
                     aria-hidden="true"
                   >
@@ -245,16 +272,19 @@ export default function StatsWithIcons({
                   CARD_PADDING,
                   "bg-[var(--stats-icon-card-bg,hsl(0_0%_98%))]",
                   "border border-[var(--stats-icon-card-border,hsl(0_0%_0%/0.06))]",
-                  "focus-within:ring-2 focus-within:ring-[var(--stats-icon-focus-ring,hsl(220_80%_55%))] focus-within:ring-offset-2"
                 )}
+                style={{
+                  ['--tw-ring-color' as string]: RING_COLOR_VALUE,
+                }}
               >
                 <div
                   className={cn(
-                    "mb-4 flex items-center justify-center",
+                    "flex items-center justify-center",
+                    BADGE_MARGIN_BOTTOM,
                     ICON_BADGE_SIZE_SM,
                     ICON_BADGE_RADIUS,
                     "bg-[var(--stats-icon-badge-bg,hsl(220_80%_55%/0.1))]",
-                    "text-[var(--stats-icon-accent,hsl(220_80%_55%))]"
+                    "text-[var(--stats-icon-accent,hsl(220_80%_55%))]",
                   )}
                   aria-hidden="true"
                 >
@@ -263,8 +293,8 @@ export default function StatsWithIcons({
                 <dd
                   className={cn(
                     "font-bold",
-                    "text-[clamp(1.5rem,1rem+1vw,1.875rem)]",
-                    "text-[var(--stats-icon-value-color,hsl(0_0%_9%))]"
+                    VALUE_CLAMP_CARD,
+                    "text-[var(--stats-icon-value-color,hsl(0_0%_9%))]",
                   )}
                 >
                   {stat.value}

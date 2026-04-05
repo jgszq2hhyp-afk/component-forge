@@ -153,8 +153,8 @@ export default function FooterWithNewsletter({
                 className={cn(
                   'whitespace-nowrap rounded-lg text-sm font-semibold',
                   BUTTON_PADDING,
-                  'transition-all duration-200',
-                  'hover:brightness-110 active:scale-[0.98]',
+                  'transition-all duration-200 motion-reduce:transition-none',
+                  'hover:brightness-110 active:scale-[0.98] motion-reduce:active:scale-100',
                   FOCUS_RING,
                   'disabled:opacity-60 disabled:pointer-events-none',
                 )}
@@ -199,11 +199,16 @@ export default function FooterWithNewsletter({
                         <a
                           href={link.href}
                           className={cn(
-                            'text-sm transition-colors duration-200 hover:underline underline-offset-4',
+                            'text-sm rounded-sm',
+                            'transition-colors duration-200 motion-reduce:transition-none',
+                            'hover:underline underline-offset-4',
                             FOCUS_RING,
-                            'rounded-sm',
                           )}
-                          style={{ color: 'var(--muted-foreground)' }}
+                          style={{
+                            color: 'var(--muted-foreground)',
+                            ['--tw-ring-color' as string]: 'var(--primary)',
+                            ['--tw-ring-offset-color' as string]: 'var(--background)',
+                          }}
                         >
                           {link.label}
                         </a>

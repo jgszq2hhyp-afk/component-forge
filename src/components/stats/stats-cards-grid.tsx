@@ -9,11 +9,22 @@ import { cn } from "@/lib/utils";
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
 
-const SECTION_PY = "py-16 sm:py-24";
+const SECTION_PADDING_Y = "py-16 sm:py-24";
 const MAX_WIDTH = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
 const CARD_RADIUS = "rounded-2xl";
 const CARD_PADDING = "p-6";
 const TREND_ICON_SIZE = "h-3 w-3";
+const HEADING_CLAMP = "text-[clamp(1.5rem,1rem+1.5vw,1.875rem)]";
+const HEADING_MARGIN_BOTTOM = "mb-12";
+const GRID_GAP = "gap-6";
+const TREND_MARGIN_TOP = "mt-4";
+const DESCRIPTION_MARGIN_TOP = "mt-3";
+const VALUE_MARGIN_TOP = "mt-2";
+const RING_COLOR_VALUE = "var(--ring, hsl(215 20% 65%))";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface StatCard {
   value: string;
@@ -30,6 +41,10 @@ interface StatsCardsGridProps {
   variant?: "bordered" | "filled" | "elevated";
   className?: string;
 }
+
+// ---------------------------------------------------------------------------
+// Default data
+// ---------------------------------------------------------------------------
 
 const defaultStats: StatCard[] = [
   {
@@ -58,6 +73,10 @@ const defaultStats: StatCard[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Column & variant maps
+// ---------------------------------------------------------------------------
+
 const columnClasses: Record<2 | 3 | 4, string> = {
   2: "grid-cols-1 sm:grid-cols-2",
   3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
@@ -72,6 +91,10 @@ const variantClasses: Record<string, string> = {
     "bg-[var(--stat-card-bg,hsl(0_0%_100%))] shadow-md shadow-[var(--stat-card-shadow,hsl(0_0%_0%/0.04))]",
 };
 
+// ---------------------------------------------------------------------------
+// Component (Server Component)
+// ---------------------------------------------------------------------------
+
 export default function StatsCardsGrid({
   stats = defaultStats,
   heading,
@@ -82,9 +105,9 @@ export default function StatsCardsGrid({
   return (
     <section
       className={cn(
-        SECTION_PY,
+        SECTION_PADDING_Y,
         "bg-[var(--stats-bg,transparent)]",
-        className
+        className,
       )}
       aria-label="Key statistics overview"
     >
@@ -92,16 +115,17 @@ export default function StatsCardsGrid({
         {heading && (
           <h2
             className={cn(
-              "mb-12 text-center font-bold",
-              "text-[clamp(1.5rem,1rem+1.5vw,1.875rem)]",
-              "text-[var(--stats-heading-color,hsl(0_0%_9%))]"
+              HEADING_MARGIN_BOTTOM,
+              "text-center font-bold",
+              HEADING_CLAMP,
+              "text-[var(--stats-heading-color,hsl(0_0%_9%))]",
             )}
           >
             {heading}
           </h2>
         )}
 
-        <dl className={cn("grid gap-6", columnClasses[columns])}>
+        <dl className={cn("grid", GRID_GAP, columnClasses[columns])}>
           {stats.map((stat) => (
             <div
               key={stat.label}
@@ -109,15 +133,17 @@ export default function StatsCardsGrid({
                 CARD_RADIUS,
                 CARD_PADDING,
                 variantClasses[variant],
-                "focus-within:ring-2 focus-within:ring-[var(--stat-card-focus-ring,hsl(220_80%_55%))] focus-within:ring-offset-2"
               )}
+              style={{
+                ['--tw-ring-color' as string]: RING_COLOR_VALUE,
+              }}
             >
               <div className="flex items-start justify-between">
                 <div>
                   <dt className="text-sm font-medium text-[var(--stat-card-label-color,hsl(0_0%_45%))]">
                     {stat.label}
                   </dt>
-                  <dd className="mt-2 text-3xl font-bold tracking-tight text-[var(--stat-card-value-color,hsl(0_0%_9%))]">
+                  <dd className={cn(VALUE_MARGIN_TOP, "text-3xl font-bold tracking-tight text-[var(--stat-card-value-color,hsl(0_0%_9%))]")}>
                     {stat.value}
                   </dd>
                 </div>
@@ -132,26 +158,26 @@ export default function StatsCardsGrid({
               </div>
 
               {stat.description && (
-                <p className="mt-3 text-sm text-[var(--stat-card-desc-color,hsl(0_0%_55%))]">
+                <p className={cn(DESCRIPTION_MARGIN_TOP, "text-sm text-[var(--stat-card-desc-color,hsl(0_0%_55%))]")}>
                   {stat.description}
                 </p>
               )}
 
               {stat.trend && (
-                <div className="mt-4 flex items-center gap-1.5">
+                <div className={cn(TREND_MARGIN_TOP, "flex items-center gap-1.5")}>
                   <span
                     className={cn(
                       "inline-flex items-center text-xs font-semibold",
                       stat.trend.direction === "up"
                         ? "text-[var(--stat-card-trend-up,hsl(142_71%_35%))]"
-                        : "text-[var(--stat-card-trend-down,hsl(0_84%_50%))]"
+                        : "text-[var(--stat-card-trend-down,hsl(0_84%_50%))]",
                     )}
                   >
                     <svg
                       className={cn(
                         TREND_ICON_SIZE,
                         "mr-0.5",
-                        stat.trend.direction === "down" && "rotate-180"
+                        stat.trend.direction === "down" && "rotate-180",
                       )}
                       viewBox="0 0 12 12"
                       fill="none"

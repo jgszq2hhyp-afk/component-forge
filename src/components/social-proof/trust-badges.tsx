@@ -10,10 +10,16 @@ import { cn } from '@/lib/utils';
 // ---------------------------------------------------------------------------
 
 const SECTION_MAX_WIDTH = 'max-w-7xl';
+const SECTION_PADDING_X = 'px-4 sm:px-6 lg:px-8';
+const SECTION_PADDING_Y = 'py-8 sm:py-12';
 const ICON_SIZE = 'h-6 w-6';
 const BADGE_RADIUS = 'rounded-xl';
 const BADGE_PADDING = 'px-4 py-3';
+const BADGE_GAP = 'gap-3';
 const HEADING_CLAMP = 'clamp(0.75rem, 1vw + 0.25rem, 0.875rem)';
+const HEADING_MARGIN_BOTTOM = 'mb-6';
+const HORIZONTAL_GAP = 'gap-6 sm:gap-10';
+const GRID_GAP = 'gap-6';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -108,27 +114,32 @@ export default function TrustBadges({
   return (
     <section
       className={cn(
-        'py-8 sm:py-12 border-y border-[var(--trust-badge-border,hsl(0_0%_0%/0.06))]',
+        SECTION_PADDING_Y,
+        'border-y border-[var(--trust-badge-border,hsl(0_0%_0%/0.06))]',
         'bg-[var(--trust-badge-bg,hsl(0_0%_98%))]',
         className,
       )}
       aria-label={heading ?? 'Vertrauensindikatoren'}
     >
-      <div className={`mx-auto ${SECTION_MAX_WIDTH} px-4 sm:px-6 lg:px-8`}>
+      <div className={cn('mx-auto', SECTION_MAX_WIDTH, SECTION_PADDING_X)}>
         {heading && (
-          <p
-            className="mb-6 text-center font-medium text-[var(--trust-badge-heading-color,hsl(0_0%_45%))]"
+          <h2
+            className={cn(
+              HEADING_MARGIN_BOTTOM,
+              'text-center font-medium',
+              'text-[var(--trust-badge-heading-color,hsl(0_0%_45%))]',
+            )}
             style={{ fontSize: HEADING_CLAMP }}
           >
             {heading}
-          </p>
+          </h2>
         )}
 
         <ul
           className={cn(
             layout === 'horizontal'
-              ? 'flex flex-wrap items-center justify-center gap-6 sm:gap-10'
-              : 'grid grid-cols-2 sm:grid-cols-4 gap-6',
+              ? cn('flex flex-wrap items-center justify-center', HORIZONTAL_GAP)
+              : cn('grid grid-cols-2 sm:grid-cols-4', GRID_GAP),
           )}
           role="list"
         >
@@ -136,13 +147,19 @@ export default function TrustBadges({
             <li
               key={badge.label}
               className={cn(
-                `flex items-center gap-3 ${BADGE_RADIUS} ${BADGE_PADDING}`,
+                'flex items-center',
+                BADGE_GAP,
+                BADGE_RADIUS,
+                BADGE_PADDING,
                 'bg-[var(--trust-badge-card-bg,hsl(0_0%_100%))]',
                 'border border-[var(--trust-badge-card-border,hsl(0_0%_0%/0.06))]',
                 'shadow-sm',
               )}
             >
-              <div className="flex-shrink-0 text-[var(--trust-badge-icon-color,hsl(142_71%_45%))]" aria-hidden="true">
+              <div
+                className="flex-shrink-0 text-[var(--trust-badge-icon-color,hsl(142_71%_45%))]"
+                aria-hidden="true"
+              >
                 {badge.icon}
               </div>
               <div>

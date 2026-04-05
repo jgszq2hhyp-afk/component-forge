@@ -12,13 +12,21 @@ import { cn } from "@/lib/utils";
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
 
-const SECTION_PY = "py-16 sm:py-24";
+const SECTION_PADDING_Y = "py-16 sm:py-24";
 const MAX_WIDTH = "mx-auto max-w-3xl px-4 sm:px-6 lg:px-8";
 const BAR_HEIGHT = "h-2.5";
 const INTERSECTION_THRESHOLD = 0.3;
 const DEFAULT_ANIMATION_DURATION_MS = 1200;
 const DEFAULT_MAX_VALUE = 100;
 const PERCENTAGE_CAP = 100;
+const HEADING_CLAMP = "text-[clamp(1.5rem,1rem+1.5vw,1.875rem)]";
+const HEADER_MARGIN_BOTTOM = "mb-12";
+const BAR_SPACING = "space-y-8";
+const LABEL_MARGIN_BOTTOM = "mb-2";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface BarStat {
   label: string;
@@ -36,12 +44,20 @@ interface StatsInlineBarProps {
   className?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Default data
+// ---------------------------------------------------------------------------
+
 const defaultStats: BarStat[] = [
   { label: "Customer Satisfaction", value: 97, displayValue: "97%" },
   { label: "On-Time Delivery", value: 94, displayValue: "94%" },
   { label: "Revenue Growth", value: 82, displayValue: "82%" },
   { label: "Employee Retention", value: 91, displayValue: "91%" },
 ];
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function StatsInlineBar({
   stats = defaultStats,
@@ -69,7 +85,7 @@ export default function StatsInlineBar({
         setIsVisible(true);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -86,21 +102,21 @@ export default function StatsInlineBar({
     <section
       ref={sectionRef}
       className={cn(
-        SECTION_PY,
+        SECTION_PADDING_Y,
         "bg-[var(--stats-bar-bg,transparent)]",
-        className
+        className,
       )}
       aria-label="Performance statistics"
     >
       <div className={MAX_WIDTH}>
         {(heading || subheading) && (
-          <header className="mb-12 text-center">
+          <header className={cn(HEADER_MARGIN_BOTTOM, "text-center")}>
             {heading && (
               <h2
                 className={cn(
                   "font-bold",
-                  "text-[clamp(1.5rem,1rem+1.5vw,1.875rem)]",
-                  "text-[var(--stats-bar-heading-color,hsl(0_0%_9%))]"
+                  HEADING_CLAMP,
+                  "text-[var(--stats-bar-heading-color,hsl(0_0%_9%))]",
                 )}
               >
                 {heading}
@@ -114,18 +130,18 @@ export default function StatsInlineBar({
           </header>
         )}
 
-        <div className="space-y-8" role="list">
+        <ol className={BAR_SPACING} aria-label="Statistics bars">
           {stats.map((stat) => {
             const maxVal = stat.maxValue ?? DEFAULT_MAX_VALUE;
             const percentage = Math.min(
               (stat.value / maxVal) * PERCENTAGE_CAP,
-              PERCENTAGE_CAP
+              PERCENTAGE_CAP,
             );
             const showFilled = isVisible || prefersReducedMotion;
 
             return (
-              <div key={stat.label} role="listitem">
-                <div className="mb-2 flex items-center justify-between">
+              <li key={stat.label}>
+                <div className={cn(LABEL_MARGIN_BOTTOM, "flex items-center justify-between")}>
                   <span className="text-sm font-medium text-[var(--stats-bar-label-color,hsl(0_0%_20%))]">
                     {stat.label}
                   </span>
@@ -137,7 +153,7 @@ export default function StatsInlineBar({
                   className={cn(
                     BAR_HEIGHT,
                     "w-full overflow-hidden rounded-full",
-                    "bg-[var(--stats-bar-track-bg,hsl(0_0%_92%))]"
+                    "bg-[var(--stats-bar-track-bg,hsl(0_0%_92%))]",
                   )}
                   role="progressbar"
                   aria-valuenow={stat.value}
@@ -148,7 +164,7 @@ export default function StatsInlineBar({
                   <div
                     className={cn(
                       "h-full rounded-full",
-                      "motion-reduce:!transition-none"
+                      "motion-reduce:!transition-none",
                     )}
                     style={{
                       width: showFilled ? `${percentage}%` : "0%",
@@ -161,10 +177,10 @@ export default function StatsInlineBar({
                     }}
                   />
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ol>
       </div>
     </section>
   );

@@ -12,14 +12,24 @@ import { cn } from "@/lib/utils";
 // Constants
 // ---------------------------------------------------------------------------
 
-/** IntersectionObserver visibility threshold (0–1) */
+/** IntersectionObserver visibility threshold (0-1) */
 const VISIBILITY_THRESHOLD = 0.2;
 
 /** Default count-up animation duration in ms */
-const DEFAULT_DURATION = 2000;
+const DEFAULT_DURATION_MS = 2000;
 
 /** Easing exponent for ease-out cubic */
 const EASING_EXPONENT = 3;
+
+/** Section layout */
+const SECTION_PADDING_Y = "py-16 sm:py-24";
+const MAX_WIDTH = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
+const HEADER_MARGIN_BOTTOM = "mb-12";
+const GRID_GAP = "gap-8 sm:gap-12";
+
+/** Typography clamp values */
+const VALUE_CLAMP = "clamp(1.875rem, 3vw + 0.5rem, 3rem)";
+const HEADING_CLAMP = "clamp(1.5rem, 2.5vw + 0.5rem, 1.875rem)";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,14 +62,14 @@ const defaultStats: Stat[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Hook — animated counter
+// Hook - animated counter
 // ---------------------------------------------------------------------------
 
 function useCountUp(
   target: number,
   duration: number,
   shouldStart: boolean,
-  prefersReducedMotion: boolean
+  prefersReducedMotion: boolean,
 ): number {
   const [count, setCount] = useState(0);
 
@@ -88,7 +98,7 @@ function useCountUp(
 }
 
 // ---------------------------------------------------------------------------
-// Sub-component — single stat
+// Sub-component - single stat
 // ---------------------------------------------------------------------------
 
 function AnimatedStat({
@@ -108,7 +118,7 @@ function AnimatedStat({
     <article className="text-center">
       <p
         className="font-bold tracking-tight text-[var(--stats-value-color,hsl(0_0%_9%))]"
-        style={{ fontSize: "clamp(1.875rem, 3vw + 0.5rem, 3rem)" }}
+        style={{ fontSize: VALUE_CLAMP }}
       >
         {stat.prefix}
         {count.toLocaleString()}
@@ -129,7 +139,7 @@ export default function StatsCounterAnimated({
   stats = defaultStats,
   heading,
   subheading,
-  duration = DEFAULT_DURATION,
+  duration = DEFAULT_DURATION_MS,
   className,
 }: StatsCounterAnimatedProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -164,18 +174,19 @@ export default function StatsCounterAnimated({
     <section
       ref={sectionRef}
       className={cn(
-        "py-16 sm:py-24 bg-[var(--stats-bg,transparent)]",
-        className
+        SECTION_PADDING_Y,
+        "bg-[var(--stats-bg,transparent)]",
+        className,
       )}
       aria-label="Key statistics"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className={MAX_WIDTH}>
         {(heading || subheading) && (
-          <header className="mb-12 text-center">
+          <header className={cn(HEADER_MARGIN_BOTTOM, "text-center")}>
             {heading && (
               <h2
                 className="font-bold text-[var(--stats-heading-color,hsl(0_0%_9%))]"
-                style={{ fontSize: "clamp(1.5rem, 2.5vw + 0.5rem, 1.875rem)" }}
+                style={{ fontSize: HEADING_CLAMP }}
               >
                 {heading}
               </h2>
@@ -188,7 +199,7 @@ export default function StatsCounterAnimated({
           </header>
         )}
 
-        <div className="grid grid-cols-2 gap-8 sm:gap-12 lg:grid-cols-4">
+        <div className={cn("grid grid-cols-2 lg:grid-cols-4", GRID_GAP)}>
           {stats.map((stat) => (
             <AnimatedStat
               key={stat.label}

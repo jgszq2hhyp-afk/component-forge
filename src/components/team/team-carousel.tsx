@@ -13,13 +13,16 @@ import { cn } from "@/lib/utils";
 // ---------------------------------------------------------------------------
 
 /** Scroll threshold in px to determine edge state */
-const SCROLL_EDGE_THRESHOLD = 5;
+const SCROLL_EDGE_THRESHOLD_PX = 5;
 
 /** Auto-play scroll distance in px */
-const AUTO_SCROLL_DISTANCE = 300;
+const AUTO_SCROLL_DISTANCE_PX = 300;
 
 /** Manual scroll distance in px */
-const MANUAL_SCROLL_DISTANCE = 320;
+const MANUAL_SCROLL_DISTANCE_PX = 320;
+
+/** Default auto-play interval in ms */
+const DEFAULT_AUTO_PLAY_INTERVAL_MS = 4000;
 
 /** Navigation button size */
 const NAV_BUTTON_SIZE = "h-10 w-10";
@@ -27,9 +30,22 @@ const NAV_BUTTON_SIZE = "h-10 w-10";
 /** Navigation icon size */
 const NAV_ICON_SIZE = "h-4 w-4";
 
+/** Card widths */
+const CARD_WIDTH_SM = "w-[260px]";
+const CARD_WIDTH_MD = "sm:w-[280px]";
+
+/** Section layout */
+const SECTION_PADDING_Y = "py-16 sm:py-24";
+const MAX_WIDTH = "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8";
+const HEADER_MARGIN_BOTTOM = "mb-10";
+const CARD_GAP = "gap-6";
+const CARD_RADIUS = "rounded-2xl";
+const HEADING_CLAMP = "clamp(1.5rem, 2.5vw + 0.5rem, 1.875rem)";
+const RING_COLOR_VALUE = "var(--ring, hsl(215 20% 65%))";
+
 /** Focus ring class for all interactive elements */
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--team-carousel-ring,hsl(220_90%_56%))]";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -73,7 +89,7 @@ export default function TeamCarousel({
   heading = "The People Behind the Product",
   subheading,
   autoPlay = false,
-  autoPlayInterval = 4000,
+  autoPlayInterval = DEFAULT_AUTO_PLAY_INTERVAL_MS,
   className,
 }: TeamCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -92,8 +108,8 @@ export default function TeamCarousel({
   const updateScrollState = useCallback(() => {
     if (!scrollRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-    setCanScrollLeft(scrollLeft > SCROLL_EDGE_THRESHOLD);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - SCROLL_EDGE_THRESHOLD);
+    setCanScrollLeft(scrollLeft > SCROLL_EDGE_THRESHOLD_PX);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - SCROLL_EDGE_THRESHOLD_PX);
   }, []);
 
   useEffect(() => {
@@ -110,10 +126,10 @@ export default function TeamCarousel({
     const interval = setInterval(() => {
       if (!scrollRef.current) return;
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      if (scrollLeft >= scrollWidth - clientWidth - SCROLL_EDGE_THRESHOLD) {
+      if (scrollLeft >= scrollWidth - clientWidth - SCROLL_EDGE_THRESHOLD_PX) {
         scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
       } else {
-        scrollRef.current.scrollBy({ left: AUTO_SCROLL_DISTANCE, behavior: "smooth" });
+        scrollRef.current.scrollBy({ left: AUTO_SCROLL_DISTANCE_PX, behavior: "smooth" });
       }
     }, autoPlayInterval);
 
@@ -123,23 +139,33 @@ export default function TeamCarousel({
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollBy({
-      left: direction === "left" ? -MANUAL_SCROLL_DISTANCE : MANUAL_SCROLL_DISTANCE,
+      left: direction === "left" ? -MANUAL_SCROLL_DISTANCE_PX : MANUAL_SCROLL_DISTANCE_PX,
       behavior: prefersReducedMotion ? "auto" : "smooth",
     });
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      scroll("left");
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      scroll("right");
+    }
+  };
+
   return (
     <section
-      className={cn("py-16 sm:py-24 bg-[var(--team-carousel-bg,transparent)]", className)}
+      className={cn(SECTION_PADDING_Y, "bg-[var(--team-carousel-bg,transparent)]", className)}
       aria-label="Team members carousel"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <header className="flex items-end justify-between mb-10">
+      <div className={MAX_WIDTH}>
+        <header className={cn("flex items-end justify-between", HEADER_MARGIN_BOTTOM)}>
           <div>
             {heading && (
               <h2
                 className="font-bold text-[var(--team-carousel-heading-color,hsl(0_0%_9%))]"
-                style={{ fontSize: "clamp(1.5rem, 2.5vw + 0.5rem, 1.875rem)" }}
+                style={{ fontSize: HEADING_CLAMP }}
               >
                 {heading}
               </h2>
@@ -153,17 +179,22 @@ export default function TeamCarousel({
 
           <nav className="hidden sm:flex gap-2" aria-label="Carousel navigation">
             <button
+              type="button"
               onClick={() => scroll("left")}
               disabled={!canScrollLeft}
               className={cn(
-                `flex ${NAV_BUTTON_SIZE} items-center justify-center rounded-full border`,
+                "flex items-center justify-center rounded-full border",
+                NAV_BUTTON_SIZE,
                 "transition-colors motion-reduce:transition-none",
                 "border-[var(--team-carousel-btn-border,hsl(0_0%_0%/0.12))]",
                 FOCUS_RING,
                 canScrollLeft
                   ? "text-[var(--team-carousel-btn-color,hsl(0_0%_9%))] hover:bg-[var(--team-carousel-btn-hover-bg,hsl(0_0%_95%))]"
-                  : "text-[var(--team-carousel-btn-disabled,hsl(0_0%_75%))] cursor-not-allowed"
+                  : "text-[var(--team-carousel-btn-disabled,hsl(0_0%_75%))] cursor-not-allowed",
               )}
+              style={{
+                ['--tw-ring-color' as string]: RING_COLOR_VALUE,
+              }}
               aria-label="Previous team members"
             >
               <svg className={NAV_ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
@@ -171,17 +202,22 @@ export default function TeamCarousel({
               </svg>
             </button>
             <button
+              type="button"
               onClick={() => scroll("right")}
               disabled={!canScrollRight}
               className={cn(
-                `flex ${NAV_BUTTON_SIZE} items-center justify-center rounded-full border`,
+                "flex items-center justify-center rounded-full border",
+                NAV_BUTTON_SIZE,
                 "transition-colors motion-reduce:transition-none",
                 "border-[var(--team-carousel-btn-border,hsl(0_0%_0%/0.12))]",
                 FOCUS_RING,
                 canScrollRight
                   ? "text-[var(--team-carousel-btn-color,hsl(0_0%_9%))] hover:bg-[var(--team-carousel-btn-hover-bg,hsl(0_0%_95%))]"
-                  : "text-[var(--team-carousel-btn-disabled,hsl(0_0%_75%))] cursor-not-allowed"
+                  : "text-[var(--team-carousel-btn-disabled,hsl(0_0%_75%))] cursor-not-allowed",
               )}
+              style={{
+                ['--tw-ring-color' as string]: RING_COLOR_VALUE,
+              }}
               aria-label="Next team members"
             >
               <svg className={NAV_ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
@@ -194,19 +230,23 @@ export default function TeamCarousel({
         <div
           ref={scrollRef}
           className={cn(
-            "flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory",
+            "flex overflow-x-auto pb-4 snap-x snap-mandatory",
+            CARD_GAP,
             "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
             prefersReducedMotion ? "scroll-auto" : "scroll-smooth",
           )}
           role="list"
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+          aria-label="Team members list, use arrow keys to scroll"
         >
           {members.map((member) => (
             <article
               key={member.name}
-              className="flex-shrink-0 w-[260px] sm:w-[280px] snap-start"
+              className={cn("flex-shrink-0 snap-start", CARD_WIDTH_SM, CARD_WIDTH_MD)}
               role="listitem"
             >
-              <figure className="aspect-[3/4] overflow-hidden rounded-2xl bg-[var(--team-carousel-img-bg,hsl(0_0%_95%))] m-0">
+              <figure className={cn("aspect-[3/4] overflow-hidden bg-[var(--team-carousel-img-bg,hsl(0_0%_95%))] m-0", CARD_RADIUS)}>
                 <img
                   src={member.imageSrc}
                   alt={member.name}

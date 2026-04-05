@@ -105,10 +105,10 @@ export default function FooterSplitCta({
               'rounded-lg font-semibold',
               BUTTON_PADDING,
               BUTTON_FONT_SIZE,
-              'transition-all duration-200',
+              'transition-all duration-200 motion-reduce:transition-none',
               'hover:brightness-110 hover:shadow-lg',
               FOCUS_RING,
-              'active:scale-[0.98]',
+              'active:scale-[0.98] motion-reduce:active:scale-100',
               'shrink-0',
             )}
             style={{
@@ -148,11 +148,16 @@ export default function FooterSplitCta({
                           <a
                             href={link.href}
                             className={cn(
-                              'text-sm transition-colors duration-200 hover:underline underline-offset-4',
+                              'text-sm rounded-sm',
+                              'transition-colors duration-200 motion-reduce:transition-none',
+                              'hover:underline underline-offset-4',
                               FOCUS_RING,
-                              'rounded-sm',
                             )}
-                            style={{ color: 'var(--muted-foreground)' }}
+                            style={{
+                              color: 'var(--muted-foreground)',
+                              ['--tw-ring-color' as string]: 'var(--primary)',
+                              ['--tw-ring-offset-color' as string]: 'var(--background)',
+                            }}
                           >
                             {link.label}
                           </a>
@@ -193,11 +198,16 @@ export default function FooterSplitCta({
                     key={link.label}
                     href={link.href}
                     className={cn(
-                      'text-xs transition-colors duration-200 hover:underline underline-offset-4',
+                      'text-xs rounded-sm',
+                      'transition-colors duration-200 motion-reduce:transition-none',
+                      'hover:underline underline-offset-4',
                       FOCUS_RING,
-                      'rounded-sm',
                     )}
-                    style={{ color: 'var(--muted-foreground)' }}
+                    style={{
+                      color: 'var(--muted-foreground)',
+                      ['--tw-ring-color' as string]: 'var(--primary)',
+                      ['--tw-ring-offset-color' as string]: 'var(--background)',
+                    }}
                   >
                     {link.label}
                   </a>

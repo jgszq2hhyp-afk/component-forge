@@ -14,6 +14,14 @@ const DEFAULT_LOGO_WIDTH = 140;
 const DEFAULT_LOGO_HEIGHT = 48;
 const MAX_LOGO_WIDTH = 'max-w-[140px]';
 const HEADING_CLAMP = 'clamp(0.75rem, 1vw + 0.25rem, 0.875rem)';
+const LOGO_HEIGHT_SM = 'h-8';
+const LOGO_HEIGHT_MD = 'sm:h-10';
+const LOGO_PADDING = 'p-4';
+const SECTION_PADDING_Y = 'py-12 sm:py-16';
+const SECTION_PADDING_X = 'px-4 sm:px-6 lg:px-8';
+const HEADING_MARGIN_BOTTOM = 'mb-10';
+const GRID_GAP = 'gap-8';
+const RING_COLOR_VALUE = 'var(--ring, hsl(215 20% 65%))';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -69,24 +77,30 @@ export default function LogoGridStatic({
   return (
     <section
       className={cn(
-        'py-12 sm:py-16 bg-[var(--logo-grid-bg,transparent)]',
+        SECTION_PADDING_Y,
+        'bg-[var(--logo-grid-bg,transparent)]',
         className,
       )}
       aria-label={heading ?? 'Partner-Logos'}
     >
-      <div className={`mx-auto ${SECTION_MAX_WIDTH} px-4 sm:px-6 lg:px-8`}>
+      <div className={cn('mx-auto', SECTION_MAX_WIDTH, SECTION_PADDING_X)}>
         {heading && (
-          <p
-            className="mb-10 text-center font-medium uppercase tracking-wider text-[var(--logo-grid-heading-color,hsl(0_0%_45%))]"
+          <h2
+            className={cn(
+              HEADING_MARGIN_BOTTOM,
+              'text-center font-medium uppercase tracking-wider',
+              'text-[var(--logo-grid-heading-color,hsl(0_0%_45%))]',
+            )}
             style={{ fontSize: HEADING_CLAMP }}
           >
             {heading}
-          </p>
+          </h2>
         )}
 
         <ul
           className={cn(
-            'grid gap-8 items-center justify-items-center',
+            'grid items-center justify-items-center',
+            GRID_GAP,
             columnClasses[columns],
           )}
           role="list"
@@ -99,7 +113,11 @@ export default function LogoGridStatic({
                 width={logo.width ?? DEFAULT_LOGO_WIDTH}
                 height={logo.height ?? DEFAULT_LOGO_HEIGHT}
                 className={cn(
-                  `h-8 sm:h-10 w-auto ${MAX_LOGO_WIDTH} object-contain transition-all duration-300 motion-reduce:transition-none`,
+                  LOGO_HEIGHT_SM,
+                  LOGO_HEIGHT_MD,
+                  'w-auto object-contain',
+                  MAX_LOGO_WIDTH,
+                  'transition-all duration-300 motion-reduce:transition-none',
                   grayscale
                     ? 'grayscale opacity-40 hover:grayscale-0 hover:opacity-100'
                     : 'opacity-60 hover:opacity-100',
@@ -116,11 +134,12 @@ export default function LogoGridStatic({
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      'flex items-center justify-center p-4',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded-lg',
+                      'flex items-center justify-center rounded-lg',
+                      LOGO_PADDING,
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                     )}
                     style={{
-                      ['--tw-ring-color' as string]: 'var(--primary)',
+                      ['--tw-ring-color' as string]: RING_COLOR_VALUE,
                       ['--tw-ring-offset-color' as string]: 'var(--background)',
                     }}
                     aria-label={`${logo.name} besuchen (öffnet in neuem Tab)`}
@@ -134,7 +153,7 @@ export default function LogoGridStatic({
             return (
               <li
                 key={logo.name}
-                className="flex items-center justify-center p-4"
+                className={cn('flex items-center justify-center', LOGO_PADDING)}
               >
                 {imageElement}
               </li>
