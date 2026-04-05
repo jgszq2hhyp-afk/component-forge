@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category banners
 // @name announcement-banner
 // @source aura-inspired
@@ -7,6 +7,21 @@
 
 import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const MAX_HEIGHT_PX = 60;
+const DISMISS_HEIGHT_TRANSITION_MS = 300;
+const DISMISS_OPACITY_TRANSITION_MS = 200;
+const ICON_SIZE = 16;
+const CLOSE_ICON_SIZE = 14;
+const CLOSE_STROKE_WIDTH = 1.5;
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface AnnouncementBannerProps {
   text: string;
@@ -20,10 +35,14 @@ interface AnnouncementBannerProps {
   onDismiss?: () => void;
 }
 
+// ---------------------------------------------------------------------------
+// Icons
+// ---------------------------------------------------------------------------
+
 const DefaultIcon = () => (
   <svg
-    width="16"
-    height="16"
+    width={ICON_SIZE}
+    height={ICON_SIZE}
     viewBox="0 0 16 16"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -39,8 +58,8 @@ const DefaultIcon = () => (
 
 const CloseIcon = () => (
   <svg
-    width="14"
-    height="14"
+    width={CLOSE_ICON_SIZE}
+    height={CLOSE_ICON_SIZE}
     viewBox="0 0 14 14"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -49,11 +68,15 @@ const CloseIcon = () => (
     <path
       d="M11 3L3 11M3 3l8 8"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth={CLOSE_STROKE_WIDTH}
       strokeLinecap="round"
     />
   </svg>
 );
+
+// ---------------------------------------------------------------------------
+// Variant styles
+// ---------------------------------------------------------------------------
 
 const variantStyles = {
   default: {
@@ -69,12 +92,44 @@ const variantStyles = {
     closeHover: 'hover:bg-[var(--foreground)]/10',
   },
   urgent: {
-    wrapper: 'bg-red-600 text-white',
-    link: 'text-white hover:opacity-80',
-    badge: 'bg-white/15 text-white',
-    closeHover: 'hover:bg-white/15',
+    wrapper: 'bg-[var(--destructive,_#dc2626)] text-[var(--destructive-foreground,_#fff)]',
+    link: 'text-[var(--destructive-foreground,_#fff)] hover:opacity-80',
+    badge: 'bg-[var(--destructive-foreground,_#fff)]/15 text-[var(--destructive-foreground,_#fff)]',
+    closeHover: 'hover:bg-[var(--destructive-foreground,_#fff)]/15',
   },
 } as const;
+
+// ---------------------------------------------------------------------------
+// Scoped styles
+// ---------------------------------------------------------------------------
+
+const scopedStyles = `
+.announcement-banner {
+  max-height: ${MAX_HEIGHT_PX}px;
+  opacity: 1;
+  transition:
+    max-height ${DISMISS_HEIGHT_TRANSITION_MS}ms ease-out,
+    opacity ${DISMISS_OPACITY_TRANSITION_MS}ms ease-out;
+}
+.announcement-banner--dismissed {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .announcement-banner {
+    transition: none !important;
+  }
+  .announcement-banner--dismissed {
+    display: none;
+  }
+}
+`;
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export function AnnouncementBanner({
   text,
@@ -98,29 +153,10 @@ export function AnnouncementBanner({
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: `
-        .announcement-banner {
-          max-height: 60px;
-          opacity: 1;
-          transition: max-height 300ms ease-out, opacity 200ms ease-out;
-        }
-        .announcement-banner--dismissed {
-          max-height: 0;
-          opacity: 0;
-          overflow: hidden;
-          pointer-events: none;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .announcement-banner {
-            transition: none;
-          }
-          .announcement-banner--dismissed {
-            display: none;
-          }
-        }
-      `}} />
+      <style dangerouslySetInnerHTML={{ __html: scopedStyles }} />
       <div
         role="banner"
+        aria-label="Announcement"
         className={cn(
           'announcement-banner',
           dismissed && 'announcement-banner--dismissed',
@@ -131,7 +167,7 @@ export function AnnouncementBanner({
       >
         <div className="mx-auto flex max-w-7xl items-center justify-center gap-3 text-sm font-medium">
           {/* Icon */}
-          <span className="shrink-0 opacity-90">
+          <span className="shrink-0 opacity-90" aria-hidden="true">
             {icon ?? <DefaultIcon />}
           </span>
 
@@ -157,8 +193,12 @@ export function AnnouncementBanner({
                   href={linkHref}
                   className={cn(
                     'inline-flex items-center gap-0.5 underline underline-offset-2 transition-opacity',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                     styles.link,
                   )}
+                  style={{
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                  }}
                 >
                   {linkText}
                   <span aria-hidden="true" className="text-[0.7em]">&thinsp;&rarr;</span>
@@ -172,11 +212,15 @@ export function AnnouncementBanner({
             <button
               type="button"
               onClick={handleDismiss}
-              aria-label="Banner schließen"
+              aria-label="Dismiss announcement banner"
               className={cn(
                 'absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 transition-colors',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                 styles.closeHover,
               )}
+              style={{
+                ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+              }}
             >
               <CloseIcon />
             </button>

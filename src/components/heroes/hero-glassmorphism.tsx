@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category heroes
 // @name hero-glassmorphism
 // @source aura-inspired
@@ -12,6 +12,49 @@ import { cn } from '@/lib/utils';
 const GRADIENT_DURATION = '15s';
 const HEADING_CLAMP = 'clamp(2rem, 1.5rem + 2.5vw, 3.75rem)';
 const SUBHEADING_CLAMP = 'clamp(1rem, 0.9rem + 0.5vw, 1.25rem)';
+
+const BLOB_A_SIZE = '40vw';
+const BLOB_A_MAX = '500px';
+const BLOB_A_DURATION = '18s';
+const BLOB_B_SIZE = '35vw';
+const BLOB_B_MAX = '450px';
+const BLOB_B_DURATION = '22s';
+const BLOB_C_SIZE = '25vw';
+const BLOB_C_MAX = '350px';
+const BLOB_C_DURATION = '20s';
+
+const BLOB_A_OPACITY = 0.25;
+const BLOB_B_OPACITY = 0.2;
+const BLOB_C_OPACITY = 0.18;
+
+const BLUR_PX = 80;
+const GLASS_BLUR_PX = 16;
+const GLASS_SATURATE = 180;
+const GLASS_BG_MIX = 60;
+const GLASS_BORDER_MIX = 40;
+const NOISE_OPACITY = 0.035;
+
+const FADE_UP_DISTANCE_PX = 16;
+const FADE_UP_DURATION = '0.8s';
+const FADE_UP_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+const DELAY_1 = '0.1s';
+const DELAY_2 = '0.2s';
+const DELAY_3 = '0.35s';
+const DELAY_4 = '0.5s';
+
+const BTN_TRANSITION_DURATION = '0.25s';
+const BTN_TRANSITION_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const BTN_HOVER_LIFT_PX = -1;
+const BTN_HOVER_SHADOW = '0 4px 16px -4px oklch(0 0 0 / 0.15)';
+
+const BADGE_BG_MIX = 15;
+const BADGE_BORDER_MIX = 25;
+const SECONDARY_BG_MIX = 8;
+const SECONDARY_BORDER_MIX = 60;
+
+const GLOW_PRIMARY_MIX = 30;
+const GLOW_ACCENT_MIX = 20;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -75,52 +118,52 @@ const styles = `
 .hgm-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
+  filter: blur(${BLUR_PX}px);
   pointer-events: none;
 }
 
 .hgm-blob--a {
-  width: 40vw;
-  height: 40vw;
-  max-width: 500px;
-  max-height: 500px;
+  width: ${BLOB_A_SIZE};
+  height: ${BLOB_A_SIZE};
+  max-width: ${BLOB_A_MAX};
+  max-height: ${BLOB_A_MAX};
   top: 10%;
   left: 5%;
   background: var(--primary);
-  opacity: 0.25;
-  animation: hgm-float-a 18s ease-in-out infinite;
+  opacity: ${BLOB_A_OPACITY};
+  animation: hgm-float-a ${BLOB_A_DURATION} ease-in-out infinite;
 }
 
 .hgm-blob--b {
-  width: 35vw;
-  height: 35vw;
-  max-width: 450px;
-  max-height: 450px;
+  width: ${BLOB_B_SIZE};
+  height: ${BLOB_B_SIZE};
+  max-width: ${BLOB_B_MAX};
+  max-height: ${BLOB_B_MAX};
   top: 40%;
   right: 5%;
   background: var(--accent);
-  opacity: 0.2;
-  animation: hgm-float-b 22s ease-in-out infinite;
+  opacity: ${BLOB_B_OPACITY};
+  animation: hgm-float-b ${BLOB_B_DURATION} ease-in-out infinite;
 }
 
 .hgm-blob--c {
-  width: 25vw;
-  height: 25vw;
-  max-width: 350px;
-  max-height: 350px;
+  width: ${BLOB_C_SIZE};
+  height: ${BLOB_C_SIZE};
+  max-width: ${BLOB_C_MAX};
+  max-height: ${BLOB_C_MAX};
   bottom: 10%;
   left: 30%;
   background: var(--muted);
-  opacity: 0.18;
-  animation: hgm-float-c 20s ease-in-out infinite;
+  opacity: ${BLOB_C_OPACITY};
+  animation: hgm-float-c ${BLOB_C_DURATION} ease-in-out infinite;
 }
 
 /* ---- Glass card ---- */
 .hgm-glass {
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  background: color-mix(in srgb, var(--background) 60%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+  backdrop-filter: blur(${GLASS_BLUR_PX}px) saturate(${GLASS_SATURATE}%);
+  -webkit-backdrop-filter: blur(${GLASS_BLUR_PX}px) saturate(${GLASS_SATURATE}%);
+  background: color-mix(in srgb, var(--background) ${GLASS_BG_MIX}%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) ${GLASS_BORDER_MIX}%, transparent);
   position: relative;
   overflow: hidden;
 }
@@ -131,7 +174,7 @@ const styles = `
   inset: 0;
   pointer-events: none;
   mix-blend-mode: overlay;
-  opacity: 0.035;
+  opacity: ${NOISE_OPACITY};
   z-index: 1;
 }
 
@@ -139,7 +182,7 @@ const styles = `
 @keyframes hgm-fade-up {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(${FADE_UP_DISTANCE_PX}px);
   }
   to {
     opacity: 1;
@@ -148,25 +191,25 @@ const styles = `
 }
 
 .hgm-animate {
-  animation: hgm-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: hgm-fade-up ${FADE_UP_DURATION} ${FADE_UP_EASING} both;
 }
 
-.hgm-animate--1 { animation-delay: 0.1s; }
-.hgm-animate--2 { animation-delay: 0.2s; }
-.hgm-animate--3 { animation-delay: 0.35s; }
-.hgm-animate--4 { animation-delay: 0.5s; }
+.hgm-animate--1 { animation-delay: ${DELAY_1}; }
+.hgm-animate--2 { animation-delay: ${DELAY_2}; }
+.hgm-animate--3 { animation-delay: ${DELAY_3}; }
+.hgm-animate--4 { animation-delay: ${DELAY_4}; }
 
 /* ---- Button hover (CSS-only) ---- */
 .hgm-btn {
   transition:
-    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.25s ease;
+    transform ${BTN_TRANSITION_DURATION} ${BTN_TRANSITION_EASING},
+    box-shadow ${BTN_TRANSITION_DURATION} ${BTN_TRANSITION_EASING},
+    opacity ${BTN_TRANSITION_DURATION} ease;
 }
 
 .hgm-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.15);
+  transform: translateY(${BTN_HOVER_LIFT_PX}px);
+  box-shadow: ${BTN_HOVER_SHADOW};
 }
 
 .hgm-btn:active {
@@ -182,9 +225,9 @@ const styles = `
   padding: 1px;
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--primary) 30%, transparent),
+    color-mix(in srgb, var(--primary) ${GLOW_PRIMARY_MIX}%, transparent),
     transparent 50%,
-    color-mix(in srgb, var(--accent) 20%, transparent)
+    color-mix(in srgb, var(--accent) ${GLOW_ACCENT_MIX}%, transparent)
   );
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -287,10 +330,11 @@ export default function HeroGlassmorphism({
             {badge && (
               <span
                 className="hgm-animate hgm-animate--1 inline-block mb-6 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest rounded-full"
+                aria-hidden="true"
                 style={{
-                  backgroundColor: 'color-mix(in srgb, var(--primary) 15%, transparent)',
+                  backgroundColor: `color-mix(in srgb, var(--primary) ${BADGE_BG_MIX}%, transparent)`,
                   color: 'var(--primary)',
-                  border: '1px solid color-mix(in srgb, var(--primary) 25%, transparent)',
+                  border: `1px solid color-mix(in srgb, var(--primary) ${BADGE_BORDER_MIX}%, transparent)`,
                 }}
               >
                 {badge}
@@ -323,14 +367,21 @@ export default function HeroGlassmorphism({
 
             {/* CTAs */}
             {(ctaText || secondaryCtaText) && (
-              <div className="hgm-animate hgm-animate--4 mt-8 flex flex-wrap items-center justify-center gap-4">
+              <nav
+                className="hgm-animate hgm-animate--4 mt-8 flex flex-wrap items-center justify-center gap-4"
+                aria-label="Call to action"
+              >
                 {ctaText && (
                   <a
                     href={ctaHref}
-                    className="hgm-btn inline-flex items-center justify-center px-7 py-3 text-sm font-semibold rounded-xl"
+                    className={cn(
+                      'hgm-btn inline-flex items-center justify-center px-7 py-3 text-sm font-semibold rounded-xl',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    )}
                     style={{
                       backgroundColor: 'var(--primary)',
                       color: 'var(--primary-foreground)',
+                      ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     }}
                   >
                     {ctaText}
@@ -339,17 +390,21 @@ export default function HeroGlassmorphism({
                 {secondaryCtaText && (
                   <a
                     href={secondaryCtaHref}
-                    className="hgm-btn inline-flex items-center justify-center px-7 py-3 text-sm font-semibold rounded-xl"
+                    className={cn(
+                      'hgm-btn inline-flex items-center justify-center px-7 py-3 text-sm font-semibold rounded-xl',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    )}
                     style={{
-                      backgroundColor: 'color-mix(in srgb, var(--foreground) 8%, transparent)',
+                      backgroundColor: `color-mix(in srgb, var(--foreground) ${SECONDARY_BG_MIX}%, transparent)`,
                       color: 'var(--foreground)',
-                      border: '1px solid color-mix(in srgb, var(--border) 60%, transparent)',
+                      border: `1px solid color-mix(in srgb, var(--border) ${SECONDARY_BORDER_MIX}%, transparent)`,
+                      ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     }}
                   >
                     {secondaryCtaText}
                   </a>
                 )}
-              </div>
+              </nav>
             )}
           </div>
         </div>

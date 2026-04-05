@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category animations
 // @name text-reveal
 // @source custom
@@ -7,6 +7,19 @@
 
 import { cn } from '@/lib/utils';
 import { useEffect, useMemo, useRef, useState } from 'react';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const INTERSECTION_THRESHOLD = 0.2;
+const CHAR_STAGGER_MS = 30;
+const WORD_STAGGER_MS = 60;
+const REVEAL_DURATION_MS = 400;
+const BLUR_PX = 6;
+const TRANSLATE_Y_PX = 8;
+const EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const NBSP = '\u00A0';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -30,8 +43,8 @@ const keyframes = `
 @keyframes tr-reveal {
   from {
     opacity: 0;
-    filter: blur(6px);
-    transform: translateY(8px);
+    filter: blur(${BLUR_PX}px);
+    transform: translateY(${TRANSLATE_Y_PX}px);
   }
   to {
     opacity: 1;
@@ -77,7 +90,7 @@ export default function TextReveal({
           observer.disconnect();
         }
       },
-      { threshold: 0.2 },
+      { threshold: INTERSECTION_THRESHOLD },
     );
 
     observer.observe(el);
@@ -88,12 +101,12 @@ export default function TextReveal({
     if (mode === 'char') {
       return text.split('').map((char, i) => ({
         key: `${char}-${i}`,
-        content: char === ' ' ? '\u00A0' : char,
+        content: char === ' ' ? NBSP : char,
         index: i,
       }));
     }
 
-    // Word mode — preserve spaces between words
+    // Word mode -- preserve spaces between words
     return text.split(' ').map((word, i) => ({
       key: `${word}-${i}`,
       content: word,
@@ -101,7 +114,7 @@ export default function TextReveal({
     }));
   }, [text, mode]);
 
-  const staggerMs = mode === 'char' ? 30 : 60;
+  const staggerMs = mode === 'char' ? CHAR_STAGGER_MS : WORD_STAGGER_MS;
 
   return (
     <>
@@ -109,6 +122,7 @@ export default function TextReveal({
       <span
         ref={ref}
         className={cn('tr-container inline-flex flex-wrap', className)}
+        role="text"
         aria-label={text}
       >
         {tokens.map((token) => (
@@ -119,12 +133,12 @@ export default function TextReveal({
             style={{
               opacity: visible ? undefined : 0,
               animation: visible
-                ? `tr-reveal 400ms cubic-bezier(0.16,1,0.3,1) ${delay + token.index * staggerMs}ms both`
+                ? `tr-reveal ${REVEAL_DURATION_MS}ms ${EASING} ${delay + token.index * staggerMs}ms both`
                 : 'none',
             }}
           >
             {token.content}
-            {mode === 'word' ? '\u00A0' : ''}
+            {mode === 'word' ? NBSP : ''}
           </span>
         ))}
       </span>

@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
@@ -21,6 +21,16 @@ const IMAGE_WIDTH_SM = "sm:w-40";
 const IMAGE_WIDTH_LG = "lg:w-48";
 const EXPANDED_MAX_HEIGHT = "max-h-96";
 const COLLAPSED_MAX_HEIGHT = "max-h-0";
+const HEADING_CLAMP = "text-[clamp(1.5rem,1rem+1.5vw,1.875rem)]";
+const TRANSITION_DURATION = "duration-300";
+const CHEVRON_ROTATE_DURATION = "duration-200";
+const RING_STYLE = {
+  ["--tw-ring-color" as string]: "var(--ring, hsl(215 20% 65%))",
+};
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
 
 interface TeamMember {
   name: string;
@@ -37,6 +47,10 @@ interface TeamWithBioProps {
   subheading?: string;
   className?: string;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Default data                                                       */
+/* ------------------------------------------------------------------ */
 
 const defaultMembers: TeamMember[] = [
   {
@@ -56,7 +70,7 @@ const defaultMembers: TeamMember[] = [
       "Max is a systems thinker who spent 8 years at Stripe building payment infrastructure that processed billions in transactions. He leads the engineering organization with a focus on developer experience, system reliability, and thoughtful technical architecture. He holds a PhD in distributed computing.",
   },
   {
-    name: "Lena M\u00FCller",
+    name: "Lena Müller",
     role: "Head of Design",
     imageSrc: "/team/lena.jpg",
     shortBio: "Design systems and user experience expert.",
@@ -65,6 +79,10 @@ const defaultMembers: TeamMember[] = [
   },
 ];
 
+/* ------------------------------------------------------------------ */
+/*  Component                                                          */
+/* ------------------------------------------------------------------ */
+
 export default function TeamWithBio({
   members = defaultMembers,
   heading = "Leadership Team",
@@ -72,10 +90,46 @@ export default function TeamWithBio({
   className,
 }: TeamWithBioProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const cardRefs = useRef<(HTMLElement | null)[]>([]);
 
   const toggleBio = useCallback((index: number) => {
     setExpandedIndex((prev) => (prev === index ? null : index));
   }, []);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, index: number) => {
+      const lastIndex = members.length - 1;
+      let targetIndex: number | null = null;
+
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          targetIndex = index < lastIndex ? index + 1 : 0;
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          targetIndex = index > 0 ? index - 1 : lastIndex;
+          break;
+        case "Home":
+          e.preventDefault();
+          targetIndex = 0;
+          break;
+        case "End":
+          e.preventDefault();
+          targetIndex = lastIndex;
+          break;
+      }
+
+      if (targetIndex !== null) {
+        const targetCard = cardRefs.current[targetIndex];
+        const button = targetCard?.querySelector<HTMLButtonElement>(
+          "[data-toggle-bio]"
+        );
+        button?.focus();
+      }
+    },
+    [members.length]
+  );
 
   return (
     <section
@@ -85,6 +139,7 @@ export default function TeamWithBio({
         className
       )}
       aria-label="Team members"
+      style={RING_STYLE}
     >
       <div className={MAX_WIDTH}>
         {(heading || subheading) && (
@@ -93,7 +148,7 @@ export default function TeamWithBio({
               <h2
                 className={cn(
                   "font-bold",
-                  "text-[clamp(1.5rem,1rem+1.5vw,1.875rem)]",
+                  HEADING_CLAMP,
                   "text-[var(--team-bio-heading-color,hsl(0_0%_9%))]"
                 )}
               >
@@ -115,18 +170,21 @@ export default function TeamWithBio({
             return (
               <article
                 key={member.name}
+                ref={(el) => {
+                  cardRefs.current[i] = el;
+                }}
                 role="listitem"
                 className={cn(
                   CARD_RADIUS,
                   "overflow-hidden",
-                  "transition-shadow duration-300 motion-reduce:!transition-none",
+                  `transition-shadow ${TRANSITION_DURATION} motion-reduce:!transition-none`,
                   "border border-[var(--team-bio-card-border,hsl(0_0%_0%/0.08))]",
                   "bg-[var(--team-bio-card-bg,hsl(0_0%_100%))]",
                   isExpanded && "shadow-lg"
                 )}
               >
                 <div className="flex flex-col sm:flex-row">
-                  <div className="flex-shrink-0">
+                  <figure className="flex-shrink-0 m-0">
                     <img
                       src={member.imageSrc}
                       alt={`Portrait of ${member.name}`}
@@ -137,7 +195,7 @@ export default function TeamWithBio({
                       )}
                       loading="lazy"
                     />
-                  </div>
+                  </figure>
 
                   <div className="flex-1 p-6">
                     <div className="flex items-start justify-between gap-4">
@@ -155,7 +213,9 @@ export default function TeamWithBio({
 
                       <button
                         type="button"
+                        data-toggle-bio
                         onClick={() => toggleBio(i)}
+                        onKeyDown={(e) => handleKeyDown(e, i)}
                         className={cn(
                           "flex-shrink-0 flex items-center justify-center rounded-full border",
                           TOGGLE_SIZE,
@@ -172,11 +232,12 @@ export default function TeamWithBio({
                             ? `Collapse ${member.name}'s bio`
                             : `Expand ${member.name}'s bio`
                         }
+                        style={RING_STYLE}
                       >
                         <svg
                           className={cn(
                             CHEVRON_SIZE,
-                            "transition-transform duration-200 motion-reduce:!transition-none",
+                            `transition-transform ${CHEVRON_ROTATE_DURATION} motion-reduce:!transition-none`,
                             isExpanded && "rotate-180"
                           )}
                           viewBox="0 0 24 24"
@@ -202,7 +263,7 @@ export default function TeamWithBio({
                       id={`bio-${i}`}
                       className={cn(
                         "overflow-hidden",
-                        "transition-all duration-300 motion-reduce:!transition-none",
+                        `transition-all ${TRANSITION_DURATION} motion-reduce:!transition-none`,
                         isExpanded
                           ? `${EXPANDED_MAX_HEIGHT} opacity-100 mt-4`
                           : `${COLLAPSED_MAX_HEIGHT} opacity-0`
@@ -214,6 +275,31 @@ export default function TeamWithBio({
                         <p className="text-sm leading-relaxed text-[var(--team-bio-full-color,hsl(0_0%_30%))]">
                           {member.fullBio}
                         </p>
+
+                        {member.socials && member.socials.length > 0 && (
+                          <nav
+                            aria-label={`${member.name}'s social links`}
+                            className="mt-4 flex gap-3"
+                          >
+                            {member.socials.map((social) => (
+                              <a
+                                key={social.platform}
+                                href={social.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={cn(
+                                  "text-sm font-medium underline-offset-4 hover:underline",
+                                  "text-[var(--team-bio-link-color,hsl(220_80%_55%))]",
+                                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--team-bio-focus-ring,hsl(220_80%_55%))] focus-visible:ring-offset-2",
+                                  "rounded-sm"
+                                )}
+                                style={RING_STYLE}
+                              >
+                                {social.platform}
+                              </a>
+                            ))}
+                          </nav>
+                        )}
                       </div>
                     </div>
                   </div>

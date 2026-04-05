@@ -1,16 +1,24 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category animations
 // @name counter-animate
 // @source custom
 
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { cn } from "@/lib/utils";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Constants                                                         */
+/* ------------------------------------------------------------------ */
+
+const DEFAULT_DURATION_MS = 2000;
+const INTERSECTION_THRESHOLD = 0.3;
+const EASING_EXPONENT = 3; // cubic ease-out
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                             */
+/* ------------------------------------------------------------------ */
 
 interface CounterAnimateProps {
   /** Starting value */
@@ -23,32 +31,35 @@ interface CounterAnimateProps {
   suffix?: string;
   /** Text prepended before number (e.g. "$", "~") */
   prefix?: string;
+  /** Accessible label describing the counter */
+  "aria-label"?: string;
   className?: string;
 }
 
-// ---------------------------------------------------------------------------
-// Scoped styles
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Scoped styles                                                     */
+/* ------------------------------------------------------------------ */
 
 const styles = `
 @media (prefers-reduced-motion: reduce) {
   .ca-counter {
-    /* Immediately show final value — no animation */
+    /* Immediately show final value -- no animation */
     transition: none !important;
   }
 }
 `;
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Component                                                         */
+/* ------------------------------------------------------------------ */
 
 export default function CounterAnimate({
   from = 0,
   to,
-  duration = 2000,
-  suffix = '',
-  prefix = '',
+  duration = DEFAULT_DURATION_MS,
+  suffix = "",
+  prefix = "",
+  "aria-label": ariaLabel,
   className,
 }: CounterAnimateProps) {
   const [display, setDisplay] = useState(from);
@@ -58,7 +69,7 @@ export default function CounterAnimate({
 
   useEffect(() => {
     prefersReducedMotion.current = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
+      "(prefers-reduced-motion: reduce)"
     ).matches;
   }, []);
 
@@ -78,7 +89,7 @@ export default function CounterAnimate({
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
       // ease-out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
+      const eased = 1 - Math.pow(1 - progress, EASING_EXPONENT);
       setDisplay(Math.round(from + diff * eased));
 
       if (progress < 1) {
@@ -100,20 +111,27 @@ export default function CounterAnimate({
           observer.disconnect();
         }
       },
-      { threshold: 0.3 },
+      { threshold: INTERSECTION_THRESHOLD }
     );
 
     observer.observe(el);
     return () => observer.disconnect();
   }, [animate]);
 
+  const formattedValue = `${prefix}${display.toLocaleString()}${suffix}`;
+  const finalValue = `${prefix}${to.toLocaleString()}${suffix}`;
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />
-      <span ref={ref} className={cn('ca-counter tabular-nums', className)}>
-        {prefix}
-        {display.toLocaleString()}
-        {suffix}
+      <span
+        ref={ref}
+        className={cn("ca-counter tabular-nums", className)}
+        role="status"
+        aria-label={ariaLabel ?? `Counter: ${finalValue}`}
+        aria-live="polite"
+      >
+        {formattedValue}
       </span>
     </>
   );

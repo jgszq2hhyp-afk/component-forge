@@ -9,8 +9,14 @@ import { cn } from "@/lib/utils";
 /*  Constants                                                         */
 /* ------------------------------------------------------------------ */
 
-const AVATAR_SIZE = 40; // px – used for both img and fallback circle
-const LOCATION_ICON_SIZE = 12; // px
+const AVATAR_SIZE_PX = 40;
+const LOCATION_ICON_SIZE_PX = 12;
+const SECTION_PY = "py-16 sm:py-24";
+const MAX_WIDTH = "mx-auto max-w-3xl px-4 sm:px-6 lg:px-8";
+const HEADING_CLAMP = "text-[clamp(1.5rem,1rem+1.5vw,2rem)]";
+const RING_STYLE = {
+  ["--tw-ring-color" as string]: "var(--ring, hsl(215 20% 65%))",
+};
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -48,6 +54,17 @@ const defaultMembers: TeamMember[] = [
 ];
 
 /* ------------------------------------------------------------------ */
+/*  Helpers                                                           */
+/* ------------------------------------------------------------------ */
+
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("");
+}
+
+/* ------------------------------------------------------------------ */
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -70,14 +87,15 @@ export default function TeamMinimalList({
 
   return (
     <section
-      className={cn("py-16 sm:py-24 bg-[var(--team-list-bg,transparent)]", className)}
+      className={cn(SECTION_PY, "bg-[var(--team-list-bg,transparent)]", className)}
       aria-label="Team list"
+      style={RING_STYLE}
     >
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <div className={MAX_WIDTH}>
         {(heading || subheading) && (
           <header className="mb-10">
             {heading && (
-              <h2 className="font-bold text-[clamp(1.5rem,3vw,2rem)] text-[var(--team-list-heading-color,hsl(0_0%_9%))]">
+              <h2 className={cn("font-bold", HEADING_CLAMP, "text-[var(--team-list-heading-color,hsl(0_0%_9%))]")}>
                 {heading}
               </h2>
             )}
@@ -142,22 +160,19 @@ function MemberRow({
           src={member.avatarSrc}
           alt=""
           aria-hidden="true"
-          width={AVATAR_SIZE}
-          height={AVATAR_SIZE}
+          width={AVATAR_SIZE_PX}
+          height={AVATAR_SIZE_PX}
           className="flex-shrink-0 rounded-full object-cover"
-          style={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}
+          style={{ width: AVATAR_SIZE_PX, height: AVATAR_SIZE_PX }}
           loading="lazy"
         />
       ) : (
         <div
           className="flex flex-shrink-0 items-center justify-center rounded-full bg-[var(--team-list-avatar-bg,hsl(0_0%_92%))] text-sm font-semibold text-[var(--team-list-avatar-color,hsl(0_0%_35%))]"
-          style={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}
+          style={{ width: AVATAR_SIZE_PX, height: AVATAR_SIZE_PX }}
           aria-hidden="true"
         >
-          {member.name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")}
+          {getInitials(member.name)}
         </div>
       )}
 
@@ -174,8 +189,8 @@ function MemberRow({
         <span className="hidden sm:inline-flex items-center gap-1 text-xs text-[var(--team-list-location-color,hsl(0_0%_55%))]">
           <svg
             className="shrink-0"
-            width={LOCATION_ICON_SIZE}
-            height={LOCATION_ICON_SIZE}
+            width={LOCATION_ICON_SIZE_PX}
+            height={LOCATION_ICON_SIZE_PX}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -193,9 +208,11 @@ function MemberRow({
         <a
           href={`mailto:${member.email}`}
           className={cn(
-            "hidden sm:inline-flex text-sm text-[var(--team-list-link-color,hsl(220_80%_55%))] hover:underline",
+            "hidden sm:inline-flex text-sm underline-offset-4",
+            "text-[var(--team-list-link-color,hsl(220_80%_55%))] hover:underline",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--team-list-link-color,hsl(220_80%_55%))] focus-visible:ring-offset-2 rounded-sm"
           )}
+          style={RING_STYLE}
         >
           Email
         </a>

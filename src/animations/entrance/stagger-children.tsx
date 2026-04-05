@@ -1,22 +1,32 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category animations
 // @name stagger-children
 // @source custom
 
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 import {
   Children,
   useEffect,
   useRef,
   useState,
   type ReactNode,
-} from 'react';
+} from "react";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Constants                                                         */
+/* ------------------------------------------------------------------ */
+
+const DEFAULT_STAGGER_DELAY_MS = 100;
+const CHILD_ANIMATION_DURATION_MS = 500;
+const TRANSLATE_OFFSET_PX = 20;
+const INTERSECTION_THRESHOLD = 0.1;
+const EASING_FUNCTION = "cubic-bezier(0.16,1,0.3,1)";
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                             */
+/* ------------------------------------------------------------------ */
 
 interface StaggerChildrenProps {
   /** Delay between each child animation (ms) */
@@ -25,15 +35,15 @@ interface StaggerChildrenProps {
   className?: string;
 }
 
-// ---------------------------------------------------------------------------
-// Scoped keyframes
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Scoped keyframes                                                  */
+/* ------------------------------------------------------------------ */
 
 const keyframes = `
 @keyframes sc-enter {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(${TRANSLATE_OFFSET_PX}px);
   }
   to {
     opacity: 1;
@@ -49,16 +59,17 @@ const keyframes = `
 
   .sc-child {
     transform: none !important;
+    animation-duration: 0.01ms !important;
   }
 }
 `;
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Component                                                         */
+/* ------------------------------------------------------------------ */
 
 export default function StaggerChildren({
-  staggerDelay = 100,
+  staggerDelay = DEFAULT_STAGGER_DELAY_MS,
   children,
   className,
 }: StaggerChildrenProps) {
@@ -76,7 +87,7 @@ export default function StaggerChildren({
           observer.disconnect();
         }
       },
-      { threshold: 0.1 },
+      { threshold: INTERSECTION_THRESHOLD }
     );
 
     observer.observe(el);
@@ -86,15 +97,18 @@ export default function StaggerChildren({
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
-      <div ref={ref} className={cn('sc-container', className)}>
+      <div
+        ref={ref}
+        className={cn("sc-container", className)}
+      >
         {Children.map(children, (child, index) => (
           <div
             className="sc-child"
             style={{
               opacity: visible ? undefined : 0,
               animation: visible
-                ? `sc-enter 500ms cubic-bezier(0.16,1,0.3,1) ${index * staggerDelay}ms both`
-                : 'none',
+                ? `sc-enter ${CHILD_ANIMATION_DURATION_MS}ms ${EASING_FUNCTION} ${index * staggerDelay}ms both`
+                : "none",
             }}
           >
             {child}

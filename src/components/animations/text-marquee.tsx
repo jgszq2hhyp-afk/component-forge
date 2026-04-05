@@ -1,9 +1,24 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category animations
 // @name text-marquee
 // @source aura-inspired
 
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const DEFAULT_DURATION_SECONDS = 20;
+const DEFAULT_SEPARATOR = '\u2605';
+const SEPARATOR_OPACITY = 0.4;
+const SEPARATOR_MARGIN = '0.4em';
+const FILLED_OPACITY = 0.1;
+const OUTLINE_OPACITY = 0.2;
+const OUTLINE_STROKE_WIDTH = '2px';
+const FONT_SIZE_CLAMP = 'clamp(4rem, 10vw, 10rem)';
+const LINE_HEIGHT = 1.1;
+const VERTICAL_PADDING_REM = 2;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,7 +59,8 @@ function buildKeyframes(
   will-change: transform;
 }
 
-.tm-wrapper:hover .tm-track {
+.tm-wrapper:hover .tm-track,
+.tm-wrapper:focus-within .tm-track {
   animation-play-state: paused;
 }
 
@@ -70,9 +86,9 @@ function buildItemSequence(
       items.push(
         <span
           key={`sep-${i}`}
-          className="mx-[0.4em] select-none"
+          className="select-none"
           aria-hidden="true"
-          style={{ opacity: 0.4 }}
+          style={{ opacity: SEPARATOR_OPACITY, marginInline: SEPARATOR_MARGIN }}
         >
           {separator}
         </span>,
@@ -88,9 +104,9 @@ function buildItemSequence(
   items.push(
     <span
       key="sep-trail"
-      className="mx-[0.4em] select-none"
+      className="select-none"
       aria-hidden="true"
-      style={{ opacity: 0.4 }}
+      style={{ opacity: SEPARATOR_OPACITY, marginInline: SEPARATOR_MARGIN }}
     >
       {separator}
     </span>,
@@ -104,8 +120,8 @@ function buildItemSequence(
 
 export default function TextMarquee({
   texts,
-  separator = '\u2605',
-  durationSeconds = 20,
+  separator = DEFAULT_SEPARATOR,
+  durationSeconds = DEFAULT_DURATION_SECONDS,
   direction = 'left',
   variant = 'filled',
   className,
@@ -115,27 +131,36 @@ export default function TextMarquee({
   const isOutline = variant === 'outline';
 
   const textStyles: React.CSSProperties = {
-    fontSize: 'clamp(4rem, 10vw, 10rem)',
-    lineHeight: 1.1,
+    fontSize: FONT_SIZE_CLAMP,
+    lineHeight: LINE_HEIGHT,
     ...(isOutline
       ? {
-          WebkitTextStroke: '2px var(--foreground)',
+          WebkitTextStroke: `${OUTLINE_STROKE_WIDTH} var(--foreground)`,
           WebkitTextFillColor: 'transparent',
           color: 'transparent',
-          opacity: 0.2,
+          opacity: OUTLINE_OPACITY,
         }
       : {
           color: 'var(--foreground)',
-          opacity: 0.1,
+          opacity: FILLED_OPACITY,
         }),
   };
 
   return (
     <section
-      className={cn('tm-wrapper w-full select-none overflow-hidden py-8', className)}
+      className={cn(
+        'tm-wrapper w-full select-none overflow-hidden',
+        className,
+      )}
+      style={{ paddingBlock: `${VERTICAL_PADDING_REM}rem` }}
       aria-label={`Scrolling text: ${texts.join(', ')}`}
+      tabIndex={0}
     >
-      <style dangerouslySetInnerHTML={{ __html: buildKeyframes(durationSeconds, direction) }} />
+      <style
+        dangerouslySetInnerHTML={{
+          __html: buildKeyframes(durationSeconds, direction),
+        }}
+      />
 
       <div
         className="tm-track flex w-max items-center font-bold uppercase"

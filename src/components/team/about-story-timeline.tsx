@@ -13,10 +13,17 @@ import { cn } from "@/lib/utils";
 /* ------------------------------------------------------------------ */
 
 const INTERSECTION_THRESHOLD = 0.2;
-const TRANSLATE_OFFSET_PX = 32; // translate-y-8 = 2rem = 32px
-const DOT_SIZE = 12; // px
-const IMAGE_MAX_HEIGHT = 192; // px – max-h-48
+const TRANSLATE_OFFSET_REM = 2; // translate-y-8 = 2rem
+const DOT_SIZE_PX = 12;
+const DOT_WRAPPER_PX = DOT_SIZE_PX + 4;
+const IMAGE_MAX_HEIGHT_PX = 192;
 const ANIMATION_DURATION_MS = 700;
+const SECTION_PY = "py-16 sm:py-24";
+const HEADING_CLAMP = "text-[clamp(1.5rem,1rem+1.5vw,2rem)]";
+const CARD_RADIUS = "rounded-2xl";
+const RING_STYLE = {
+  ["--tw-ring-color" as string]: "var(--ring, hsl(215 20% 65%))",
+};
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -99,14 +106,15 @@ function TimelineItem({
         prefersReducedMotion
           ? "opacity-100 translate-y-0"
           : isVisible
-            ? `opacity-100 translate-y-0 transition-all`
-            : `opacity-0 translate-y-8 transition-all`
+            ? "opacity-100 translate-y-0 transition-all"
+            : "opacity-0 translate-y-8 transition-all"
       )}
       style={!prefersReducedMotion ? { transitionDuration: `${ANIMATION_DURATION_MS}ms` } : undefined}
     >
       <div
         className={cn(
-          "rounded-2xl p-6",
+          CARD_RADIUS,
+          "p-6",
           event.highlight
             ? "bg-[var(--timeline-highlight-bg,hsl(220_80%_55%/0.05))] border border-[var(--timeline-highlight-border,hsl(220_80%_55%/0.15))]"
             : "bg-[var(--timeline-card-bg,hsl(0_0%_98%))] border border-[var(--timeline-card-border,hsl(0_0%_0%/0.06))]"
@@ -119,11 +127,13 @@ function TimelineItem({
               ? "bg-[var(--timeline-year-highlight-bg,hsl(220_80%_55%/0.1))] text-[var(--timeline-year-highlight-color,hsl(220_80%_55%))]"
               : "bg-[var(--timeline-year-bg,hsl(0_0%_92%))] text-[var(--timeline-year-color,hsl(0_0%_40%))]"
           )}
+          aria-hidden="true"
         >
           {event.year}
         </span>
 
         <h3 className="text-lg font-semibold text-[var(--timeline-title-color,hsl(0_0%_9%))]">
+          <time dateTime={event.year} className="sr-only">{event.year}: </time>
           {event.title}
         </h3>
         <p className="mt-2 text-sm leading-relaxed text-[var(--timeline-desc-color,hsl(0_0%_40%))]">
@@ -135,7 +145,7 @@ function TimelineItem({
             src={event.imageSrc}
             alt={`${event.title} – ${event.year}`}
             className="mt-4 rounded-xl w-full object-cover"
-            style={{ maxHeight: IMAGE_MAX_HEIGHT }}
+            style={{ maxHeight: IMAGE_MAX_HEIGHT_PX }}
             loading="lazy"
           />
         )}
@@ -188,29 +198,36 @@ export default function AboutStoryTimeline({
     return () => observer.disconnect();
   }, [handleIntersect, prefersReducedMotion]);
 
+  /* ---- Shared header ---- */
+  const renderHeader = () => {
+    if (!heading && !subheading) return null;
+    return (
+      <header className="mb-16 text-center">
+        {heading && (
+          <h2 className={cn("font-bold", HEADING_CLAMP, "text-[var(--timeline-heading-color,hsl(0_0%_9%))]")}>
+            {heading}
+          </h2>
+        )}
+        {subheading && (
+          <p className="mt-3 text-lg text-[var(--timeline-subheading-color,hsl(0_0%_45%))]">
+            {subheading}
+          </p>
+        )}
+      </header>
+    );
+  };
+
   /* ---- Alternating variant ---- */
   if (variant === "alternating") {
     return (
       <section
         ref={sectionRef}
-        className={cn("py-16 sm:py-24 bg-[var(--timeline-bg,transparent)]", className)}
+        className={cn(SECTION_PY, "bg-[var(--timeline-bg,transparent)]", className)}
         aria-label="Company timeline"
+        style={RING_STYLE}
       >
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          {(heading || subheading) && (
-            <header className="mb-16 text-center">
-              {heading && (
-                <h2 className="font-bold text-[clamp(1.5rem,3vw,2rem)] text-[var(--timeline-heading-color,hsl(0_0%_9%))]">
-                  {heading}
-                </h2>
-              )}
-              {subheading && (
-                <p className="mt-3 text-lg text-[var(--timeline-subheading-color,hsl(0_0%_45%))]">
-                  {subheading}
-                </p>
-              )}
-            </header>
-          )}
+          {renderHeader()}
 
           <div className="relative">
             {/* Center line */}
@@ -219,19 +236,19 @@ export default function AboutStoryTimeline({
               aria-hidden="true"
             />
 
-            <div className="space-y-12 md:space-y-0">
+            <ol className="space-y-12 md:space-y-0 list-none p-0 m-0">
               {events.map((event, i) => {
                 const isLeft = i % 2 === 0;
 
                 return (
-                  <div
+                  <li
                     key={`${event.year}-${event.title}`}
                     data-index={i}
                     className="relative md:flex md:items-start md:gap-8 md:py-8"
                   >
                     {/* Left content */}
                     <div className={cn("md:w-1/2", isLeft ? "md:pr-12" : "md:pr-12 md:order-2")}>
-                      {(isLeft || typeof window === "undefined") && (
+                      {isLeft && (
                         <TimelineItem
                           event={event}
                           isVisible={visibleItems.has(i)}
@@ -244,7 +261,7 @@ export default function AboutStoryTimeline({
                     {/* Center dot */}
                     <div
                       className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center justify-center"
-                      style={{ width: DOT_SIZE + 4, height: DOT_SIZE + 4 }}
+                      style={{ width: DOT_WRAPPER_PX, height: DOT_WRAPPER_PX }}
                       aria-hidden="true"
                     >
                       <div
@@ -254,7 +271,7 @@ export default function AboutStoryTimeline({
                             ? "bg-[var(--timeline-dot-highlight,hsl(220_80%_55%))]"
                             : "bg-[var(--timeline-dot-color,hsl(0_0%_75%))]"
                         )}
-                        style={{ width: DOT_SIZE, height: DOT_SIZE }}
+                        style={{ width: DOT_SIZE_PX, height: DOT_SIZE_PX }}
                       />
                     </div>
 
@@ -279,10 +296,10 @@ export default function AboutStoryTimeline({
                         prefersReducedMotion={prefersReducedMotion}
                       />
                     </div>
-                  </div>
+                  </li>
                 );
               })}
-            </div>
+            </ol>
           </div>
         </div>
       </section>
@@ -293,24 +310,12 @@ export default function AboutStoryTimeline({
   return (
     <section
       ref={sectionRef}
-      className={cn("py-16 sm:py-24 bg-[var(--timeline-bg,transparent)]", className)}
+      className={cn(SECTION_PY, "bg-[var(--timeline-bg,transparent)]", className)}
       aria-label="Company timeline"
+      style={RING_STYLE}
     >
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        {(heading || subheading) && (
-          <header className="mb-16 text-center">
-            {heading && (
-              <h2 className="font-bold text-[clamp(1.5rem,3vw,2rem)] text-[var(--timeline-heading-color,hsl(0_0%_9%))]">
-                {heading}
-              </h2>
-            )}
-            {subheading && (
-              <p className="mt-3 text-lg text-[var(--timeline-subheading-color,hsl(0_0%_45%))]">
-                {subheading}
-              </p>
-            )}
-          </header>
-        )}
+        {renderHeader()}
 
         <div className="relative">
           {/* Timeline line */}
@@ -319,9 +324,9 @@ export default function AboutStoryTimeline({
             aria-hidden="true"
           />
 
-          <div className="space-y-10">
+          <ol className="space-y-10 list-none p-0 m-0">
             {events.map((event, i) => (
-              <div
+              <li
                 key={`${event.year}-${event.title}`}
                 data-index={i}
                 className="relative pl-12 sm:pl-16"
@@ -335,7 +340,7 @@ export default function AboutStoryTimeline({
                         ? "bg-[var(--timeline-dot-highlight,hsl(220_80%_55%))]"
                         : "bg-[var(--timeline-dot-color,hsl(0_0%_75%))]"
                     )}
-                    style={{ width: DOT_SIZE, height: DOT_SIZE }}
+                    style={{ width: DOT_SIZE_PX, height: DOT_SIZE_PX }}
                   />
                 </div>
 
@@ -345,9 +350,9 @@ export default function AboutStoryTimeline({
                   side="left"
                   prefersReducedMotion={prefersReducedMotion}
                 />
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </div>
     </section>

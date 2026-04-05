@@ -1,31 +1,41 @@
-// @version 1.1.0
+// @version 2.0.0
 // @category animations
 // @name parallax-layer
 // @source custom
 
-import { cn } from '@/lib/utils';
-import type { ReactNode } from 'react';
+import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Constants                                                         */
+/* ------------------------------------------------------------------ */
+
+const MIN_SPEED = 0.1;
+const MAX_SPEED = 1.0;
+const MOBILE_INTENSITY_FACTOR = 0.5;
+const MOBILE_BREAKPOINT_PX = 767;
+const PX_PER_SPEED_UNIT = 100;
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                             */
+/* ------------------------------------------------------------------ */
 
 interface ParallaxLayerProps {
-  /** Parallax intensity — 0.1 (subtle) to 1.0 (strong) */
+  /** Parallax intensity -- 0.1 (subtle) to 1.0 (strong) */
   speed?: number;
   /** Scroll direction of the parallax offset */
-  direction?: 'up' | 'down';
+  direction?: "up" | "down";
   /** Completely disable parallax (useful for debugging or a11y) */
   disabled?: boolean;
-  /** Accessible label — when set, the container is treated as meaningful content */
-  'aria-label'?: string;
+  /** Accessible label -- when set, the container is treated as meaningful content */
+  "aria-label"?: string;
   children: ReactNode;
   className?: string;
 }
 
-// ---------------------------------------------------------------------------
-// Scoped keyframes
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Scoped keyframes                                                  */
+/* ------------------------------------------------------------------ */
 
 const keyframes = `
 @supports (animation-timeline: scroll()) {
@@ -48,9 +58,9 @@ const keyframes = `
   }
 
   /* Responsive: halve parallax intensity on small screens */
-  @media (max-width: 767px) {
+  @media (max-width: ${MOBILE_BREAKPOINT_PX}px) {
     .plx-layer {
-      --plx-distance-mobile: calc(var(--plx-distance) * 0.5);
+      --plx-distance-mobile: calc(var(--plx-distance) * ${MOBILE_INTENSITY_FACTOR});
       animation-name: var(--plx-anim);
     }
 
@@ -85,15 +95,15 @@ const keyframes = `
 }
 `;
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Component                                                         */
+/* ------------------------------------------------------------------ */
 
 export default function ParallaxLayer({
   speed = 0.5,
-  direction = 'up',
+  direction = "up",
   disabled = false,
-  'aria-label': ariaLabel,
+  "aria-label": ariaLabel,
   children,
   className,
 }: ParallaxLayerProps) {
@@ -106,26 +116,29 @@ export default function ParallaxLayer({
         className={className}
         aria-hidden={isDecorative || undefined}
         aria-label={ariaLabel}
+        role={ariaLabel ? "region" : undefined}
       >
         {children}
       </div>
     );
   }
 
-  const clampedSpeed = Math.min(1, Math.max(0.1, speed));
-  const distance = `${clampedSpeed * 100}px`;
+  const clampedSpeed = Math.min(MAX_SPEED, Math.max(MIN_SPEED, speed));
+  const distance = `${clampedSpeed * PX_PER_SPEED_UNIT}px`;
+  const animationName = direction === "up" ? "plx-shift-up" : "plx-shift-down";
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
       <div
-        className={cn('plx-layer', className)}
+        className={cn("plx-layer", className)}
         aria-hidden={isDecorative || undefined}
         aria-label={ariaLabel}
+        role={ariaLabel ? "region" : undefined}
         style={
           {
-            '--plx-distance': distance,
-            '--plx-anim': direction === 'up' ? 'plx-shift-up' : 'plx-shift-down',
+            "--plx-distance": distance,
+            "--plx-anim": animationName,
           } as React.CSSProperties
         }
       >

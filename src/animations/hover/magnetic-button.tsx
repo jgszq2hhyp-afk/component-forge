@@ -1,4 +1,4 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category animations
 // @name magnetic-button
 // @source custom
@@ -9,11 +9,23 @@ import { cn } from '@/lib/utils';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const MIN_STRENGTH = 1;
+const MAX_STRENGTH = 10;
+const DEFAULT_STRENGTH = 5;
+const STRENGTH_MULTIPLIER = 0.4;
+const OFFSET_DIVISOR = 10;
+const TRANSITION_DURATION_MS = 200;
+const CENTER_DIVISOR = 2;
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface MagneticButtonProps {
-  /** Magnetic pull strength — 1 (subtle) to 10 (strong) */
+  /** Magnetic pull strength -- 1 (subtle) to 10 (strong) */
   strength?: number;
   children: ReactNode;
   className?: string;
@@ -25,7 +37,7 @@ interface MagneticButtonProps {
 
 const styles = `
 .mb-magnetic {
-  transition: transform 200ms cubic-bezier(0.33, 1, 0.68, 1);
+  transition: transform ${TRANSITION_DURATION_MS}ms cubic-bezier(0.33, 1, 0.68, 1);
   will-change: transform;
 }
 
@@ -42,7 +54,7 @@ const styles = `
 // ---------------------------------------------------------------------------
 
 export default function MagneticButton({
-  strength = 5,
+  strength = DEFAULT_STRENGTH,
   children,
   className,
 }: MagneticButtonProps) {
@@ -56,8 +68,8 @@ export default function MagneticButton({
     ).matches;
   }, []);
 
-  const clampedStrength = Math.min(10, Math.max(1, strength));
-  const multiplier = clampedStrength * 0.4;
+  const clampedStrength = Math.min(MAX_STRENGTH, Math.max(MIN_STRENGTH, strength));
+  const multiplier = clampedStrength * STRENGTH_MULTIPLIER;
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -66,12 +78,12 @@ export default function MagneticButton({
       if (!el) return;
 
       const rect = el.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
+      const centerX = rect.left + rect.width / CENTER_DIVISOR;
+      const centerY = rect.top + rect.height / CENTER_DIVISOR;
 
       setOffset({
-        x: (e.clientX - centerX) * (multiplier / 10),
-        y: (e.clientY - centerY) * (multiplier / 10),
+        x: (e.clientX - centerX) * (multiplier / OFFSET_DIVISOR),
+        y: (e.clientY - centerY) * (multiplier / OFFSET_DIVISOR),
       });
     },
     [multiplier],
@@ -81,17 +93,37 @@ export default function MagneticButton({
     setOffset({ x: 0, y: 0 });
   }, []);
 
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      const el = ref.current;
+      if (!el) return;
+      const focusable = el.querySelector<HTMLElement>(
+        'button, a, [tabindex]:not([tabindex="-1"])',
+      );
+      focusable?.click();
+    }
+  }, []);
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />
       <div
         ref={ref}
-        className={cn('mb-magnetic inline-block', className)}
+        role="group"
+        aria-label="Magnetic hover effect wrapper"
+        className={cn(
+          'mb-magnetic inline-block',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          className,
+        )}
         style={{
           transform: `translate3d(${offset.x}px, ${offset.y}px, 0)`,
+          ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onKeyDown={handleKeyDown}
       >
         {children}
       </div>
