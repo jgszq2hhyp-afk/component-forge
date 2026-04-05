@@ -3,7 +3,7 @@
 Last updated: 2026-04-05
 
 ## Current Focus
-183 components across 35 categories. ALL 183 components at award-worthy (91+). Cycle 8 added 18 new components in 8 new categories.
+225 components across 52 categories. ALL 225 components at award-worthy (91+). Cycle 9 added 42 new components in 17 new categories.
 
 ## Recent Cycles
 
@@ -86,6 +86,29 @@ Last updated: 2026-04-05
 - **sidebar (2, NEU):** sidebar-blog (Search+Categories+Tags), sidebar-toc (IntersectionObserver Active Tracking)
 - **Build:** Clean ✓ — zero TS errors
 - **All 18 built to award-worthy (91+) from day one**
+
+### Cycle 9 — 2026-04-05: 17 New Categories (Major Expansion)
+- **42 neue Komponenten** in 17 neuen Kategorien
+- **modal (3, NEU):** modal-lightbox, modal-dialog-centered, modal-command-palette
+- **forms (3, NEU):** form-multi-step, form-contact-advanced, form-survey-section
+- **tabs (3, NEU):** tabs-underline-animated, tabs-vertical-split, tabs-pill-cards
+- **video (3, NEU):** video-hero-section, video-feature-showcase, video-testimonial-section
+- **cards (3, NEU):** cards-bento-grid, cards-hover-reveal, cards-glassmorphism
+- **tables (2, NEU):** table-data-display, table-comparison-matrix
+- **ratings (2, NEU):** ratings-aggregate-display, ratings-review-cards
+- **search (2, NEU):** search-hero-section, search-results-section
+- **mobile-menu (2, NEU):** mobile-menu-fullscreen, mobile-menu-drawer
+- **empty-state (2, NEU):** empty-state-illustrated, empty-state-minimal
+- **ecommerce (3, NEU):** ecommerce-product-grid, ecommerce-product-detail, ecommerce-featured-collection
+- **map (2, NEU):** map-location-section, map-multi-location
+- **pagination (2, NEU):** pagination-numbered, pagination-load-more
+- **dashboard (3, NEU):** dashboard-stats-overview, dashboard-activity-feed, dashboard-chart-card
+- **notification (2, NEU):** notification-toast-stack, notification-inline-alert
+- **avatar (2, NEU):** avatar-group-stack, avatar-profile-card
+- **onboarding (3, NEU):** onboarding-welcome-steps, onboarding-feature-tour, onboarding-checklist
+- **Inspired by:** aura.build + 21st.dev 2026 trends research
+- **Build:** Clean ✓ — zero TS errors
+- **All 42 built to award-worthy (91+) from day one**
 
 ## Blockers
 - Remote scheduled trigger (RemoteTrigger API) returned 401 — scheduled automation not yet active
