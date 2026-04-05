@@ -3,8 +3,6 @@
 // @name hero-with-image-overlay
 // @source https://tailwindcss.com/plus/ui-blocks/marketing/sections/heroes
 
-'use client';
-
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +21,10 @@ const SUBHEADLINE_DELAY = '0.35s';
 const CTA_DELAY = '0.5s';
 const DEFAULT_OVERLAY_OPACITY = 0.5;
 const GRADIENT_FADE_STOP = '60%';
+const HEADING_CLAMP = 'clamp(2.25rem, 5vw + 1rem, 4.5rem)';
+const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)';
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -71,12 +73,17 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hio-fade-up {
-    from { opacity: 1; }
-    to   { opacity: 1; }
+    from { opacity: 1; transform: none; filter: none; }
+    to   { opacity: 1; transform: none; filter: none; }
   }
   @keyframes hio-scale-in {
     from { transform: scale(1); }
     to   { transform: scale(1); }
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 `;
@@ -85,7 +92,10 @@ const keyframes = `
 // Position mapping
 // ---------------------------------------------------------------------------
 
-const positionClasses: Record<string, string> = {
+const positionClasses: Record<
+  NonNullable<HeroWithImageOverlayProps['contentPosition']>,
+  string
+> = {
   center: 'items-center justify-center text-center',
   left: 'items-start justify-center text-left',
   'bottom-left': 'items-end justify-end text-left pb-8 md:pb-16',
@@ -121,7 +131,6 @@ export default function HeroWithImageOverlay({
           className,
         )}
       >
-        {/* Background image with slow zoom */}
         <div
           className="absolute inset-0"
           style={{
@@ -139,19 +148,18 @@ export default function HeroWithImageOverlay({
           />
         </div>
 
-        {/* Gradient overlay */}
         <div
           className="absolute inset-0"
           style={{
-            background: contentPosition === 'bottom-left'
-              ? `linear-gradient(to top, color-mix(in srgb, var(--background) ${overlayOpacity * 100}%, transparent), transparent ${GRADIENT_FADE_STOP})`
-              : `color-mix(in srgb, var(--background) ${overlayOpacity * 100}%, transparent)`,
+            background:
+              contentPosition === 'bottom-left'
+                ? `linear-gradient(to top, color-mix(in srgb, var(--background) ${overlayOpacity * 100}%, transparent), transparent ${GRADIENT_FADE_STOP})`
+                : `color-mix(in srgb, var(--background) ${overlayOpacity * 100}%, transparent)`,
           }}
           aria-hidden="true"
         />
 
-        {/* Content */}
-        <div
+        <article
           className={cn(
             'relative z-10',
             contentPosition === 'center' ? 'max-w-3xl' : 'max-w-2xl',
@@ -160,7 +168,7 @@ export default function HeroWithImageOverlay({
           <h1
             className="font-bold tracking-tight leading-[1.08]"
             style={{
-              fontSize: 'clamp(2.25rem, 5vw + 1rem, 4.5rem)',
+              fontSize: HEADING_CLAMP,
               color: 'var(--foreground)',
               animation: `hio-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
               animationDelay: HEADLINE_DELAY,
@@ -173,10 +181,12 @@ export default function HeroWithImageOverlay({
             <p
               className={cn(
                 'mt-5 md:mt-6 leading-relaxed',
-                contentPosition === 'center' ? 'mx-auto max-w-xl' : 'max-w-lg',
+                contentPosition === 'center'
+                  ? 'mx-auto max-w-xl'
+                  : 'max-w-lg',
               )}
               style={{
-                fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)',
+                fontSize: SUBHEADLINE_CLAMP,
                 color: 'var(--muted-foreground)',
                 animation: `hio-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
                 animationDelay: SUBHEADLINE_DELAY,
@@ -187,7 +197,8 @@ export default function HeroWithImageOverlay({
           )}
 
           {(ctaText || secondaryCtaText) && (
-            <div
+            <nav
+              aria-label="Hero actions"
               className={cn(
                 'mt-8 md:mt-10 flex flex-wrap gap-4',
                 contentPosition === 'center'
@@ -207,13 +218,13 @@ export default function HeroWithImageOverlay({
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
                     'transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110 hover:shadow-lg',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    FOCUS_RING,
                     'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
-                    ['--tw-ring-color' as string]: 'var(--primary)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
@@ -229,23 +240,24 @@ export default function HeroWithImageOverlay({
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
                     'border backdrop-blur-sm transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    FOCUS_RING,
                     'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     color: 'var(--foreground)',
-                    borderColor: 'color-mix(in srgb, var(--foreground) 40%, transparent)',
-                    backgroundColor: 'color-mix(in srgb, var(--background) 15%, transparent)',
-                    ['--tw-ring-color' as string]: 'var(--foreground)',
+                    borderColor: 'var(--border)',
+                    backgroundColor:
+                      'color-mix(in srgb, var(--background) 15%, transparent)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
                   {secondaryCtaText}
                 </a>
               )}
-            </div>
+            </nav>
           )}
-        </div>
+        </article>
       </section>
     </>
   );

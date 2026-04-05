@@ -13,6 +13,8 @@ const GRADIENT_SHIFT_DURATION = '6s';
 const GRADIENT_BG_SIZE = '200% 200%';
 const DEFAULT_GRADIENT = 'linear-gradient(135deg, var(--primary), var(--accent), var(--primary))';
 const HEADING_CLAMP = 'clamp(2.5rem, 6vw + 1rem, 5.5rem)';
+const SUBHEADING_CLAMP = 'clamp(1rem, 1.5vw + 0.5rem, 1.25rem)';
+const MIN_HERO_HEIGHT = '80vh';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -68,12 +70,15 @@ export default function HeroGradientText({
     <section
       aria-label="Gradient text hero"
       className={cn(
-        'relative flex min-h-[80vh] flex-col items-center justify-center',
+        'relative flex flex-col items-center justify-center',
         'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
         'text-center',
         className,
       )}
-      style={{ backgroundColor: 'var(--background)' }}
+      style={{
+        backgroundColor: 'var(--background)',
+        minHeight: MIN_HERO_HEIGHT,
+      }}
     >
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
@@ -95,8 +100,11 @@ export default function HeroGradientText({
 
         {subheadline && (
           <p
-            className="mt-6 max-w-2xl mx-auto text-lg leading-relaxed md:text-xl"
-            style={{ color: 'var(--muted-foreground)' }}
+            className="mt-6 max-w-2xl mx-auto leading-relaxed"
+            style={{
+              color: 'var(--muted-foreground)',
+              fontSize: SUBHEADING_CLAMP,
+            }}
           >
             {subheadline}
           </p>
@@ -119,7 +127,7 @@ export default function HeroGradientText({
               style={{
                 backgroundColor: 'var(--primary)',
                 color: 'var(--primary-foreground)',
-                ['--tw-ring-color' as string]: 'var(--primary)',
+                ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                 ['--tw-ring-offset-color' as string]: 'var(--background)',
               }}
             >
@@ -141,7 +149,7 @@ export default function HeroGradientText({
               style={{
                 color: 'var(--foreground)',
                 borderColor: 'color-mix(in srgb, var(--foreground) 20%, transparent)',
-                ['--tw-ring-color' as string]: 'var(--foreground)',
+                ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                 ['--tw-ring-offset-color' as string]: 'var(--background)',
               }}
             >

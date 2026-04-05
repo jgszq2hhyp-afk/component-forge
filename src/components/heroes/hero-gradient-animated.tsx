@@ -28,6 +28,10 @@ const BLOB_LEFT_STEP = 15;
 const HEADLINE_DELAY = '0.15s';
 const SUBHEADLINE_DELAY = '0.3s';
 const CTA_DELAY = '0.45s';
+const HEADING_CLAMP = 'clamp(2.5rem, 5vw + 1rem, 5rem)';
+const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)';
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -91,8 +95,13 @@ const keyframes = `
     0%, 50%, 100% { transform: translateY(0); }
   }
   @keyframes hga-fade-up {
-    from { opacity: 1; }
-    to   { opacity: 1; }
+    from { opacity: 1; transform: none; filter: none; }
+    to   { opacity: 1; transform: none; filter: none; }
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 `;
@@ -134,12 +143,15 @@ export default function HeroGradientAnimated({
   useEffect(() => {
     if (!interactive) return;
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
     if (prefersReducedMotion) return;
 
     function handleMouseMove(e: MouseEvent) {
       if (!interactiveRef.current) return;
-      const rect = interactiveRef.current.parentElement?.getBoundingClientRect();
+      const rect =
+        interactiveRef.current.parentElement?.getBoundingClientRect();
       if (!rect) return;
       interactiveRef.current.style.transform = `translate(${e.clientX - rect.left - rect.width / 2}px, ${e.clientY - rect.top - rect.height / 2}px)`;
     }
@@ -159,16 +171,21 @@ export default function HeroGradientAnimated({
           'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
           className,
         )}
-        style={{
-          '--hga-first': 'var(--primary)',
-          '--hga-second': 'color-mix(in srgb, var(--primary) 60%, var(--background))',
-          '--hga-third': 'color-mix(in srgb, var(--primary) 40%, var(--foreground) 10%)',
-          '--hga-fourth': 'color-mix(in srgb, var(--primary) 80%, var(--background))',
-          '--hga-fifth': 'color-mix(in srgb, var(--primary) 30%, var(--background))',
-          backgroundColor: 'var(--background)',
-        } as React.CSSProperties}
+        style={
+          {
+            '--hga-first': 'var(--primary)',
+            '--hga-second':
+              'color-mix(in srgb, var(--primary) 60%, var(--background))',
+            '--hga-third':
+              'color-mix(in srgb, var(--primary) 40%, var(--foreground) 10%)',
+            '--hga-fourth':
+              'color-mix(in srgb, var(--primary) 80%, var(--background))',
+            '--hga-fifth':
+              'color-mix(in srgb, var(--primary) 30%, var(--background))',
+            backgroundColor: 'var(--background)',
+          } as React.CSSProperties
+        }
       >
-        {/* Animated gradient blobs */}
         <div
           className="absolute inset-0"
           style={{ filter: `blur(${BLOB_BLUR})` }}
@@ -176,7 +193,7 @@ export default function HeroGradientAnimated({
         >
           {blobs.map((blob, i) => (
             <div
-              key={i}
+              key={blob.cssVar}
               className="absolute rounded-full mix-blend-hard-light"
               style={{
                 width: BLOB_SIZE,
@@ -190,7 +207,6 @@ export default function HeroGradientAnimated({
             />
           ))}
 
-          {/* Interactive blob follows cursor */}
           {interactive && (
             <div
               ref={interactiveRef}
@@ -205,12 +221,11 @@ export default function HeroGradientAnimated({
           )}
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 max-w-3xl text-center">
+        <article className="relative z-10 max-w-3xl text-center">
           <h1
             className="font-bold tracking-tight leading-[1.08]"
             style={{
-              fontSize: 'clamp(2.5rem, 5vw + 1rem, 5rem)',
+              fontSize: HEADING_CLAMP,
               color: 'var(--foreground)',
               animation: `hga-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
               animationDelay: HEADLINE_DELAY,
@@ -223,7 +238,7 @@ export default function HeroGradientAnimated({
             <p
               className="mx-auto mt-5 md:mt-6 leading-relaxed max-w-xl"
               style={{
-                fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)',
+                fontSize: SUBHEADLINE_CLAMP,
                 color: 'var(--muted-foreground)',
                 animation: `hga-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
                 animationDelay: SUBHEADLINE_DELAY,
@@ -234,7 +249,8 @@ export default function HeroGradientAnimated({
           )}
 
           {(ctaText || secondaryCtaText) && (
-            <div
+            <nav
+              aria-label="Hero actions"
               className="mt-8 md:mt-10 flex flex-wrap items-center justify-center gap-4"
               style={{
                 animation: `hga-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
@@ -249,13 +265,13 @@ export default function HeroGradientAnimated({
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
                     'backdrop-blur-sm transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110 hover:shadow-lg',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    FOCUS_RING,
                     'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
-                    ['--tw-ring-color' as string]: 'var(--primary)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
@@ -271,23 +287,24 @@ export default function HeroGradientAnimated({
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
                     'border backdrop-blur-md transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    FOCUS_RING,
                     'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     color: 'var(--foreground)',
                     borderColor: 'color-mix(in srgb, var(--foreground) 30%, transparent)',
-                    backgroundColor: 'color-mix(in srgb, var(--background) 30%, transparent)',
-                    ['--tw-ring-color' as string]: 'var(--foreground)',
+                    backgroundColor:
+                      'color-mix(in srgb, var(--background) 30%, transparent)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
                   {secondaryCtaText}
                 </a>
               )}
-            </div>
+            </nav>
           )}
-        </div>
+        </article>
       </section>
     </>
   );

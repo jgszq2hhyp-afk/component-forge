@@ -15,17 +15,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // ---------------------------------------------------------------------------
 
 const HERO_MIN_HEIGHT = '85vh';
-const CONTENT_MAX_WIDTH = '48rem'; // max-w-3xl
-const SUBHEADLINE_MAX_WIDTH = '36rem'; // max-w-xl
+const CONTENT_MAX_WIDTH = '48rem';
+const SUBHEADLINE_MAX_WIDTH = '36rem';
 const HEADING_CLAMP = 'clamp(2.5rem, 5vw + 1rem, 4.5rem)';
 const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1vw + 0.75rem, 1.25rem)';
 const TRANSITION_LOCK_MS = 600;
 const OVERLAY_MIX_PERCENT = '55%';
-const NAV_BUTTON_SIZE = '2.5rem'; // 40px
+const NAV_BUTTON_SIZE = '2.5rem';
 const NAV_BUTTON_BG_MIX = '40%';
-const DOT_ACTIVE_WIDTH = '2rem'; // 32px
-const DOT_INACTIVE_WIDTH = '1rem'; // 16px
-const DOT_HEIGHT = '0.25rem'; // 4px
+const DOT_ACTIVE_WIDTH = '2rem';
+const DOT_INACTIVE_WIDTH = '1rem';
+const DOT_HEIGHT = '0.25rem';
 const DOT_BG_MIX = '30%';
 const ANIMATION_DURATION = '0.6s';
 const ANIMATION_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
@@ -35,7 +35,10 @@ const IMAGE_TRANSITION_MS = 700;
 const ARROW_SIZE = 16;
 const ARROW_STROKE_WIDTH = 1.5;
 const DEFAULT_AUTOPLAY_MS = 5000;
-const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--ring)]';
+const CTA_FONT_SIZE = '0.9375rem';
+const ACTIVE_SCALE = '0.98';
+const DOT_WIDTH_TRANSITION_MS = '300ms';
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -81,17 +84,11 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hwc-fade-in {
-    from { opacity: 1; }
-    to   { opacity: 1; }
+    from, to { opacity: 1; transform: none; filter: none; }
   }
   @keyframes hwc-progress {
     from { transform: scaleX(0); }
     to   { transform: scaleX(1); }
-  }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
   }
 }
 `;
@@ -130,14 +127,12 @@ export default function HeroWithCarousel({
     goTo((current - 1 + slides.length) % slides.length);
   }, [current, slides.length, goTo]);
 
-  // Auto-play
   useEffect(() => {
     if (autoPlayInterval <= 0) return;
     timerRef.current = setTimeout(goNext, autoPlayInterval);
     return () => clearTimeout(timerRef.current);
   }, [current, autoPlayInterval, goNext]);
 
-  // Keyboard navigation (arrow keys within section)
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
@@ -177,6 +172,7 @@ export default function HeroWithCarousel({
         style={{
           minHeight: HERO_MIN_HEIGHT,
           backgroundColor: 'var(--background)',
+          ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
         }}
       >
         {/* Background images */}
@@ -258,13 +254,16 @@ export default function HeroWithCarousel({
                   href={ctaHref}
                   className={cn(
                     'inline-flex items-center justify-center',
-                    'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
+                    `rounded-lg px-7 py-3.5 text-[${CTA_FONT_SIZE}] font-semibold`,
+                    'transition-all duration-200 motion-reduce:transition-none',
+                    'hover:brightness-110 hover:shadow-lg',
                     FOCUS_RING,
-                    'active:scale-[0.98]',
+                    `active:scale-[${ACTIVE_SCALE}] motion-reduce:active:scale-100`,
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
@@ -285,7 +284,7 @@ export default function HeroWithCarousel({
             type="button"
             className={cn(
               'flex items-center justify-center rounded-full',
-              'backdrop-blur-md',
+              'backdrop-blur-md transition-colors duration-200 motion-reduce:transition-none',
               FOCUS_RING,
             )}
             style={{
@@ -293,6 +292,7 @@ export default function HeroWithCarousel({
               height: NAV_BUTTON_SIZE,
               backgroundColor: `color-mix(in srgb, var(--background) ${NAV_BUTTON_BG_MIX}, transparent)`,
               color: 'var(--foreground)',
+              ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
             }}
             aria-label="Previous slide"
           >
@@ -306,7 +306,7 @@ export default function HeroWithCarousel({
             type="button"
             className={cn(
               'flex items-center justify-center rounded-full',
-              'backdrop-blur-md',
+              'backdrop-blur-md transition-colors duration-200 motion-reduce:transition-none',
               FOCUS_RING,
             )}
             style={{
@@ -314,6 +314,7 @@ export default function HeroWithCarousel({
               height: NAV_BUTTON_SIZE,
               backgroundColor: `color-mix(in srgb, var(--background) ${NAV_BUTTON_BG_MIX}, transparent)`,
               color: 'var(--foreground)',
+              ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
             }}
             aria-label="Next slide"
           >
@@ -335,13 +336,14 @@ export default function HeroWithCarousel({
               type="button"
               role="tab"
               onClick={() => goTo(i)}
-              className="relative rounded-full overflow-hidden"
+              className={cn('relative rounded-full overflow-hidden', FOCUS_RING)}
               style={{
                 height: DOT_HEIGHT,
                 width: i === current ? DOT_ACTIVE_WIDTH : DOT_INACTIVE_WIDTH,
                 backgroundColor: `color-mix(in srgb, var(--foreground) ${DOT_BG_MIX}, transparent)`,
                 transitionProperty: 'width',
-                transitionDuration: '300ms',
+                transitionDuration: DOT_WIDTH_TRANSITION_MS,
+                ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
               }}
               aria-label={`Go to slide ${i + 1}`}
               aria-selected={i === current}

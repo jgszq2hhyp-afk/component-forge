@@ -1,85 +1,97 @@
-// @version 1.0.0
+// @version 2.0.0
 // @category navigation
 // @name nav-sticky-blur
-// @score pending
-// @csv-refs stacks/shadcn:nav
-'use client'
+// @source self-authored
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   AnimatePresence,
   motion,
   useMotionValueEvent,
   useScroll,
-} from 'framer-motion'
-import { Menu, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+} from 'framer-motion';
+import { Menu, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
 
-interface NavLink {
-  label: string
-  href: string
-}
+const SCROLL_THRESHOLD = 50;
+const LOGO_FONT_SIZE = 'clamp(1rem, 1.5vw + 0.5rem, 1.25rem)';
+const SPRING_STIFFNESS = 500;
+const SPRING_DAMPING = 35;
+const PANEL_SPRING_STIFFNESS = 400;
+const PANEL_SPRING_DAMPING = 40;
+const LINK_STAGGER_DELAY = 0.05;
+const LINK_STAGGER_OFFSET = 0.15;
+const LINK_STAGGER_DURATION = 0.3;
+const ACTIVE_LINK_OPACITY = 0.7;
 
-interface NavStickyBlurProps {
-  logo?: React.ReactNode
-  logoText?: string
-  links: NavLink[]
-  ctaText?: string
-  ctaHref?: string
-  className?: string
-}
-
-/* ------------------------------------------------------------------ */
-/*  Constants                                                          */
-/* ------------------------------------------------------------------ */
-
-const SCROLL_THRESHOLD = 50
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 const mobileMenuVariants = {
   closed: { x: '100%' },
   open: { x: 0 },
-} as const
+} as const;
 
 const overlayVariants = {
   closed: { opacity: 0 },
   open: { opacity: 1 },
-} as const
+} as const;
 
 const linkVariants = {
   closed: { opacity: 0, x: 20 },
   open: (i: number) => ({
     opacity: 1,
     x: 0,
-    transition: { delay: 0.05 * i + 0.15, duration: 0.3 },
+    transition: { delay: LINK_STAGGER_DELAY * i + LINK_STAGGER_OFFSET, duration: LINK_STAGGER_DURATION },
   }),
-} as const
+} as const;
 
-/* ------------------------------------------------------------------ */
-/*  Reduced-motion helper                                              */
-/* ------------------------------------------------------------------ */
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
-function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false)
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReduced(mq.matches)
-
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-
-  return reduced
+interface NavLink {
+  label: string;
+  href: string;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                          */
-/* ------------------------------------------------------------------ */
+interface NavStickyBlurProps {
+  logo?: React.ReactNode;
+  logoText?: string;
+  links: NavLink[];
+  ctaText?: string;
+  ctaHref?: string;
+  className?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Reduced-motion helper
+// ---------------------------------------------------------------------------
+
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(mq.matches);
+
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  return reduced;
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export function NavStickyBlur({
   logo,
@@ -89,74 +101,65 @@ export function NavStickyBlur({
   ctaHref = '#',
   className,
 }: NavStickyBlurProps) {
-  const [scrolled, setScrolled] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [activeHref, setActiveHref] = useState('')
-  const reducedMotion = usePrefersReducedMotion()
-  const navRef = useRef<HTMLElement>(null)
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeHref, setActiveHref] = useState('');
+  const reducedMotion = usePrefersReducedMotion();
+  const navRef = useRef<HTMLElement>(null);
 
-  /* ---- scroll detection ---- */
-  const { scrollY } = useScroll()
+  const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
-    setScrolled(latest > SCROLL_THRESHOLD)
-  })
+    setScrolled(latest > SCROLL_THRESHOLD);
+  });
 
-  /* ---- track current hash / path for active link ---- */
   useEffect(() => {
     const updateActive = () => {
-      setActiveHref(window.location.hash || window.location.pathname)
-    }
-    updateActive()
-    window.addEventListener('hashchange', updateActive)
-    return () => window.removeEventListener('hashchange', updateActive)
-  }, [])
+      setActiveHref(window.location.hash || window.location.pathname);
+    };
+    updateActive();
+    window.addEventListener('hashchange', updateActive);
+    return () => window.removeEventListener('hashchange', updateActive);
+  }, []);
 
-  /* ---- lock body scroll when mobile menu is open ---- */
   useEffect(() => {
     if (mobileOpen) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = ''
+      document.body.style.overflow = '';
     }
     return () => {
-      document.body.style.overflow = ''
-    }
-  }, [mobileOpen])
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
 
-  /* ---- close mobile menu on Escape ---- */
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Escape' && mobileOpen) {
-        setMobileOpen(false)
+        setMobileOpen(false);
       }
     },
     [mobileOpen],
-  )
+  );
 
-  /* ---- focus trap refs ---- */
-  const closeButtonRef = useRef<HTMLButtonElement>(null)
-  const lastLinkRef = useRef<HTMLAnchorElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const lastLinkRef = useRef<HTMLAnchorElement>(null);
 
-  /* focus the close button when mobile menu opens */
   useEffect(() => {
     if (mobileOpen) {
-      // small raf delay so framer-motion has rendered the panel
       requestAnimationFrame(() => {
-        closeButtonRef.current?.focus()
-      })
+        closeButtonRef.current?.focus();
+      });
     }
-  }, [mobileOpen])
+  }, [mobileOpen]);
 
-  /* ---- transition config ---- */
-  const transitionDuration = reducedMotion ? 0 : 0.3
+  const transitionDuration = reducedMotion ? 0 : 0.3;
 
   return (
     <>
       <nav
         ref={navRef}
         onKeyDown={handleKeyDown}
-        role="navigation"
         aria-label="Main navigation"
         className={cn(
           'fixed inset-x-0 top-0 z-50 h-16 lg:h-20',
@@ -178,26 +181,34 @@ export function NavStickyBlur({
         }}
       >
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          {/* ---------- Logo ---------- */}
           <a
             href="/"
-            className="relative z-10 flex shrink-0 items-center gap-2 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+            className={cn(
+              'relative z-10 flex shrink-0 items-center gap-2 rounded-md',
+              focusRing,
+            )}
+            style={{
+              ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+              ['--tw-ring-offset-color' as string]: 'var(--background)',
+            }}
           >
             {logo}
             {logoText && (
               <span
-                className="text-lg font-bold tracking-tight"
-                style={{ color: 'var(--foreground)' }}
+                className="font-bold tracking-tight"
+                style={{
+                  color: 'var(--foreground)',
+                  fontSize: LOGO_FONT_SIZE,
+                }}
               >
                 {logoText}
               </span>
             )}
           </a>
 
-          {/* ---------- Desktop links (centered) ---------- */}
           <ul className="hidden items-center gap-1 lg:flex" role="menubar">
             {links.map((link) => {
-              const isActive = activeHref === link.href
+              const isActive = activeHref === link.href;
               return (
                 <li key={link.href} role="none">
                   <a
@@ -206,55 +217,56 @@ export function NavStickyBlur({
                     aria-current={isActive ? 'page' : undefined}
                     onClick={() => setActiveHref(link.href)}
                     className={cn(
-                      'relative rounded-md px-3 py-2 text-sm font-medium outline-none',
+                      'relative rounded-md px-3 py-2 text-sm font-medium',
                       'transition-colors',
                       reducedMotion ? 'duration-0' : 'duration-200',
-                      'focus-visible:ring-2 focus-visible:ring-[var(--primary)]',
+                      focusRing,
                     )}
                     style={{
                       color: isActive
                         ? 'var(--primary)'
-                        : 'color-mix(in srgb, var(--foreground) 70%, transparent)',
+                        : `color-mix(in srgb, var(--foreground) ${ACTIVE_LINK_OPACITY * 100}%, transparent)`,
+                      ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                      ['--tw-ring-offset-color' as string]: 'var(--background)',
                     }}
                     onMouseEnter={(e) => {
                       ;(e.currentTarget as HTMLElement).style.color =
-                        'var(--foreground)'
+                        'var(--foreground)';
                     }}
                     onMouseLeave={(e) => {
                       ;(e.currentTarget as HTMLElement).style.color = isActive
                         ? 'var(--primary)'
-                        : 'color-mix(in srgb, var(--foreground) 70%, transparent)'
+                        : `color-mix(in srgb, var(--foreground) ${ACTIVE_LINK_OPACITY * 100}%, transparent)`;
                     }}
                   >
                     {link.label}
-                    {/* active underline indicator */}
                     {isActive && (
                       <motion.span
                         layoutId="nav-underline"
                         className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full"
                         style={{ backgroundColor: 'var(--primary)' }}
+                        aria-hidden="true"
                         transition={{
                           type: 'spring',
-                          stiffness: 500,
-                          damping: 35,
+                          stiffness: SPRING_STIFFNESS,
+                          damping: SPRING_DAMPING,
                           duration: reducedMotion ? 0 : undefined,
                         }}
                       />
                     )}
                   </a>
                 </li>
-              )
+              );
             })}
           </ul>
 
-          {/* ---------- Desktop CTA + Mobile hamburger ---------- */}
           <div className="flex items-center gap-3">
             {ctaText && (
               <a
                 href={ctaHref}
                 className={cn(
                   'hidden rounded-full px-5 py-2 text-sm font-semibold lg:inline-flex',
-                  'outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2',
+                  focusRing,
                   'transition-transform',
                   reducedMotion ? 'duration-0' : 'duration-200',
                   !reducedMotion && 'hover:scale-105 active:scale-[0.98]',
@@ -262,13 +274,14 @@ export function NavStickyBlur({
                 style={{
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground, var(--background))',
+                  ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                  ['--tw-ring-offset-color' as string]: 'var(--background)',
                 }}
               >
                 {ctaText}
               </a>
             )}
 
-            {/* hamburger */}
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
@@ -277,11 +290,15 @@ export function NavStickyBlur({
               aria-controls="mobile-nav-panel"
               className={cn(
                 'relative z-10 inline-flex items-center justify-center rounded-md p-2 lg:hidden',
-                'outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]',
+                focusRing,
                 'transition-colors',
                 reducedMotion ? 'duration-0' : 'duration-200',
               )}
-              style={{ color: 'var(--foreground)' }}
+              style={{
+                color: 'var(--foreground)',
+                ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                ['--tw-ring-offset-color' as string]: 'var(--background)',
+              }}
             >
               <Menu className="size-6" aria-hidden="true" />
             </button>
@@ -289,11 +306,9 @@ export function NavStickyBlur({
         </div>
       </nav>
 
-      {/* ---------- Mobile menu overlay + panel ---------- */}
       <AnimatePresence>
         {mobileOpen && (
           <>
-            {/* backdrop overlay */}
             <motion.div
               key="mobile-overlay"
               variants={overlayVariants}
@@ -312,8 +327,7 @@ export function NavStickyBlur({
               }}
             />
 
-            {/* slide-in panel */}
-            <motion.div
+            <motion.aside
               key="mobile-panel"
               id="mobile-nav-panel"
               role="dialog"
@@ -325,25 +339,24 @@ export function NavStickyBlur({
               exit="closed"
               transition={{
                 type: reducedMotion ? 'tween' : 'spring',
-                stiffness: 400,
-                damping: 40,
+                stiffness: PANEL_SPRING_STIFFNESS,
+                damping: PANEL_SPRING_DAMPING,
                 duration: transitionDuration,
               }}
               onKeyDown={(e: React.KeyboardEvent) => {
                 if (e.key === 'Escape') {
-                  setMobileOpen(false)
+                  setMobileOpen(false);
                 }
-                /* simple focus trap: Tab on last item wraps to close btn */
                 if (e.key === 'Tab' && !e.shiftKey) {
                   if (document.activeElement === lastLinkRef.current) {
-                    e.preventDefault()
-                    closeButtonRef.current?.focus()
+                    e.preventDefault();
+                    closeButtonRef.current?.focus();
                   }
                 }
                 if (e.key === 'Tab' && e.shiftKey) {
                   if (document.activeElement === closeButtonRef.current) {
-                    e.preventDefault()
-                    lastLinkRef.current?.focus()
+                    e.preventDefault();
+                    lastLinkRef.current?.focus();
                   }
                 }
               }}
@@ -353,7 +366,6 @@ export function NavStickyBlur({
                 borderLeft: '1px solid var(--border)',
               }}
             >
-              {/* close button */}
               <div className="flex h-16 items-center justify-end px-4 sm:px-6">
                 <button
                   ref={closeButtonRef}
@@ -362,21 +374,24 @@ export function NavStickyBlur({
                   aria-label="Close navigation menu"
                   className={cn(
                     'inline-flex items-center justify-center rounded-md p-2',
-                    'outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]',
+                    focusRing,
                     'transition-colors',
                     reducedMotion ? 'duration-0' : 'duration-200',
                   )}
-                  style={{ color: 'var(--foreground)' }}
+                  style={{
+                    color: 'var(--foreground)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                    ['--tw-ring-offset-color' as string]: 'var(--background)',
+                  }}
                 >
                   <X className="size-6" aria-hidden="true" />
                 </button>
               </div>
 
-              {/* mobile nav links */}
               <ul className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 pb-8 sm:px-6">
                 {links.map((link, i) => {
-                  const isActive = activeHref === link.href
-                  const isLast = i === links.length - 1 && !ctaText
+                  const isActive = activeHref === link.href;
+                  const isLast = i === links.length - 1 && !ctaText;
                   return (
                     <motion.li
                       key={link.href}
@@ -389,12 +404,12 @@ export function NavStickyBlur({
                         href={link.href}
                         ref={isLast ? lastLinkRef : undefined}
                         onClick={() => {
-                          setActiveHref(link.href)
-                          setMobileOpen(false)
+                          setActiveHref(link.href);
+                          setMobileOpen(false);
                         }}
                         className={cn(
                           'block rounded-lg px-4 py-3 text-base font-medium',
-                          'outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]',
+                          focusRing,
                           'transition-colors',
                           reducedMotion ? 'duration-0' : 'duration-200',
                         )}
@@ -405,15 +420,16 @@ export function NavStickyBlur({
                           backgroundColor: isActive
                             ? 'color-mix(in srgb, var(--primary) 10%, transparent)'
                             : 'transparent',
+                          ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                          ['--tw-ring-offset-color' as string]: 'var(--background)',
                         }}
                       >
                         {link.label}
                       </a>
                     </motion.li>
-                  )
+                  );
                 })}
 
-                {/* mobile CTA */}
                 {ctaText && (
                   <motion.li
                     variants={linkVariants}
@@ -428,15 +444,16 @@ export function NavStickyBlur({
                       onClick={() => setMobileOpen(false)}
                       className={cn(
                         'block rounded-full px-4 py-3 text-center text-base font-semibold',
-                        'outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2',
+                        focusRing,
                         'transition-transform',
                         reducedMotion ? 'duration-0' : 'duration-200',
                         !reducedMotion && 'active:scale-[0.98]',
                       )}
                       style={{
                         backgroundColor: 'var(--primary)',
-                        color:
-                          'var(--primary-foreground, var(--background))',
+                        color: 'var(--primary-foreground, var(--background))',
+                        ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                        ['--tw-ring-offset-color' as string]: 'var(--background)',
                       }}
                     >
                       {ctaText}
@@ -444,10 +461,10 @@ export function NavStickyBlur({
                   </motion.li>
                 )}
               </ul>
-            </motion.div>
+            </motion.aside>
           </>
         )}
       </AnimatePresence>
     </>
-  )
+  );
 }

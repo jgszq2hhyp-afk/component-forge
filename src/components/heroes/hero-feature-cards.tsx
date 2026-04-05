@@ -3,8 +3,6 @@
 // @name hero-feature-cards
 // @source https://dev.to/vaibhavg/shadcn-hero-sections-37af, https://www.shadcn.io/blocks/hero-feature-comparison
 
-'use client';
-
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
@@ -25,6 +23,15 @@ const CTA_DELAY = '0.45s';
 const CARD_BASE_DELAY = 0.6;
 const CARD_STAGGER = 0.1;
 const ICON_SIZE = 'size-10';
+const HEADING_CLAMP = 'clamp(2.25rem, 4.5vw + 1rem, 4.25rem)';
+const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)';
+const CTA_FONT_SIZE = '0.9375rem';
+const ACTIVE_SCALE = '0.98';
+const CARD_BG_MIX = '3%';
+const CARD_BORDER_MIX = '8%';
+const ICON_BG_MIX = '12%';
+const GLOW_MIX = '8%';
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -77,12 +84,10 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hfc-fade-up {
-    from { opacity: 1; }
-    to   { opacity: 1; }
+    from, to { opacity: 1; transform: none; filter: none; }
   }
   @keyframes hfc-card-in {
-    from { opacity: 1; }
-    to   { opacity: 1; }
+    from, to { opacity: 1; transform: none; }
   }
 }
 `;
@@ -114,7 +119,6 @@ export default function HeroFeatureCards({
         style={{ backgroundColor: 'var(--background)' }}
       >
         <div className="mx-auto max-w-6xl">
-          {/* Top: centered headline area */}
           <header className="text-center max-w-3xl mx-auto">
             {badgeText && (
               <span
@@ -123,7 +127,7 @@ export default function HeroFeatureCards({
                   'text-xs font-medium tracking-wide uppercase',
                 )}
                 style={{
-                  backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
+                  backgroundColor: `color-mix(in srgb, var(--primary) 10%, transparent)`,
                   color: 'var(--primary)',
                   animation: `hfc-fade-up 0.8s ${ANIMATION_EASING} both`,
                   animationDelay: BADGE_DELAY,
@@ -136,7 +140,7 @@ export default function HeroFeatureCards({
             <h1
               className="font-bold tracking-tight leading-[1.08]"
               style={{
-                fontSize: 'clamp(2.25rem, 4.5vw + 1rem, 4.25rem)',
+                fontSize: HEADING_CLAMP,
                 color: 'var(--foreground)',
                 animation: `hfc-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
                 animationDelay: HEADLINE_DELAY,
@@ -149,7 +153,7 @@ export default function HeroFeatureCards({
               <p
                 className="mx-auto mt-5 md:mt-6 leading-relaxed max-w-xl"
                 style={{
-                  fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)',
+                  fontSize: SUBHEADLINE_CLAMP,
                   color: 'var(--muted-foreground)',
                   animation: `hfc-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
                   animationDelay: SUBHEADLINE_DELAY,
@@ -171,16 +175,16 @@ export default function HeroFeatureCards({
                   href={ctaHref}
                   className={cn(
                     'inline-flex items-center justify-center',
-                    'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
+                    `rounded-lg px-7 py-3.5 text-[${CTA_FONT_SIZE}] font-semibold`,
                     'transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110 hover:shadow-lg',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    'active:scale-[0.98] motion-reduce:active:scale-100',
+                    FOCUS_RING,
+                    `active:scale-[${ACTIVE_SCALE}] motion-reduce:active:scale-100`,
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
-                    ['--tw-ring-color' as string]: 'var(--primary)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
@@ -209,27 +213,25 @@ export default function HeroFeatureCards({
                   'hover:-translate-y-1 motion-reduce:hover:translate-y-0',
                 )}
                 style={{
-                  backgroundColor: 'color-mix(in srgb, var(--foreground) 3%, var(--background))',
-                  border: '1px solid color-mix(in srgb, var(--foreground) 8%, transparent)',
+                  backgroundColor: `color-mix(in srgb, var(--foreground) ${CARD_BG_MIX}, var(--background))`,
+                  border: `1px solid color-mix(in srgb, var(--foreground) ${CARD_BORDER_MIX}, transparent)`,
                   animation: `hfc-card-in ${CARD_ANIMATION_DURATION} ${ANIMATION_EASING} both`,
                   animationDelay: `${CARD_BASE_DELAY + i * CARD_STAGGER}s`,
                 }}
               >
-                {/* Hover glow */}
                 <div
                   className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 motion-reduce:hidden"
                   style={{
                     background:
-                      'radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--primary) 8%, transparent), transparent 70%)',
+                      `radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--primary) ${GLOW_MIX}, transparent), transparent 70%)`,
                   }}
                   aria-hidden="true"
                 />
 
-                {/* Icon */}
                 <div
                   className={`relative mb-4 inline-flex items-center justify-center ${ICON_SIZE} rounded-lg`}
                   style={{
-                    backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)',
+                    backgroundColor: `color-mix(in srgb, var(--primary) ${ICON_BG_MIX}, transparent)`,
                     color: 'var(--primary)',
                   }}
                   aria-hidden="true"
@@ -237,7 +239,6 @@ export default function HeroFeatureCards({
                   {feature.icon}
                 </div>
 
-                {/* Text */}
                 <h3
                   className="relative text-base font-semibold"
                   style={{ color: 'var(--foreground)' }}

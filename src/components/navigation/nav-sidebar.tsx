@@ -4,31 +4,39 @@
 // @score 92
 // @source custom-implementation
 
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { cn } from "@/lib/utils";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const SIDEBAR_WIDTH_EXPANDED = "16rem"; // 256px / w-64
-const SIDEBAR_WIDTH_COLLAPSED = "4rem"; // 64px / w-16
-const MOBILE_TOPBAR_HEIGHT = "3.5rem";
-const LOGO_PY = "1.25rem";
-const LOGO_PX = "1rem";
-const GROUP_SPACING = "1.5rem";
-const LINK_PY = "0.5rem";
-const LINK_PX = "0.75rem";
-const LINK_GAP = "0.75rem";
-const LINK_BORDER_RADIUS = "0.5rem";
+const SIDEBAR_WIDTH_EXPANDED = '16rem';
+const SIDEBAR_WIDTH_COLLAPSED = '4rem';
+const MOBILE_TOPBAR_HEIGHT = '3.5rem';
+const LOGO_PY = '1.25rem';
+const LOGO_PX = '1rem';
+const GROUP_SPACING = '1.5rem';
+const LINK_PY = '0.5rem';
+const LINK_PX = '0.75rem';
+const LINK_GAP = '0.75rem';
+const LINK_BORDER_RADIUS = '0.5rem';
 const COLLAPSE_ICON_SIZE = 16;
 const NAV_ICON_SIZE = 20;
 const HAMBURGER_SIZE = 20;
 const HAMBURGER_STROKE = 2;
 const COLLAPSE_STROKE = 2;
-const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--ring)]";
+const TRANSITION_DURATION_MS = '300ms';
+
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+
+const ringStyle = {
+  ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+  ['--tw-ring-offset-color' as string]: 'var(--background)',
+};
 
 // ---------------------------------------------------------------------------
 // Types
@@ -90,17 +98,17 @@ const defaultIcon = (
 const defaultGroups: SidebarGroup[] = [
   {
     links: [
-      { label: "Dashboard", href: "#dashboard", icon: defaultIcon },
-      { label: "Analytics", href: "#analytics", icon: defaultIcon, badge: "New" },
-      { label: "Projects", href: "#projects", icon: defaultIcon },
+      { label: 'Dashboard', href: '#dashboard', icon: defaultIcon },
+      { label: 'Analytics', href: '#analytics', icon: defaultIcon, badge: 'New' },
+      { label: 'Projects', href: '#projects', icon: defaultIcon },
     ],
   },
   {
-    title: "Management",
+    title: 'Management',
     links: [
-      { label: "Team", href: "#team", icon: defaultIcon },
-      { label: "Settings", href: "#settings", icon: defaultIcon },
-      { label: "Billing", href: "#billing", icon: defaultIcon },
+      { label: 'Team', href: '#team', icon: defaultIcon },
+      { label: 'Settings', href: '#settings', icon: defaultIcon },
+      { label: 'Billing', href: '#billing', icon: defaultIcon },
     ],
   },
 ];
@@ -110,13 +118,13 @@ const defaultGroups: SidebarGroup[] = [
 // ---------------------------------------------------------------------------
 
 export default function NavSidebar({
-  logo = "Brand",
+  logo = 'Brand',
   groups = defaultGroups,
   footerLinks = [
-    { label: "Help", href: "#help", icon: defaultIcon },
-    { label: "Logout", href: "#logout", icon: defaultIcon },
+    { label: 'Help', href: '#help', icon: defaultIcon },
+    { label: 'Logout', href: '#logout', icon: defaultIcon },
   ],
-  activeHref = "#dashboard",
+  activeHref = '#dashboard',
   className,
   collapsed: controlledCollapsed,
   onCollapsedChange,
@@ -125,35 +133,46 @@ export default function NavSidebar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
   const navLinksRef = useRef<HTMLDivElement>(null);
+  const mobileToggleRef = useRef<HTMLButtonElement>(null);
 
   const collapsed = controlledCollapsed ?? internalCollapsed;
   const setCollapsed = onCollapsedChange ?? setInternalCollapsed;
 
-  // Escape key closes mobile menu
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape" && mobileOpen) {
+      if (e.key === 'Escape' && mobileOpen) {
         setMobileOpen(false);
+        mobileToggleRef.current?.focus();
       }
     }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [mobileOpen]);
 
-  // Arrow key navigation within sidebar links
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
+
   const handleNavKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
       e.preventDefault();
 
       const container = navLinksRef.current;
       if (!container) return;
 
-      const focusableLinks = Array.from(container.querySelectorAll<HTMLAnchorElement>("a"));
+      const focusableLinks = Array.from(container.querySelectorAll<HTMLAnchorElement>('a'));
       const currentIndex = focusableLinks.indexOf(document.activeElement as HTMLAnchorElement);
 
       let nextIndex: number;
-      if (e.key === "ArrowDown") {
+      if (e.key === 'ArrowDown') {
         nextIndex = currentIndex < focusableLinks.length - 1 ? currentIndex + 1 : 0;
       } else {
         nextIndex = currentIndex > 0 ? currentIndex - 1 : focusableLinks.length - 1;
@@ -166,20 +185,25 @@ export default function NavSidebar({
 
   const sidebarContent = (
     <div className="flex h-full flex-col" ref={navLinksRef} onKeyDown={handleNavKeyDown}>
-      {/* Logo */}
       <div
-        className="flex items-center justify-between border-b border-[var(--sidebar-border,hsl(0_0%_0%/0.08))]"
-        style={{ padding: `${LOGO_PY} ${LOGO_PX}` }}
+        className="flex items-center justify-between"
+        style={{
+          padding: `${LOGO_PY} ${LOGO_PX}`,
+          borderBottom: '1px solid var(--sidebar-border, var(--border))',
+        }}
       >
         {!collapsed && (
           <a
             href="/"
             aria-label="Home"
             className={cn(
-              "text-lg font-bold text-[var(--sidebar-logo,hsl(0_0%_9%))]",
-              "rounded-lg",
-              FOCUS_RING,
+              'text-lg font-bold rounded-lg',
+              focusRing,
             )}
+            style={{
+              color: 'var(--sidebar-logo, var(--foreground))',
+              ...ringStyle,
+            }}
           >
             {logo}
           </a>
@@ -188,15 +212,24 @@ export default function NavSidebar({
           type="button"
           onClick={() => setCollapsed(!collapsed)}
           className={cn(
-            "hidden lg:flex p-1.5 rounded-lg",
-            "text-[var(--sidebar-muted,hsl(0_0%_50%))]",
-            "hover:bg-[var(--sidebar-hover-bg,hsl(0_0%_0%/0.05))]",
-            FOCUS_RING,
+            'hidden lg:flex p-1.5 rounded-lg',
+            focusRing,
           )}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          style={{
+            color: 'var(--sidebar-muted, var(--muted-foreground))',
+            ...ringStyle,
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.backgroundColor =
+              'var(--sidebar-hover-bg, var(--muted))';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+          }}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <svg
-            className={cn(collapsed && "rotate-180")}
+            className={cn(collapsed && 'rotate-180')}
             style={{ width: COLLAPSE_ICON_SIZE, height: COLLAPSE_ICON_SIZE }}
             fill="none"
             viewBox="0 0 24 24"
@@ -209,13 +242,13 @@ export default function NavSidebar({
         </button>
       </div>
 
-      {/* Navigation Groups */}
       <div className="flex-1 overflow-y-auto px-3 py-4" style={{ display: 'flex', flexDirection: 'column', gap: GROUP_SPACING }}>
         {groups.map((group, gi) => (
           <div key={gi} role="group" aria-label={group.title ?? `Navigation group ${gi + 1}`}>
             {group.title && !collapsed && (
               <p
-                className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--sidebar-muted,hsl(0_0%_50%))]"
+                className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider"
+                style={{ color: 'var(--sidebar-muted, var(--muted-foreground))' }}
                 id={`sidebar-group-${gi}`}
               >
                 {group.title}
@@ -234,19 +267,38 @@ export default function NavSidebar({
                       href={link.href}
                       role="menuitem"
                       title={collapsed ? link.label : undefined}
-                      aria-current={isActive ? "page" : undefined}
+                      aria-current={isActive ? 'page' : undefined}
                       className={cn(
-                        "flex items-center text-sm font-medium",
-                        isActive
-                          ? "bg-[var(--sidebar-active-bg,hsl(0_0%_0%/0.08))] text-[var(--sidebar-active-text,hsl(0_0%_9%))]"
-                          : "text-[var(--sidebar-link,hsl(0_0%_40%))] hover:bg-[var(--sidebar-hover-bg,hsl(0_0%_0%/0.05))] hover:text-[var(--sidebar-link-hover,hsl(0_0%_9%))]",
-                        collapsed && "justify-center",
-                        FOCUS_RING,
+                        'flex items-center text-sm font-medium',
+                        collapsed && 'justify-center',
+                        focusRing,
                       )}
                       style={{
+                        color: isActive
+                          ? 'var(--sidebar-active-text, var(--foreground))'
+                          : 'var(--sidebar-link, var(--muted-foreground))',
+                        backgroundColor: isActive
+                          ? 'var(--sidebar-active-bg, var(--muted))'
+                          : 'transparent',
                         gap: collapsed ? 0 : LINK_GAP,
                         borderRadius: LINK_BORDER_RADIUS,
                         padding: collapsed ? `${LINK_PY} 0.5rem` : `${LINK_PY} ${LINK_PX}`,
+                        ...ringStyle,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) {
+                          (e.currentTarget as HTMLElement).style.backgroundColor =
+                            'var(--sidebar-hover-bg, var(--muted))';
+                          (e.currentTarget as HTMLElement).style.color =
+                            'var(--sidebar-link-hover, var(--foreground))';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) {
+                          (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                          (e.currentTarget as HTMLElement).style.color =
+                            'var(--sidebar-link, var(--muted-foreground))';
+                        }
                       }}
                     >
                       {link.icon && (
@@ -256,7 +308,13 @@ export default function NavSidebar({
                         <>
                           <span className="flex-1">{link.label}</span>
                           {link.badge && (
-                            <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-[var(--sidebar-badge-bg,hsl(220_90%_56%))] text-[var(--sidebar-badge-text,hsl(0_0%_100%))]">
+                            <span
+                              className="rounded-full px-2 py-0.5 text-xs font-medium"
+                              style={{
+                                backgroundColor: 'var(--sidebar-badge-bg, var(--primary))',
+                                color: 'var(--sidebar-badge-text, var(--primary-foreground))',
+                              }}
+                            >
                               {link.badge}
                             </span>
                           )}
@@ -271,25 +329,37 @@ export default function NavSidebar({
         ))}
       </div>
 
-      {/* Footer Links */}
-      <div className="border-t border-[var(--sidebar-border,hsl(0_0%_0%/0.08))] px-3 py-3 space-y-1">
+      <div
+        className="px-3 py-3 space-y-1"
+        style={{ borderTop: '1px solid var(--sidebar-border, var(--border))' }}
+      >
         {footerLinks.map((link) => (
           <a
             key={link.href}
             href={link.href}
             title={collapsed ? link.label : undefined}
             className={cn(
-              "flex items-center text-sm font-medium",
-              "text-[var(--sidebar-link,hsl(0_0%_40%))]",
-              "hover:bg-[var(--sidebar-hover-bg,hsl(0_0%_0%/0.05))]",
-              "hover:text-[var(--sidebar-link-hover,hsl(0_0%_9%))]",
-              collapsed && "justify-center",
-              FOCUS_RING,
+              'flex items-center text-sm font-medium',
+              collapsed && 'justify-center',
+              focusRing,
             )}
             style={{
+              color: 'var(--sidebar-link, var(--muted-foreground))',
               gap: collapsed ? 0 : LINK_GAP,
               borderRadius: LINK_BORDER_RADIUS,
               padding: collapsed ? `${LINK_PY} 0.5rem` : `${LINK_PY} ${LINK_PX}`,
+              ...ringStyle,
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.backgroundColor =
+                'var(--sidebar-hover-bg, var(--muted))';
+              (e.currentTarget as HTMLElement).style.color =
+                'var(--sidebar-link-hover, var(--foreground))';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+              (e.currentTarget as HTMLElement).style.color =
+                'var(--sidebar-link, var(--muted-foreground))';
             }}
           >
             {link.icon && <span className="flex-shrink-0" aria-hidden="true">{link.icon}</span>}
@@ -304,32 +374,42 @@ export default function NavSidebar({
     <>
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
-      {/* Mobile Top Bar */}
       <header
-        className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 border-b bg-[var(--sidebar-bg,hsl(0_0%_100%))] border-[var(--sidebar-border,hsl(0_0%_0%/0.08))]"
-        style={{ height: MOBILE_TOPBAR_HEIGHT }}
+        className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4"
+        style={{
+          height: MOBILE_TOPBAR_HEIGHT,
+          backgroundColor: 'var(--sidebar-bg, var(--background))',
+          borderBottom: '1px solid var(--sidebar-border, var(--border))',
+        }}
         aria-label="Mobile header"
       >
         <a
           href="/"
           aria-label="Home"
           className={cn(
-            "text-lg font-bold text-[var(--sidebar-logo,hsl(0_0%_9%))]",
-            "rounded-lg",
-            FOCUS_RING,
+            'text-lg font-bold rounded-lg',
+            focusRing,
           )}
+          style={{
+            color: 'var(--sidebar-logo, var(--foreground))',
+            ...ringStyle,
+          }}
         >
           {logo}
         </a>
         <button
+          ref={mobileToggleRef}
           type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
           className={cn(
-            "p-2 text-[var(--sidebar-muted,hsl(0_0%_50%))]",
-            "rounded-lg",
-            FOCUS_RING,
+            'p-2 rounded-lg',
+            focusRing,
           )}
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          style={{
+            color: 'var(--sidebar-muted, var(--muted-foreground))',
+            ...ringStyle,
+          }}
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
           aria-controls="sidebar-nav"
         >
@@ -350,31 +430,30 @@ export default function NavSidebar({
         </button>
       </header>
 
-      {/* Mobile Overlay */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-40 bg-[var(--sidebar-overlay,hsl(0_0%_0%/0.5))]"
+          className="lg:hidden fixed inset-0 z-40"
+          style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 50%, transparent)' }}
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
       )}
 
-      {/* Sidebar */}
       <aside
         ref={sidebarRef}
         id="sidebar-nav"
         aria-label="Sidebar navigation"
         className={cn(
-          "fixed top-0 left-0 z-50 h-screen border-r",
-          "bg-[var(--sidebar-bg,hsl(0_0%_100%))]",
-          "border-[var(--sidebar-border,hsl(0_0%_0%/0.08))]",
-          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+          'fixed top-0 left-0 z-50 h-screen',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
           className,
         )}
         style={{
           width: collapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED,
           transitionProperty: 'width, transform',
-          transitionDuration: '300ms',
+          transitionDuration: TRANSITION_DURATION_MS,
+          backgroundColor: 'var(--sidebar-bg, var(--background))',
+          borderRight: '1px solid var(--sidebar-border, var(--border))',
         }}
       >
         {sidebarContent}

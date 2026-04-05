@@ -14,11 +14,11 @@ import { useState, useEffect, useRef, type FormEvent } from 'react';
 // ---------------------------------------------------------------------------
 
 const HERO_MIN_HEIGHT = '80vh';
-const CONTENT_MAX_WIDTH = '80rem'; // max-w-7xl
-const SUBHEADLINE_MAX_WIDTH = '32rem'; // max-w-lg
-const CARD_MAX_WIDTH = '28rem'; // max-w-md
-const CARD_BORDER_RADIUS = '1rem'; // rounded-2xl
-const CARD_PADDING = '2rem'; // p-8
+const CONTENT_MAX_WIDTH = '80rem';
+const SUBHEADLINE_MAX_WIDTH = '32rem';
+const CARD_MAX_WIDTH = '28rem';
+const CARD_BORDER_RADIUS = '1rem';
+const CARD_PADDING = '2rem';
 const HEADING_CLAMP = 'clamp(2.25rem, 4vw + 1rem, 3.75rem)';
 const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1vw + 0.75rem, 1.25rem)';
 const ANIMATION_DURATION = '0.6s';
@@ -27,7 +27,8 @@ const DELAY_FORM = '0.15s';
 const INPUT_BORDER_RADIUS = '0.5rem';
 const INPUT_PY = '0.625rem';
 const INPUT_PX = '1rem';
-const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--ring)]';
+const FADE_TRANSLATE_Y = '20px';
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -50,25 +51,19 @@ interface HeroWithFormProps {
 
 const keyframes = `
 @keyframes hero-form-fade-up {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(${FADE_TRANSLATE_Y}); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hero-form-fade-up {
-    from { opacity: 1; }
-    to { opacity: 1; }
-  }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    from, to { opacity: 1; transform: none; }
   }
 }
 `;
 
 // ---------------------------------------------------------------------------
-// Component ('use client' -- form state management)
+// Component
 // ---------------------------------------------------------------------------
 
 export default function HeroWithForm({
@@ -86,7 +81,6 @@ export default function HeroWithForm({
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Escape key resets form status messages
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && (status === 'success' || status === 'error')) {
@@ -233,7 +227,7 @@ export default function HeroWithForm({
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Your name"
                     className={cn(
-                      'w-full text-sm',
+                      'w-full text-sm transition-colors duration-150 motion-reduce:transition-none',
                       FOCUS_RING,
                     )}
                     style={{
@@ -242,6 +236,7 @@ export default function HeroWithForm({
                       backgroundColor: 'var(--input)',
                       color: 'var(--foreground)',
                       border: '1px solid var(--border)',
+                      ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     }}
                   />
                 </div>
@@ -262,7 +257,7 @@ export default function HeroWithForm({
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@company.com"
                     className={cn(
-                      'w-full text-sm',
+                      'w-full text-sm transition-colors duration-150 motion-reduce:transition-none',
                       FOCUS_RING,
                     )}
                     style={{
@@ -271,6 +266,7 @@ export default function HeroWithForm({
                       backgroundColor: 'var(--input)',
                       color: 'var(--foreground)',
                       border: '1px solid var(--border)',
+                      ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     }}
                   />
                 </div>
@@ -279,7 +275,10 @@ export default function HeroWithForm({
                   type="submit"
                   disabled={status === 'submitting'}
                   className={cn(
-                    'w-full text-sm font-semibold disabled:opacity-50',
+                    'w-full text-sm font-semibold',
+                    'transition-all duration-200 motion-reduce:transition-none',
+                    'hover:brightness-110',
+                    'disabled:opacity-50 disabled:pointer-events-none',
                     FOCUS_RING,
                   )}
                   style={{
@@ -287,6 +286,8 @@ export default function HeroWithForm({
                     padding: `${INPUT_PY} ${INPUT_PX}`,
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+                    ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
                   {status === 'submitting' ? 'Sending...' : submitText}

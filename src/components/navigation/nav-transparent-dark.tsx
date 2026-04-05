@@ -3,17 +3,18 @@
 // @name Nav Transparent Dark
 // @source custom-implementation
 
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { cn } from "@/lib/utils";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const DEFAULT_SCROLL_THRESHOLD = 100;
-const TRANSITION_DURATION = "duration-500";
+const TRANSITION_DURATION = 'duration-500';
+const LOGO_FONT_SIZE = 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -38,69 +39,95 @@ interface NavTransparentDarkProps {
 // ---------------------------------------------------------------------------
 
 const focusRing =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring,var(--primary))] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]";
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+
+const ringStyle = {
+  ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+  ['--tw-ring-offset-color' as string]: 'var(--background)',
+};
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export default function NavTransparentDark({
-  logo = "Brand",
+  logo = 'Brand',
   links = [
-    { label: "Features", href: "#features" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "About", href: "#about" },
-    { label: "Contact", href: "#contact" },
+    { label: 'Features', href: '#features' },
+    { label: 'Pricing', href: '#pricing' },
+    { label: 'About', href: '#about' },
+    { label: 'Contact', href: '#contact' },
   ],
-  ctaLabel = "Get Started",
-  ctaHref = "#cta",
+  ctaLabel = 'Get Started',
+  ctaHref = '#cta',
   className,
   scrollThreshold = DEFAULT_SCROLL_THRESHOLD,
 }: NavTransparentDarkProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleScroll = useCallback(() => {
     setIsScrolled(window.scrollY > scrollThreshold);
   }, [scrollThreshold]);
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
+
+  useEffect(() => {
+    if (!isMobileOpen) return;
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setIsMobileOpen(false);
+        toggleButtonRef.current?.focus();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isMobileOpen]);
 
   return (
     <header
       className={cn(
         `fixed top-0 left-0 right-0 z-50 transition-all ${TRANSITION_DURATION} motion-reduce:transition-none`,
-        isScrolled
-          ? "bg-[var(--background)] shadow-sm border-b border-[var(--border)]"
-          : "bg-transparent",
-        className
+        className,
       )}
+      style={{
+        backgroundColor: isScrolled ? 'var(--background)' : 'transparent',
+        boxShadow: isScrolled ? '0 1px 3px 0 color-mix(in srgb, var(--foreground) 10%, transparent)' : 'none',
+        borderBottom: isScrolled ? '1px solid var(--border)' : '1px solid transparent',
+      }}
     >
       <nav
         aria-label="Main navigation"
         className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-4"
       >
-        {/* Logo */}
         <a
           href="/"
           className={cn(
             focusRing,
-            `rounded-lg text-xl font-bold transition-colors ${TRANSITION_DURATION} motion-reduce:transition-none`,
-            isScrolled
-              ? "text-[var(--foreground)]"
-              : "text-[var(--nav-dark-logo,var(--background))]"
+            `rounded-lg font-bold transition-colors ${TRANSITION_DURATION} motion-reduce:transition-none`,
           )}
           style={{
-            fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)',
+            color: isScrolled
+              ? 'var(--foreground)'
+              : 'var(--nav-dark-logo, var(--background))',
+            fontSize: LOGO_FONT_SIZE,
+            ...ringStyle,
           }}
         >
           {logo}
         </a>
 
-        {/* Desktop Links */}
         <ul className="hidden md:flex items-center gap-1" role="list">
           {links.map((link) => (
             <li key={link.href}>
@@ -109,10 +136,23 @@ export default function NavTransparentDark({
                 className={cn(
                   focusRing,
                   `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${TRANSITION_DURATION} motion-reduce:transition-none`,
-                  isScrolled
-                    ? "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                    : "text-[var(--nav-dark-link,var(--background)/0.8)] hover:text-[var(--nav-dark-link-hover,var(--background))]"
                 )}
+                style={{
+                  color: isScrolled
+                    ? 'var(--muted-foreground)'
+                    : 'var(--nav-dark-link, color-mix(in srgb, var(--background) 80%, transparent))',
+                  ...ringStyle,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = isScrolled
+                    ? 'var(--foreground)'
+                    : 'var(--nav-dark-link-hover, var(--background))';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = isScrolled
+                    ? 'var(--muted-foreground)'
+                    : 'var(--nav-dark-link, color-mix(in srgb, var(--background) 80%, transparent))';
+                }}
               >
                 {link.label}
               </a>
@@ -120,32 +160,36 @@ export default function NavTransparentDark({
           ))}
         </ul>
 
-        {/* CTA */}
         <a
           href={ctaHref}
           className={cn(
             focusRing,
             `hidden md:inline-flex items-center rounded-lg px-5 py-2 text-sm font-medium transition-all ${TRANSITION_DURATION} motion-reduce:transition-none`,
-            isScrolled
-              ? "bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90"
-              : "bg-[var(--background)] text-[var(--foreground)] hover:bg-[var(--background)]/90"
           )}
+          style={{
+            backgroundColor: isScrolled ? 'var(--primary)' : 'var(--background)',
+            color: isScrolled ? 'var(--primary-foreground)' : 'var(--foreground)',
+            ...ringStyle,
+          }}
         >
           {ctaLabel}
         </a>
 
-        {/* Mobile Toggle */}
         <button
+          ref={toggleButtonRef}
           type="button"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           className={cn(
             focusRing,
-            "md:hidden rounded-lg p-2 transition-colors motion-reduce:transition-none",
-            isScrolled
-              ? "text-[var(--muted-foreground)]"
-              : "text-[var(--nav-dark-link,var(--background)/0.8)]"
+            'md:hidden rounded-lg p-2 transition-colors motion-reduce:transition-none',
           )}
-          aria-label={isMobileOpen ? "Close menu" : "Open menu"}
+          style={{
+            color: isScrolled
+              ? 'var(--muted-foreground)'
+              : 'var(--nav-dark-link, color-mix(in srgb, var(--background) 80%, transparent))',
+            ...ringStyle,
+          }}
+          aria-label={isMobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={isMobileOpen}
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
@@ -158,17 +202,18 @@ export default function NavTransparentDark({
         </button>
       </nav>
 
-      {/* Mobile Menu */}
       {isMobileOpen && (
         <div
-          className={cn(
-            "md:hidden px-4 pb-4",
-            isScrolled
-              ? "bg-[var(--background)]"
-              : "bg-[var(--nav-dark-mobile-bg,hsl(0_0%_0%/0.9))] backdrop-blur-md"
-          )}
+          className="md:hidden px-4 pb-4"
           role="menu"
           aria-label="Mobile navigation"
+          style={{
+            backgroundColor: isScrolled
+              ? 'var(--background)'
+              : 'var(--nav-dark-mobile-bg, color-mix(in srgb, var(--foreground) 90%, transparent))',
+            backdropFilter: isScrolled ? 'none' : 'blur(12px)',
+            WebkitBackdropFilter: isScrolled ? 'none' : 'blur(12px)',
+          }}
         >
           <ul className="flex flex-col gap-1" role="list">
             {links.map((link) => (
@@ -179,11 +224,21 @@ export default function NavTransparentDark({
                   onClick={() => setIsMobileOpen(false)}
                   className={cn(
                     focusRing,
-                    "block rounded-lg px-4 py-2.5 text-sm font-medium transition-colors motion-reduce:transition-none",
-                    isScrolled
-                      ? "text-[var(--muted-foreground)] hover:bg-[var(--muted)]/10"
-                      : "text-[var(--nav-dark-link,var(--background)/0.8)] hover:bg-[var(--background)]/10"
+                    'block rounded-lg px-4 py-2.5 text-sm font-medium transition-colors motion-reduce:transition-none',
                   )}
+                  style={{
+                    color: isScrolled
+                      ? 'var(--muted-foreground)'
+                      : 'var(--nav-dark-link, color-mix(in srgb, var(--background) 80%, transparent))',
+                    ...ringStyle,
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.backgroundColor =
+                      `color-mix(in srgb, var(--${isScrolled ? 'muted' : 'background'}) 10%, transparent)`;
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                  }}
                 >
                   {link.label}
                 </a>
@@ -196,11 +251,13 @@ export default function NavTransparentDark({
                 onClick={() => setIsMobileOpen(false)}
                 className={cn(
                   focusRing,
-                  "block rounded-lg px-4 py-2.5 text-sm font-medium text-center mt-2 transition-colors motion-reduce:transition-none",
-                  isScrolled
-                    ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                    : "bg-[var(--background)] text-[var(--foreground)]"
+                  'block rounded-lg px-4 py-2.5 text-sm font-medium text-center mt-2 transition-colors motion-reduce:transition-none',
                 )}
+                style={{
+                  backgroundColor: isScrolled ? 'var(--primary)' : 'var(--background)',
+                  color: isScrolled ? 'var(--primary-foreground)' : 'var(--foreground)',
+                  ...ringStyle,
+                }}
               >
                 {ctaLabel}
               </a>

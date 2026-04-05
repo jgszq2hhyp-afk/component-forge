@@ -3,8 +3,6 @@
 // @name hero-saas-landing
 // @source https://dev.to/vaibhavg/shadcn-hero-sections-37af, https://prebuiltui.com/components/hero-section
 
-'use client';
-
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +26,9 @@ const CTA_FONT_SIZE = '0.9375rem';
 const SCREENSHOT_WIDTH = 1200;
 const SCREENSHOT_HEIGHT = 720;
 const AVATAR_SIZE = 32;
+const FADE_UP_BLUR = '4px';
+const FADE_UP_TRANSLATE_Y = '24px';
+const SLIDE_UP_TRANSLATE_Y = '60px';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -62,8 +63,8 @@ const keyframes = `
 @keyframes hsl-fade-up {
   from {
     opacity: 0;
-    filter: blur(4px);
-    transform: translateY(24px);
+    filter: blur(${FADE_UP_BLUR});
+    transform: translateY(${FADE_UP_TRANSLATE_Y});
   }
   to {
     opacity: 1;
@@ -75,7 +76,7 @@ const keyframes = `
 @keyframes hsl-slide-up {
   from {
     opacity: 0;
-    transform: translateY(60px);
+    transform: translateY(${SLIDE_UP_TRANSLATE_Y});
   }
   to {
     opacity: 1;
@@ -112,7 +113,6 @@ export default function HeroSaasLanding({
   screenshotAlt = 'Product screenshot',
   className,
 }: HeroSaasLandingProps) {
-  // Optionally highlight a word in the headline with primary color
   const renderedHeadline = highlightedWord
     ? headline.split(highlightedWord).map((part, i, arr) =>
         i < arr.length - 1 ? (
@@ -197,8 +197,9 @@ export default function HeroSaasLanding({
           {/* Subheadline */}
           {subheadline && (
             <p
-              className="mx-auto mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-2xl"
+              className="mx-auto mt-5 md:mt-6 leading-relaxed max-w-2xl"
               style={{
+                fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)',
                 color: 'var(--muted-foreground)',
                 animation: `hsl-fade-up ${FADE_DURATION} ${EASING} both`,
                 animationDelay: SUBHEADLINE_DELAY,
@@ -224,15 +225,15 @@ export default function HeroSaasLanding({
                   className={cn(
                     'inline-flex items-center justify-center',
                     `rounded-lg px-7 py-3.5 text-[${CTA_FONT_SIZE}] font-semibold`,
-                    'transition-all duration-200',
+                    'transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110 hover:shadow-lg',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    `active:scale-[${ACTIVE_SCALE}]`,
+                    `active:scale-[${ACTIVE_SCALE}] motion-reduce:active:scale-100`,
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
-                    ['--tw-ring-color' as string]: 'var(--primary)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
@@ -246,15 +247,15 @@ export default function HeroSaasLanding({
                   className={cn(
                     'inline-flex items-center justify-center',
                     `rounded-lg px-7 py-3.5 text-[${CTA_FONT_SIZE}] font-semibold`,
-                    'border transition-all duration-200',
+                    'border transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    `active:scale-[${ACTIVE_SCALE}]`,
+                    `active:scale-[${ACTIVE_SCALE}] motion-reduce:active:scale-100`,
                   )}
                   style={{
                     color: 'var(--foreground)',
                     borderColor: 'color-mix(in srgb, var(--foreground) 20%, transparent)',
-                    ['--tw-ring-color' as string]: 'var(--foreground)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
@@ -326,7 +327,6 @@ export default function HeroSaasLanding({
                   className="w-full h-auto"
                 />
               </div>
-              {/* Fade out at bottom to blend into page */}
               <div
                 className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 md:h-32"
                 style={{

@@ -4,8 +4,6 @@
 // @score 92
 // @csv-refs landing:1, products:general
 
-'use client';
-
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -14,8 +12,8 @@ import { cn } from '@/lib/utils';
 // ---------------------------------------------------------------------------
 
 const HERO_MIN_HEIGHT = '70vh';
-const CONTENT_MAX_WIDTH = '80rem'; // max-w-7xl
-const SUBHEADLINE_MAX_WIDTH = '32rem'; // max-w-lg
+const CONTENT_MAX_WIDTH = '80rem';
+const SUBHEADLINE_MAX_WIDTH = '32rem';
 const ANIMATION_DURATION = '0.9s';
 const FADE_DURATION = '0.8s';
 const ANIMATION_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
@@ -28,7 +26,8 @@ const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1vw + 0.75rem, 1.25rem)';
 const IMAGE_SHADOW_MIX = '8%';
 const ARROW_ICON_SIZE = 16;
 const ARROW_STROKE_WIDTH = 1.5;
-const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--ring)]';
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -89,16 +88,16 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hero-split-slide-left {
-    from { opacity: 1; }
-    to   { opacity: 1; }
+    from { opacity: 1; transform: none; filter: none; }
+    to   { opacity: 1; transform: none; filter: none; }
   }
   @keyframes hero-split-slide-right {
-    from { opacity: 1; }
-    to   { opacity: 1; }
+    from { opacity: 1; transform: none; filter: none; }
+    to   { opacity: 1; transform: none; filter: none; }
   }
   @keyframes hero-split-fade-up {
-    from { opacity: 1; }
-    to   { opacity: 1; }
+    from { opacity: 1; transform: none; }
+    to   { opacity: 1; transform: none; }
   }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -145,9 +144,6 @@ export default function HeroSplitImage({
           )}
           style={{ maxWidth: CONTENT_MAX_WIDTH }}
         >
-          {/* ---------------------------------------------------------------- */}
-          {/* Text side                                                        */}
-          {/* ---------------------------------------------------------------- */}
           <div
             className={cn(
               'flex flex-col justify-center',
@@ -158,7 +154,6 @@ export default function HeroSplitImage({
               animationDelay: DELAY_TEXT,
             }}
           >
-            {/* Headline */}
             <h1
               className="font-bold tracking-tight leading-[1.08]"
               style={{
@@ -169,7 +164,6 @@ export default function HeroSplitImage({
               {headline}
             </h1>
 
-            {/* Subheadline */}
             {subheadline && (
               <p
                 className="mt-5 md:mt-6 leading-relaxed"
@@ -185,7 +179,6 @@ export default function HeroSplitImage({
               </p>
             )}
 
-            {/* CTA */}
             {ctaText && (
               <nav
                 aria-label="Hero actions"
@@ -200,12 +193,15 @@ export default function HeroSplitImage({
                   className={cn(
                     'inline-flex items-center justify-center',
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
+                    'transition-all duration-200 motion-reduce:transition-none',
+                    'hover:brightness-110 hover:shadow-lg',
                     FOCUS_RING,
-                    'active:scale-[0.98]',
+                    'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
@@ -231,9 +227,6 @@ export default function HeroSplitImage({
             )}
           </div>
 
-          {/* ---------------------------------------------------------------- */}
-          {/* Image side                                                       */}
-          {/* ---------------------------------------------------------------- */}
           <figure
             className={cn(
               'relative overflow-hidden rounded-2xl',

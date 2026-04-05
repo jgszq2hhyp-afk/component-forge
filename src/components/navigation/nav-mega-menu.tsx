@@ -3,17 +3,18 @@
 // @name Nav Mega Menu
 // @source custom-implementation
 
-"use client";
+'use client';
 
-import { useState, useRef, useEffect, useCallback, useId } from "react";
-import { cn } from "@/lib/utils";
+import { useState, useRef, useEffect, useCallback, useId } from 'react';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const HOVER_CLOSE_DELAY = 150;
-const DROPDOWN_MIN_WIDTH = "min-w-[480px]";
+const DROPDOWN_MIN_WIDTH = 'min-w-[480px]';
+const LOGO_FONT_SIZE = 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -56,7 +57,12 @@ interface NavMegaMenuProps {
 // ---------------------------------------------------------------------------
 
 const focusRing =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+
+const ringStyle = {
+  ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
+  ['--tw-ring-offset-color' as string]: 'var(--background)',
+};
 
 // ---------------------------------------------------------------------------
 // Default data
@@ -64,25 +70,25 @@ const focusRing =
 
 const defaultMegaMenus: MegaMenuGroup[] = [
   {
-    label: "Products",
+    label: 'Products',
     items: [
-      { title: "Analytics", description: "Measure what matters", href: "#analytics" },
-      { title: "Automation", description: "Streamline your workflow", href: "#automation" },
-      { title: "Integrations", description: "Connect your tools", href: "#integrations" },
-      { title: "Security", description: "Enterprise-grade protection", href: "#security" },
+      { title: 'Analytics', description: 'Measure what matters', href: '#analytics' },
+      { title: 'Automation', description: 'Streamline your workflow', href: '#automation' },
+      { title: 'Integrations', description: 'Connect your tools', href: '#integrations' },
+      { title: 'Security', description: 'Enterprise-grade protection', href: '#security' },
     ],
     featured: {
-      title: "New: AI Assistant",
-      description: "Supercharge your productivity with AI-powered features",
-      href: "#ai",
+      title: 'New: AI Assistant',
+      description: 'Supercharge your productivity with AI-powered features',
+      href: '#ai',
     },
   },
   {
-    label: "Solutions",
+    label: 'Solutions',
     items: [
-      { title: "For Startups", description: "Move fast and ship", href: "#startups" },
-      { title: "For Enterprise", description: "Scale with confidence", href: "#enterprise" },
-      { title: "For Agencies", description: "Manage client projects", href: "#agencies" },
+      { title: 'For Startups', description: 'Move fast and ship', href: '#startups' },
+      { title: 'For Enterprise', description: 'Scale with confidence', href: '#enterprise' },
+      { title: 'For Agencies', description: 'Manage client projects', href: '#agencies' },
     ],
   },
 ];
@@ -92,14 +98,14 @@ const defaultMegaMenus: MegaMenuGroup[] = [
 // ---------------------------------------------------------------------------
 
 export default function NavMegaMenu({
-  logo = "Brand",
+  logo = 'Brand',
   megaMenus = defaultMegaMenus,
   links = [
-    { label: "Pricing", href: "#pricing" },
-    { label: "Blog", href: "#blog" },
+    { label: 'Pricing', href: '#pricing' },
+    { label: 'Blog', href: '#blog' },
   ],
-  ctaLabel = "Get Started",
-  ctaHref = "#cta",
+  ctaLabel = 'Get Started',
+  ctaHref = '#cta',
   className,
 }: NavMegaMenuProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -107,10 +113,11 @@ export default function NavMegaMenu({
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const triggerRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const dropdownRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const mobileToggleRef = useRef<HTMLButtonElement>(null);
   const instanceId = useId();
 
   const getDropdownId = (label: string) =>
-    `${instanceId}-mega-dropdown-${label.toLowerCase().replace(/\s+/g, "-")}`;
+    `${instanceId}-mega-dropdown-${label.toLowerCase().replace(/\s+/g, '-')}`;
 
   const handleMouseEnter = (label: string) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -138,12 +145,12 @@ export default function NavMegaMenu({
         setOpenMenu(label);
         requestAnimationFrame(() => {
           const dropdown = dropdownRefs.current.get(label);
-          const firstLink = dropdown?.querySelector<HTMLAnchorElement>("a[href]");
+          const firstLink = dropdown?.querySelector<HTMLAnchorElement>('a[href]');
           firstLink?.focus();
         });
       }
     },
-    [openMenu, closeMenu]
+    [openMenu, closeMenu],
   );
 
   const handleTriggerKeyDown = useCallback(
@@ -151,45 +158,45 @@ export default function NavMegaMenu({
       const menuLabels = megaMenus.map((m) => m.label);
 
       switch (e.key) {
-        case "Enter":
-        case " ": {
+        case 'Enter':
+        case ' ': {
           e.preventDefault();
           toggleMenu(label);
           break;
         }
-        case "ArrowDown": {
+        case 'ArrowDown': {
           e.preventDefault();
           if (openMenu === label) {
             const dropdown = dropdownRefs.current.get(label);
-            const firstLink = dropdown?.querySelector<HTMLAnchorElement>("a[href]");
+            const firstLink = dropdown?.querySelector<HTMLAnchorElement>('a[href]');
             firstLink?.focus();
           } else {
             toggleMenu(label);
           }
           break;
         }
-        case "ArrowRight": {
+        case 'ArrowRight': {
           e.preventDefault();
           const nextIndex = (index + 1) % menuLabels.length;
           const nextTrigger = triggerRefs.current.get(menuLabels[nextIndex]);
           nextTrigger?.focus();
           break;
         }
-        case "ArrowLeft": {
+        case 'ArrowLeft': {
           e.preventDefault();
           const prevIndex = (index - 1 + menuLabels.length) % menuLabels.length;
           const prevTrigger = triggerRefs.current.get(menuLabels[prevIndex]);
           prevTrigger?.focus();
           break;
         }
-        case "Escape": {
+        case 'Escape': {
           e.preventDefault();
           closeMenu();
           break;
         }
       }
     },
-    [megaMenus, openMenu, toggleMenu, closeMenu]
+    [megaMenus, openMenu, toggleMenu, closeMenu],
   );
 
   const handleDropdownKeyDown = useCallback(
@@ -198,20 +205,20 @@ export default function NavMegaMenu({
       if (!dropdown) return;
 
       const focusableItems = Array.from(
-        dropdown.querySelectorAll<HTMLAnchorElement>("a[href]")
+        dropdown.querySelectorAll<HTMLAnchorElement>('a[href]'),
       );
       const currentIndex = focusableItems.indexOf(
-        document.activeElement as HTMLAnchorElement
+        document.activeElement as HTMLAnchorElement,
       );
 
       switch (e.key) {
-        case "ArrowDown": {
+        case 'ArrowDown': {
           e.preventDefault();
           const next = (currentIndex + 1) % focusableItems.length;
           focusableItems[next]?.focus();
           break;
         }
-        case "ArrowUp": {
+        case 'ArrowUp': {
           e.preventDefault();
           if (currentIndex <= 0) {
             const trigger = triggerRefs.current.get(label);
@@ -221,18 +228,18 @@ export default function NavMegaMenu({
           }
           break;
         }
-        case "Escape": {
+        case 'Escape': {
           e.preventDefault();
           closeMenu();
           break;
         }
-        case "Tab": {
+        case 'Tab': {
           closeMenu();
           break;
         }
       }
     },
-    [closeMenu]
+    [closeMenu],
   );
 
   useEffect(() => {
@@ -251,24 +258,36 @@ export default function NavMegaMenu({
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openMenu]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         if (openMenu) {
           closeMenu();
         } else if (isMobileOpen) {
           setIsMobileOpen(false);
+          mobileToggleRef.current?.focus();
         }
       }
     };
 
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
   }, [openMenu, isMobileOpen, closeMenu]);
+
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileOpen]);
 
   useEffect(() => {
     return () => {
@@ -279,29 +298,33 @@ export default function NavMegaMenu({
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full border-b",
-        "bg-background",
-        "border-border",
-        className
+        'sticky top-0 z-50 w-full border-b',
+        className,
       )}
+      style={{
+        backgroundColor: 'var(--background)',
+        borderColor: 'var(--border)',
+      }}
     >
       <nav
         className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3"
         aria-label="Main navigation"
       >
-        {/* Logo */}
         <a
           href="/"
           className={cn(
-            "text-xl font-bold text-foreground",
+            'font-bold rounded-sm',
             focusRing,
-            "rounded-sm"
           )}
+          style={{
+            color: 'var(--foreground)',
+            fontSize: LOGO_FONT_SIZE,
+            ...ringStyle,
+          }}
         >
           {logo}
         </a>
 
-        {/* Desktop Nav */}
         <div className="hidden lg:flex items-center gap-1" role="menubar">
           {megaMenus.map((menu, index) => (
             <div
@@ -316,14 +339,25 @@ export default function NavMegaMenu({
                   if (el) triggerRefs.current.set(menu.label, el);
                 }}
                 className={cn(
-                  "flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium",
-                  "transition-colors motion-reduce:transition-none",
-                  "text-muted-foreground",
-                  "hover:text-foreground",
-                  "hover:bg-muted",
+                  'flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium',
+                  'transition-colors motion-reduce:transition-none',
                   focusRing,
-                  openMenu === menu.label && "text-foreground bg-muted"
                 )}
+                style={{
+                  color: openMenu === menu.label ? 'var(--foreground)' : 'var(--muted-foreground)',
+                  backgroundColor: openMenu === menu.label ? 'var(--muted)' : 'transparent',
+                  ...ringStyle,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = 'var(--foreground)';
+                  (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--muted)';
+                }}
+                onMouseLeave={(e) => {
+                  if (openMenu !== menu.label) {
+                    (e.currentTarget as HTMLElement).style.color = 'var(--muted-foreground)';
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                  }
+                }}
                 role="menuitem"
                 aria-expanded={openMenu === menu.label}
                 aria-haspopup="true"
@@ -334,8 +368,8 @@ export default function NavMegaMenu({
                 {menu.label}
                 <svg
                   className={cn(
-                    "h-4 w-4 transition-transform motion-reduce:transition-none",
-                    openMenu === menu.label && "rotate-180"
+                    'h-4 w-4 transition-transform motion-reduce:transition-none',
+                    openMenu === menu.label && 'rotate-180',
                   )}
                   fill="none"
                   viewBox="0 0 24 24"
@@ -347,7 +381,6 @@ export default function NavMegaMenu({
                 </svg>
               </button>
 
-              {/* Mega Menu Dropdown */}
               {openMenu === menu.label && (
                 <div
                   ref={(el) => {
@@ -357,17 +390,21 @@ export default function NavMegaMenu({
                   role="menu"
                   aria-label={`${menu.label} submenu`}
                   className={cn(
-                    "absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-xl p-6 shadow-xl",
-                    "bg-card text-card-foreground",
-                    "border border-border",
+                    'absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-xl p-6 shadow-xl',
+                    'border',
                     `${DROPDOWN_MIN_WIDTH} animate-in fade-in slide-in-from-top-2 duration-200`,
-                    "motion-reduce:animate-none motion-reduce:transition-none"
+                    'motion-reduce:animate-none motion-reduce:transition-none',
                   )}
+                  style={{
+                    backgroundColor: 'var(--card)',
+                    color: 'var(--card-foreground)',
+                    borderColor: 'var(--border)',
+                  }}
                   onMouseEnter={() => handleMouseEnter(menu.label)}
                   onMouseLeave={handleMouseLeave}
                   onKeyDown={(e) => handleDropdownKeyDown(e, menu.label)}
                 >
-                  <div className={cn("grid gap-6", menu.featured ? "grid-cols-2" : "grid-cols-1")}>
+                  <div className={cn('grid gap-6', menu.featured ? 'grid-cols-2' : 'grid-cols-1')}>
                     <div className="space-y-1">
                       {menu.items.map((item) => (
                         <a
@@ -375,22 +412,32 @@ export default function NavMegaMenu({
                           href={item.href}
                           role="menuitem"
                           className={cn(
-                            "flex items-start gap-3 rounded-lg p-3",
-                            "transition-colors motion-reduce:transition-none",
-                            "hover:bg-muted",
-                            focusRing
+                            'flex items-start gap-3 rounded-lg p-3',
+                            'transition-colors motion-reduce:transition-none',
+                            focusRing,
                           )}
+                          style={ringStyle}
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--muted)';
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                          }}
                         >
                           {item.icon && (
-                            <div className="mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true">
+                            <div
+                              className="mt-0.5 flex-shrink-0"
+                              style={{ color: 'var(--muted-foreground)' }}
+                              aria-hidden="true"
+                            >
                               {item.icon}
                             </div>
                           )}
                           <div>
-                            <span className="text-sm font-medium text-foreground">
+                            <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
                               {item.title}
                             </span>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                               {item.description}
                             </p>
                           </div>
@@ -402,17 +449,19 @@ export default function NavMegaMenu({
                         href={menu.featured.href}
                         role="menuitem"
                         className={cn(
-                          "flex flex-col justify-end rounded-lg p-6",
-                          "transition-colors motion-reduce:transition-none",
-                          "bg-muted",
-                          "hover:bg-muted/80",
-                          focusRing
+                          'flex flex-col justify-end rounded-lg p-6',
+                          'transition-colors motion-reduce:transition-none',
+                          focusRing,
                         )}
+                        style={{
+                          backgroundColor: 'var(--muted)',
+                          ...ringStyle,
+                        }}
                       >
-                        <span className="text-sm font-semibold text-foreground">
+                        <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
                           {menu.featured.title}
                         </span>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs" style={{ color: 'var(--muted-foreground)' }}>
                           {menu.featured.description}
                         </p>
                       </a>
@@ -429,42 +478,57 @@ export default function NavMegaMenu({
               href={link.href}
               role="menuitem"
               className={cn(
-                "rounded-lg px-3 py-2 text-sm font-medium",
-                "transition-colors motion-reduce:transition-none",
-                "text-muted-foreground",
-                "hover:text-foreground",
-                "hover:bg-muted",
-                focusRing
+                'rounded-lg px-3 py-2 text-sm font-medium',
+                'transition-colors motion-reduce:transition-none',
+                focusRing,
               )}
+              style={{
+                color: 'var(--muted-foreground)',
+                ...ringStyle,
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.color = 'var(--foreground)';
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--muted)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.color = 'var(--muted-foreground)';
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+              }}
             >
               {link.label}
             </a>
           ))}
         </div>
 
-        {/* CTA */}
         <a
           href={ctaHref}
           className={cn(
-            "hidden lg:inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium",
-            "transition-colors motion-reduce:transition-none",
-            "bg-primary text-primary-foreground",
-            "hover:bg-primary/90",
-            focusRing
+            'hidden lg:inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium',
+            'transition-colors motion-reduce:transition-none',
+            focusRing,
           )}
+          style={{
+            backgroundColor: 'var(--primary)',
+            color: 'var(--primary-foreground)',
+            ...ringStyle,
+          }}
         >
           {ctaLabel}
         </a>
 
-        {/* Mobile Toggle */}
         <button
+          ref={mobileToggleRef}
           type="button"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           className={cn(
-            "lg:hidden p-2 rounded-lg text-muted-foreground",
-            focusRing
+            'lg:hidden p-2 rounded-lg',
+            focusRing,
           )}
-          aria-label={isMobileOpen ? "Close menu" : "Open menu"}
+          style={{
+            color: 'var(--muted-foreground)',
+            ...ringStyle,
+          }}
+          aria-label={isMobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={isMobileOpen}
           aria-controls={`${instanceId}-mobile-menu`}
         >
@@ -478,21 +542,24 @@ export default function NavMegaMenu({
         </button>
       </nav>
 
-      {/* Mobile Menu */}
       {isMobileOpen && (
         <div
           id={`${instanceId}-mobile-menu`}
           role="menu"
           aria-label="Mobile navigation"
           className={cn(
-            "lg:hidden border-t border-border px-4 py-4",
-            "animate-in fade-in slide-in-from-top-1 duration-150",
-            "motion-reduce:animate-none motion-reduce:transition-none"
+            'lg:hidden border-t px-4 py-4',
+            'animate-in fade-in slide-in-from-top-1 duration-150',
+            'motion-reduce:animate-none motion-reduce:transition-none',
           )}
+          style={{ borderColor: 'var(--border)' }}
         >
           {megaMenus.map((menu) => (
             <div key={menu.label} className="mb-4">
-              <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <p
+                className="px-3 py-1 text-xs font-semibold uppercase tracking-wider"
+                style={{ color: 'var(--muted-foreground)' }}
+              >
                 {menu.label}
               </p>
               {menu.items.map((item) => (
@@ -502,11 +569,22 @@ export default function NavMegaMenu({
                   role="menuitem"
                   onClick={() => setIsMobileOpen(false)}
                   className={cn(
-                    "block rounded-lg px-3 py-2 text-sm text-muted-foreground",
-                    "transition-colors motion-reduce:transition-none",
-                    "hover:bg-muted hover:text-foreground",
-                    focusRing
+                    'block rounded-lg px-3 py-2 text-sm',
+                    'transition-colors motion-reduce:transition-none',
+                    focusRing,
                   )}
+                  style={{
+                    color: 'var(--muted-foreground)',
+                    ...ringStyle,
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--muted)';
+                    (e.currentTarget as HTMLElement).style.color = 'var(--foreground)';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                    (e.currentTarget as HTMLElement).style.color = 'var(--muted-foreground)';
+                  }}
                 >
                   {item.title}
                 </a>
@@ -520,11 +598,22 @@ export default function NavMegaMenu({
               role="menuitem"
               onClick={() => setIsMobileOpen(false)}
               className={cn(
-                "block rounded-lg px-3 py-2 text-sm text-muted-foreground",
-                "transition-colors motion-reduce:transition-none",
-                "hover:bg-muted hover:text-foreground",
-                focusRing
+                'block rounded-lg px-3 py-2 text-sm',
+                'transition-colors motion-reduce:transition-none',
+                focusRing,
               )}
+              style={{
+                color: 'var(--muted-foreground)',
+                ...ringStyle,
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--muted)';
+                (e.currentTarget as HTMLElement).style.color = 'var(--foreground)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                (e.currentTarget as HTMLElement).style.color = 'var(--muted-foreground)';
+              }}
             >
               {link.label}
             </a>
@@ -534,12 +623,15 @@ export default function NavMegaMenu({
             role="menuitem"
             onClick={() => setIsMobileOpen(false)}
             className={cn(
-              "mt-3 block rounded-lg px-4 py-2.5 text-center text-sm font-medium",
-              "transition-colors motion-reduce:transition-none",
-              "bg-primary text-primary-foreground",
-              "hover:bg-primary/90",
-              focusRing
+              'mt-3 block rounded-lg px-4 py-2.5 text-center text-sm font-medium',
+              'transition-colors motion-reduce:transition-none',
+              focusRing,
             )}
+            style={{
+              backgroundColor: 'var(--primary)',
+              color: 'var(--primary-foreground)',
+              ...ringStyle,
+            }}
           >
             {ctaLabel}
           </a>

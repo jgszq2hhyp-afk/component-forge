@@ -4,8 +4,6 @@
 // @score 92
 // @csv-refs landing:4, products:10,11,5, colors:11
 
-'use client';
-
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
@@ -13,12 +11,10 @@ import { cn } from '@/lib/utils';
 // ---------------------------------------------------------------------------
 
 const HERO_MIN_HEIGHT = '80vh';
-const CONTENT_MAX_WIDTH = '48rem'; // max-w-3xl
-const SUBHEADLINE_MAX_WIDTH = '36rem'; // max-w-xl
+const CONTENT_MAX_WIDTH = '48rem';
+const SUBHEADLINE_MAX_WIDTH = '36rem';
 const SCROLL_INDICATOR_BOTTOM = '2rem';
 const SCROLL_INDICATOR_LEFT_SM = '1.5rem';
-const SCROLL_INDICATOR_LEFT_MD = '3rem';
-const SCROLL_INDICATOR_LEFT_LG = '5rem';
 const CHEVRON_SIZE = 20;
 const CHEVRON_STROKE_WIDTH = 1.5;
 const ANIMATION_DURATION = '0.8s';
@@ -28,7 +24,9 @@ const DELAY_HEADLINE = '0.1s';
 const DELAY_SUBHEADLINE = '0.25s';
 const DELAY_CTA = '0.4s';
 const HEADING_CLAMP = 'clamp(2.5rem, 5vw + 1rem, 5rem)';
-const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--ring)]';
+const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1vw + 0.75rem, 1.25rem)';
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -75,12 +73,12 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hero-fade-up {
-    from { opacity: 1; }
-    to   { opacity: 1; }
+    from { opacity: 1; transform: none; filter: none; }
+    to   { opacity: 1; transform: none; filter: none; }
   }
   @keyframes hero-chevron-bounce {
-    0%, 100% { opacity: 0.8; }
-    50%      { opacity: 0.8; }
+    0%, 100% { opacity: 0.8; transform: none; }
+    50%      { opacity: 0.8; transform: none; }
   }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -148,7 +146,6 @@ export default function HeroTypographyOnly({
 }: HeroTypographyOnlyProps) {
   return (
     <>
-      {/* Inject keyframes once -- tiny inline style, no external deps */}
       <style dangerouslySetInnerHTML={{ __html: keyframes }} />
 
       <section
@@ -163,9 +160,7 @@ export default function HeroTypographyOnly({
           backgroundColor: 'var(--background)',
         }}
       >
-        {/* ---- Content container ---- */}
         <div style={{ maxWidth: CONTENT_MAX_WIDTH }}>
-          {/* Headline */}
           <h1
             className="font-bold tracking-tight leading-[1.08]"
             style={{
@@ -178,12 +173,11 @@ export default function HeroTypographyOnly({
             {headline}
           </h1>
 
-          {/* Subheadline */}
           {subheadline && (
             <p
               className="mt-5 md:mt-6 leading-relaxed"
               style={{
-                fontSize: 'clamp(1.125rem, 1vw + 0.75rem, 1.25rem)',
+                fontSize: SUBHEADLINE_CLAMP,
                 maxWidth: SUBHEADLINE_MAX_WIDTH,
                 color: 'var(--muted-foreground)',
                 animation: `hero-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
@@ -194,7 +188,6 @@ export default function HeroTypographyOnly({
             </p>
           )}
 
-          {/* CTAs */}
           {(ctaText || secondaryCtaText) && (
             <nav
               aria-label="Hero actions"
@@ -204,19 +197,21 @@ export default function HeroTypographyOnly({
                 animationDelay: DELAY_CTA,
               }}
             >
-              {/* Primary CTA */}
               {ctaText && (
                 <a
                   href={ctaHref}
                   className={cn(
                     'inline-flex items-center justify-center',
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
+                    'transition-all duration-200 motion-reduce:transition-none',
+                    'hover:brightness-110 hover:shadow-lg',
                     FOCUS_RING,
-                    'active:scale-[0.98]',
+                    'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
-                    color: 'var(--background)',
+                    color: 'var(--primary-foreground)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
@@ -224,21 +219,22 @@ export default function HeroTypographyOnly({
                 </a>
               )}
 
-              {/* Secondary CTA (ghost) */}
               {secondaryCtaText && (
                 <a
                   href={secondaryCtaHref}
                   className={cn(
                     'inline-flex items-center justify-center',
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
-                    'border',
+                    'border transition-all duration-200 motion-reduce:transition-none',
+                    'hover:brightness-110',
                     FOCUS_RING,
-                    'active:scale-[0.98]',
+                    'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     color: 'var(--foreground)',
-                    borderColor: 'var(--foreground)',
+                    borderColor: 'var(--border)',
                     backgroundColor: 'transparent',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
@@ -249,7 +245,6 @@ export default function HeroTypographyOnly({
           )}
         </div>
 
-        {/* ---- Scroll indicator ---- */}
         <ScrollIndicator />
       </section>
     </>

@@ -3,8 +3,6 @@
 // @name hero-with-mockup
 // @source https://dev.to/vaibhavg/shadcn-hero-sections-37af, https://prebuiltui.com/components/hero-section
 
-'use client';
-
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -19,12 +17,21 @@ const TEXT_DELAY = '0.1s';
 const MOCKUP_ENTRANCE_DELAY = '0.3s';
 const MOCKUP_FLOAT_DELAY = '1.2s';
 const HEADING_CLAMP = 'clamp(2.25rem, 4vw + 1rem, 4.25rem)';
+const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)';
 const ACTIVE_SCALE = '0.98';
 const CTA_FONT_SIZE = '0.9375rem';
 const PHONE_WIDTH = 320;
 const PHONE_HEIGHT = 640;
 const DESKTOP_WIDTH = 1200;
 const DESKTOP_HEIGHT = 720;
+const FADE_BLUR = '4px';
+const FADE_TRANSLATE_X = '40px';
+const FLOAT_TRANSLATE_Y = '-8px';
+const CHROME_DOT_SIZE = 'size-2.5';
+const CHROME_DOT_MIX = '15%';
+const FRAME_BORDER_MIX = '12%';
+const FRAME_SHADOW_MIX = '15%';
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -53,8 +60,8 @@ const keyframes = `
 @keyframes hwm-fade-left {
   from {
     opacity: 0;
-    filter: blur(4px);
-    transform: translateX(-40px);
+    filter: blur(${FADE_BLUR});
+    transform: translateX(-${FADE_TRANSLATE_X});
   }
   to {
     opacity: 1;
@@ -66,8 +73,8 @@ const keyframes = `
 @keyframes hwm-fade-right {
   from {
     opacity: 0;
-    filter: blur(4px);
-    transform: translateX(40px);
+    filter: blur(${FADE_BLUR});
+    transform: translateX(${FADE_TRANSLATE_X});
   }
   to {
     opacity: 1;
@@ -78,7 +85,7 @@ const keyframes = `
 
 @keyframes hwm-float {
   0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
+  50%      { transform: translateY(${FLOAT_TRANSLATE_Y}); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -103,11 +110,10 @@ function BrowserFrame({ children }: { children: React.ReactNode }) {
     <div
       className="overflow-hidden rounded-xl"
       style={{
-        border: '1px solid color-mix(in srgb, var(--foreground) 12%, transparent)',
-        boxShadow: '0 20px 60px -12px color-mix(in srgb, var(--foreground) 15%, transparent)',
+        border: `1px solid color-mix(in srgb, var(--foreground) ${FRAME_BORDER_MIX}, transparent)`,
+        boxShadow: `0 20px 60px -12px color-mix(in srgb, var(--foreground) ${FRAME_SHADOW_MIX}, transparent)`,
       }}
     >
-      {/* Browser chrome */}
       <div
         className="flex items-center gap-2 px-4 py-3"
         style={{
@@ -117,9 +123,9 @@ function BrowserFrame({ children }: { children: React.ReactNode }) {
         aria-hidden="true"
       >
         <div className="flex gap-1.5">
-          <span className="size-2.5 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 15%, transparent)' }} />
-          <span className="size-2.5 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 15%, transparent)' }} />
-          <span className="size-2.5 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 15%, transparent)' }} />
+          <span className={`${CHROME_DOT_SIZE} rounded-full`} style={{ backgroundColor: `color-mix(in srgb, var(--foreground) ${CHROME_DOT_MIX}, transparent)` }} />
+          <span className={`${CHROME_DOT_SIZE} rounded-full`} style={{ backgroundColor: `color-mix(in srgb, var(--foreground) ${CHROME_DOT_MIX}, transparent)` }} />
+          <span className={`${CHROME_DOT_SIZE} rounded-full`} style={{ backgroundColor: `color-mix(in srgb, var(--foreground) ${CHROME_DOT_MIX}, transparent)` }} />
         </div>
         <div
           className="mx-auto h-6 w-48 rounded-md"
@@ -139,10 +145,9 @@ function PhoneFrame({ children }: { children: React.ReactNode }) {
       className="mx-auto max-w-[280px] md:max-w-[320px] overflow-hidden rounded-[2rem] p-2"
       style={{
         backgroundColor: 'color-mix(in srgb, var(--foreground) 8%, var(--background))',
-        boxShadow: '0 20px 60px -12px color-mix(in srgb, var(--foreground) 15%, transparent)',
+        boxShadow: `0 20px 60px -12px color-mix(in srgb, var(--foreground) ${FRAME_SHADOW_MIX}, transparent)`,
       }}
     >
-      {/* Notch */}
       <div className="relative">
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-24 rounded-b-2xl z-10"
@@ -160,23 +165,21 @@ function PhoneFrame({ children }: { children: React.ReactNode }) {
 function LaptopFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center">
-      {/* Screen */}
       <div
         className="overflow-hidden rounded-t-xl w-full"
         style={{
-          border: '2px solid color-mix(in srgb, var(--foreground) 12%, transparent)',
+          border: `2px solid color-mix(in srgb, var(--foreground) ${FRAME_BORDER_MIX}, transparent)`,
           borderBottom: 'none',
-          boxShadow: '0 -8px 40px -12px color-mix(in srgb, var(--foreground) 10%, transparent)',
+          boxShadow: `0 -8px 40px -12px color-mix(in srgb, var(--foreground) 10%, transparent)`,
         }}
       >
         {children}
       </div>
-      {/* Base */}
       <div
         className="h-3 w-[105%] rounded-b-lg"
         style={{
           backgroundColor: 'color-mix(in srgb, var(--foreground) 10%, var(--background))',
-          borderTop: '1px solid color-mix(in srgb, var(--foreground) 15%, transparent)',
+          borderTop: `1px solid color-mix(in srgb, var(--foreground) ${CHROME_DOT_MIX}, transparent)`,
         }}
         aria-hidden="true"
       />
@@ -256,8 +259,11 @@ export default function HeroWithMockup({
 
             {subheadline && (
               <p
-                className="mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-lg"
-                style={{ color: 'var(--muted-foreground)' }}
+                className="mt-5 md:mt-6 leading-relaxed max-w-lg"
+                style={{
+                  fontSize: SUBHEADLINE_CLAMP,
+                  color: 'var(--muted-foreground)',
+                }}
               >
                 {subheadline}
               </p>
@@ -271,15 +277,15 @@ export default function HeroWithMockup({
                     className={cn(
                       'inline-flex items-center justify-center',
                       `rounded-lg px-7 py-3.5 text-[${CTA_FONT_SIZE}] font-semibold`,
-                      'transition-all duration-200',
+                      'transition-all duration-200 motion-reduce:transition-none',
                       'hover:brightness-110 hover:shadow-lg',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                      `active:scale-[${ACTIVE_SCALE}]`,
+                      FOCUS_RING,
+                      `active:scale-[${ACTIVE_SCALE}] motion-reduce:active:scale-100`,
                     )}
                     style={{
                       backgroundColor: 'var(--primary)',
                       color: 'var(--primary-foreground)',
-                      ['--tw-ring-color' as string]: 'var(--primary)',
+                      ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                       ['--tw-ring-offset-color' as string]: 'var(--background)',
                     }}
                   >
@@ -293,15 +299,15 @@ export default function HeroWithMockup({
                     className={cn(
                       'inline-flex items-center justify-center',
                       `rounded-lg px-7 py-3.5 text-[${CTA_FONT_SIZE}] font-semibold`,
-                      'border transition-all duration-200',
+                      'border transition-all duration-200 motion-reduce:transition-none',
                       'hover:brightness-110',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                      `active:scale-[${ACTIVE_SCALE}]`,
+                      FOCUS_RING,
+                      `active:scale-[${ACTIVE_SCALE}] motion-reduce:active:scale-100`,
                     )}
                     style={{
                       color: 'var(--foreground)',
                       borderColor: 'color-mix(in srgb, var(--foreground) 20%, transparent)',
-                      ['--tw-ring-color' as string]: 'var(--foreground)',
+                      ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                       ['--tw-ring-offset-color' as string]: 'var(--background)',
                     }}
                   >

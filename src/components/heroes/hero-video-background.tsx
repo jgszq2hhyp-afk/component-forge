@@ -6,7 +6,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -22,7 +22,11 @@ const HEADLINE_DELAY = '0.1s';
 const SUBHEADLINE_DELAY = '0.25s';
 const CTA_DELAY = '0.4s';
 const DEFAULT_OVERLAY_OPACITY = 0.55;
-const BUTTON_SIZE = 'size-10';
+const HEADING_CLAMP = 'clamp(2.5rem, 5vw + 1rem, 5rem)';
+const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)';
+const PLAY_ICON_SIZE = 16;
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -72,11 +76,16 @@ const keyframes = `
 
 @media (prefers-reduced-motion: reduce) {
   @keyframes hvb-fade-up {
-    from { opacity: 1; }
-    to   { opacity: 1; }
+    from { opacity: 1; transform: none; filter: none; }
+    to   { opacity: 1; transform: none; filter: none; }
   }
   @keyframes hvb-pulse-ring {
     0%, 100% { transform: scale(1); opacity: 0; }
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 `;
@@ -100,7 +109,7 @@ export default function HeroVideoBackground({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPaused, setIsPaused] = useState(false);
 
-  function toggleVideo() {
+  const toggleVideo = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
     if (video.paused) {
@@ -110,7 +119,7 @@ export default function HeroVideoBackground({
       video.pause();
       setIsPaused(true);
     }
-  }
+  }, []);
 
   return (
     <>
@@ -124,7 +133,6 @@ export default function HeroVideoBackground({
           className,
         )}
       >
-        {/* Video background */}
         <video
           ref={videoRef}
           autoPlay
@@ -138,7 +146,6 @@ export default function HeroVideoBackground({
           <source src={videoSrc} type="video/mp4" />
         </video>
 
-        {/* Dark overlay */}
         <div
           className="absolute inset-0"
           style={{
@@ -147,12 +154,11 @@ export default function HeroVideoBackground({
           aria-hidden="true"
         />
 
-        {/* Content */}
-        <div className="relative z-10 max-w-3xl text-center">
+        <article className="relative z-10 max-w-3xl text-center">
           <h1
             className="font-bold tracking-tight leading-[1.08]"
             style={{
-              fontSize: 'clamp(2.5rem, 5vw + 1rem, 5rem)',
+              fontSize: HEADING_CLAMP,
               color: 'var(--foreground)',
               animation: `hvb-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
               animationDelay: HEADLINE_DELAY,
@@ -165,7 +171,7 @@ export default function HeroVideoBackground({
             <p
               className="mx-auto mt-5 md:mt-6 leading-relaxed max-w-xl"
               style={{
-                fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)',
+                fontSize: SUBHEADLINE_CLAMP,
                 color: 'var(--muted-foreground)',
                 animation: `hvb-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
                 animationDelay: SUBHEADLINE_DELAY,
@@ -176,7 +182,8 @@ export default function HeroVideoBackground({
           )}
 
           {(ctaText || secondaryCtaText) && (
-            <div
+            <nav
+              aria-label="Hero actions"
               className="mt-8 md:mt-10 flex flex-wrap items-center justify-center gap-4"
               style={{
                 animation: `hvb-fade-up ${ANIMATION_DURATION} ${ANIMATION_EASING} both`,
@@ -191,13 +198,13 @@ export default function HeroVideoBackground({
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
                     'transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110 hover:shadow-lg',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    FOCUS_RING,
                     'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
-                    ['--tw-ring-color' as string]: 'var(--primary)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
@@ -213,56 +220,66 @@ export default function HeroVideoBackground({
                     'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
                     'border backdrop-blur-sm transition-all duration-200 motion-reduce:transition-none',
                     'hover:brightness-110',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                    FOCUS_RING,
                     'active:scale-[0.98] motion-reduce:active:scale-100',
                   )}
                   style={{
                     color: 'var(--foreground)',
-                    borderColor: 'var(--foreground)',
+                    borderColor: 'var(--border)',
                     backgroundColor: 'color-mix(in srgb, var(--background) 20%, transparent)',
-                    ['--tw-ring-color' as string]: 'var(--foreground)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
                   {secondaryCtaText}
                 </a>
               )}
-            </div>
+            </nav>
           )}
-        </div>
+        </article>
 
-        {/* Pause/play toggle */}
         <button
           onClick={toggleVideo}
           type="button"
           className={cn(
             'absolute bottom-6 right-6 z-10',
-            `flex items-center justify-center ${BUTTON_SIZE} rounded-full`,
+            'flex items-center justify-center size-10 rounded-full',
             'backdrop-blur-md transition-all duration-200 motion-reduce:transition-none',
             'hover:scale-110 motion-reduce:hover:scale-100',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+            FOCUS_RING,
           )}
           style={{
             backgroundColor: 'color-mix(in srgb, var(--background) 40%, transparent)',
             color: 'var(--foreground)',
-            ['--tw-ring-color' as string]: 'var(--primary)',
+            ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
             ['--tw-ring-offset-color' as string]: 'var(--background)',
           }}
           aria-label={isPaused ? 'Play background video' : 'Pause background video'}
         >
           {isPaused ? (
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <svg
+              width={PLAY_ICON_SIZE}
+              height={PLAY_ICON_SIZE}
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              aria-hidden="true"
+            >
               <path d="M4 2.5l10 5.5-10 5.5V2.5z" />
             </svg>
           ) : (
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <svg
+              width={PLAY_ICON_SIZE}
+              height={PLAY_ICON_SIZE}
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              aria-hidden="true"
+            >
               <rect x="3" y="2" width="4" height="12" rx="1" />
               <rect x="9" y="2" width="4" height="12" rx="1" />
             </svg>
           )}
         </button>
 
-        {/* Pulse ring around button */}
         <div
           className="absolute bottom-6 right-6 size-10 rounded-full pointer-events-none"
           style={{

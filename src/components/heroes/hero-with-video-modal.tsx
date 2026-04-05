@@ -18,8 +18,11 @@ const MODAL_SCALE_DURATION = '0.25s';
 const BACKDROP_OPACITY = 0.8;
 const OVERLAY_OPACITY = 0.7;
 const HEADING_CLAMP = 'clamp(2.25rem, 5vw + 1rem, 4rem)';
+const SUBHEADING_CLAMP = 'clamp(1rem, 1.5vw + 0.5rem, 1.25rem)';
 const PLAY_ICON_SIZE = 48;
 const CLOSE_BUTTON_SIZE = 36;
+const MIN_HERO_HEIGHT = '85vh';
+const VIDEO_MAX_WIDTH = '56rem';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -63,7 +66,7 @@ const keyframes = `
 `;
 
 // ---------------------------------------------------------------------------
-// Component ('use client' -- modal open/close state)
+// Component
 // ---------------------------------------------------------------------------
 
 export default function HeroWithVideoModal({
@@ -83,7 +86,6 @@ export default function HeroWithVideoModal({
 
   const close = useCallback(() => {
     setIsOpen(false);
-    // Return focus to trigger button on close
     triggerRef.current?.focus();
   }, []);
 
@@ -97,7 +99,6 @@ export default function HeroWithVideoModal({
     document.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
 
-    // Focus close button when modal opens
     closeButtonRef.current?.focus();
 
     return () => {
@@ -113,13 +114,13 @@ export default function HeroWithVideoModal({
       <section
         aria-label="Video hero"
         className={cn(
-          'relative flex min-h-[85vh] items-center justify-center overflow-hidden',
+          'relative flex items-center justify-center overflow-hidden',
           'px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36',
           'text-center',
           className,
         )}
+        style={{ minHeight: MIN_HERO_HEIGHT }}
       >
-        {/* Background image */}
         <Image
           src={backgroundImageSrc}
           alt={backgroundImageAlt}
@@ -128,14 +129,12 @@ export default function HeroWithVideoModal({
           priority
         />
 
-        {/* Overlay */}
         <div
           className="absolute inset-0"
           style={{ backgroundColor: 'var(--background)', opacity: OVERLAY_OPACITY }}
           aria-hidden="true"
         />
 
-        {/* Content */}
         <header className="relative z-10 max-w-3xl">
           <h1
             className="font-bold tracking-tight"
@@ -149,8 +148,11 @@ export default function HeroWithVideoModal({
 
           {subheadline && (
             <p
-              className="mt-6 text-lg leading-relaxed md:text-xl"
-              style={{ color: 'var(--muted-foreground)' }}
+              className="mt-6 leading-relaxed"
+              style={{
+                color: 'var(--muted-foreground)',
+                fontSize: SUBHEADING_CLAMP,
+              }}
             >
               {subheadline}
             </p>
@@ -171,7 +173,7 @@ export default function HeroWithVideoModal({
                 style={{
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',
-                  ['--tw-ring-color' as string]: 'var(--primary)',
+                  ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                   ['--tw-ring-offset-color' as string]: 'var(--background)',
                 }}
               >
@@ -190,12 +192,11 @@ export default function HeroWithVideoModal({
               )}
               style={{
                 color: 'var(--foreground)',
-                ['--tw-ring-color' as string]: 'var(--primary)',
+                ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                 ['--tw-ring-offset-color' as string]: 'var(--background)',
               }}
               aria-label={playButtonLabel}
             >
-              {/* Play icon circle */}
               <span
                 className="inline-flex items-center justify-center rounded-full transition-transform group-hover:scale-105"
                 style={{
@@ -222,7 +223,6 @@ export default function HeroWithVideoModal({
         </header>
       </section>
 
-      {/* Video Modal */}
       {isOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -231,18 +231,22 @@ export default function HeroWithVideoModal({
           aria-label="Video player"
           style={{ animation: `hero-modal-fade-in ${MODAL_FADE_DURATION} ease-out` }}
         >
-          {/* Backdrop */}
           <div
             className="absolute inset-0 cursor-pointer"
-            style={{ backgroundColor: `rgba(0, 0, 0, ${BACKDROP_OPACITY})` }}
+            style={{
+              backgroundColor: 'color-mix(in srgb, var(--foreground) 80%, transparent)',
+              opacity: BACKDROP_OPACITY,
+            }}
             onClick={close}
             aria-hidden="true"
           />
 
-          {/* Video container */}
-          <div
-            className="relative w-full max-w-4xl aspect-video rounded-xl overflow-hidden shadow-2xl"
-            style={{ animation: `hero-modal-scale-in ${MODAL_SCALE_DURATION} ease-out` }}
+          <figure
+            className="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl"
+            style={{
+              maxWidth: VIDEO_MAX_WIDTH,
+              animation: `hero-modal-scale-in ${MODAL_SCALE_DURATION} ease-out`,
+            }}
           >
             <iframe
               src={videoSrc}
@@ -252,20 +256,20 @@ export default function HeroWithVideoModal({
               title="Video"
             />
 
-            {/* Close button */}
             <button
               ref={closeButtonRef}
               onClick={close}
               className={cn(
                 'absolute top-3 right-3 inline-flex items-center justify-center rounded-full',
-                'text-white/80 transition-colors hover:text-white',
+                'transition-colors',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
               )}
               style={{
                 width: `${CLOSE_BUTTON_SIZE}px`,
                 height: `${CLOSE_BUTTON_SIZE}px`,
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                ['--tw-ring-color' as string]: 'white',
+                backgroundColor: 'color-mix(in srgb, var(--foreground) 50%, transparent)',
+                color: 'var(--background)',
+                ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                 ['--tw-ring-offset-color' as string]: 'transparent',
               }}
               aria-label="Close video"
@@ -284,7 +288,7 @@ export default function HeroWithVideoModal({
                 <path d="M18 6L6 18M6 6l12 12" />
               </svg>
             </button>
-          </div>
+          </figure>
         </div>
       )}
     </>

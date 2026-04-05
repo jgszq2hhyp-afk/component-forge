@@ -3,8 +3,6 @@
 // @name hero-dark-creative
 // @source https://prebuiltui.com/components/hero-section, https://www.hover.dev/components/heros
 
-'use client';
-
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
@@ -24,8 +22,13 @@ const GLOW_PULSE_DURATION = '6s';
 const GLOW_PULSE_SECONDARY_DELAY = '3s';
 const DEFAULT_GRID_DENSITY = 12;
 const HEADING_CLAMP = 'clamp(2.5rem, 6vw + 1rem, 5.5rem)';
+const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)';
 const ACTIVE_SCALE = '0.97';
 const CTA_FONT_SIZE = '0.9375rem';
+const GRID_LINE_OPACITY = '5%';
+const GLOW_PRIMARY_MIX = '25%';
+const GLOW_SECONDARY_MIX = '15%';
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -38,7 +41,6 @@ interface HeroDarkCreativeProps {
   ctaHref?: string;
   secondaryCtaText?: string;
   secondaryCtaHref?: string;
-  /** Number of animated grid lines */
   gridDensity?: number;
   className?: string;
 }
@@ -133,25 +135,23 @@ export default function HeroDarkCreative({
           style={{ animation: `hdc-grid-scroll ${GRID_SCROLL_DURATION} linear infinite` }}
           aria-hidden="true"
         >
-          {/* Vertical lines */}
           {gridLines.map((_, i) => (
             <div
               key={`v-${i}`}
               className="absolute top-0 bottom-0 w-px"
               style={{
                 left: `${((i + 1) / (gridDensity + 1)) * 100}%`,
-                backgroundColor: 'color-mix(in srgb, var(--foreground) 5%, transparent)',
+                backgroundColor: `color-mix(in srgb, var(--foreground) ${GRID_LINE_OPACITY}, transparent)`,
               }}
             />
           ))}
-          {/* Horizontal lines */}
           {gridLines.map((_, i) => (
             <div
               key={`h-${i}`}
               className="absolute left-0 right-0 h-px"
               style={{
                 top: `${((i + 1) / (gridDensity + 1)) * 100}%`,
-                backgroundColor: 'color-mix(in srgb, var(--foreground) 5%, transparent)',
+                backgroundColor: `color-mix(in srgb, var(--foreground) ${GRID_LINE_OPACITY}, transparent)`,
               }}
             />
           ))}
@@ -161,7 +161,7 @@ export default function HeroDarkCreative({
         <div
           className="pointer-events-none absolute top-1/4 -left-20 h-80 w-80 rounded-full"
           style={{
-            background: 'radial-gradient(circle, color-mix(in srgb, var(--primary) 25%, transparent), transparent 70%)',
+            background: `radial-gradient(circle, color-mix(in srgb, var(--primary) ${GLOW_PRIMARY_MIX}, transparent), transparent 70%)`,
             animation: `hdc-glow-pulse ${GLOW_PULSE_DURATION} ease-in-out infinite`,
           }}
           aria-hidden="true"
@@ -169,7 +169,7 @@ export default function HeroDarkCreative({
         <div
           className="pointer-events-none absolute bottom-1/4 -right-20 h-64 w-64 rounded-full"
           style={{
-            background: 'radial-gradient(circle, color-mix(in srgb, var(--primary) 15%, transparent), transparent 70%)',
+            background: `radial-gradient(circle, color-mix(in srgb, var(--primary) ${GLOW_SECONDARY_MIX}, transparent), transparent 70%)`,
             animation: `hdc-glow-pulse ${GLOW_PULSE_DURATION} ease-in-out infinite ${GLOW_PULSE_SECONDARY_DELAY}`,
           }}
           aria-hidden="true"
@@ -177,7 +177,6 @@ export default function HeroDarkCreative({
 
         {/* Content */}
         <header className="relative z-10 max-w-4xl text-center">
-          {/* Decorative line above headline */}
           <div
             className="mx-auto mb-8 h-px w-16 origin-center"
             style={{
@@ -203,8 +202,9 @@ export default function HeroDarkCreative({
 
           {subheadline && (
             <p
-              className="mx-auto mt-6 md:mt-8 text-lg md:text-xl leading-relaxed max-w-2xl"
+              className="mx-auto mt-6 md:mt-8 leading-relaxed max-w-2xl"
               style={{
+                fontSize: SUBHEADLINE_CLAMP,
                 color: 'var(--muted-foreground)',
                 animation: `hdc-fade-up ${FADE_DURATION} ${EASING} both`,
                 animationDelay: SUBHEADLINE_DELAY,
@@ -229,21 +229,21 @@ export default function HeroDarkCreative({
                   className={cn(
                     'group inline-flex items-center justify-center',
                     `rounded-full px-8 py-4 text-[${CTA_FONT_SIZE}] font-semibold`,
-                    'transition-all duration-300',
+                    'transition-all duration-300 motion-reduce:transition-none',
                     'hover:shadow-[0_0_24px_color-mix(in_srgb,var(--primary)_40%,transparent)]',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    `active:scale-[${ACTIVE_SCALE}]`,
+                    FOCUS_RING,
+                    `active:scale-[${ACTIVE_SCALE}] motion-reduce:active:scale-100`,
                   )}
                   style={{
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
-                    ['--tw-ring-color' as string]: 'var(--primary)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
                   {ctaText}
                   <svg
-                    className="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1"
+                    className="ml-2 size-4 transition-transform duration-300 motion-reduce:transition-none group-hover:translate-x-1 motion-reduce:group-hover:translate-x-0"
                     viewBox="0 0 16 16"
                     fill="none"
                     aria-hidden="true"
@@ -265,15 +265,15 @@ export default function HeroDarkCreative({
                   className={cn(
                     'inline-flex items-center justify-center',
                     `rounded-full px-8 py-4 text-[${CTA_FONT_SIZE}] font-semibold`,
-                    'border transition-all duration-300',
+                    'border transition-all duration-300 motion-reduce:transition-none',
                     'hover:brightness-110',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    `active:scale-[${ACTIVE_SCALE}]`,
+                    FOCUS_RING,
+                    `active:scale-[${ACTIVE_SCALE}] motion-reduce:active:scale-100`,
                   )}
                   style={{
                     color: 'var(--foreground)',
                     borderColor: 'color-mix(in srgb, var(--foreground) 20%, transparent)',
-                    ['--tw-ring-color' as string]: 'var(--foreground)',
+                    ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                     ['--tw-ring-offset-color' as string]: 'var(--background)',
                   }}
                 >
@@ -283,7 +283,6 @@ export default function HeroDarkCreative({
             </nav>
           )}
 
-          {/* Decorative line below CTAs */}
           <div
             className="mx-auto mt-8 h-px w-16 origin-center"
             style={{

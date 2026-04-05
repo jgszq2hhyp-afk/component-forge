@@ -3,8 +3,6 @@
 // @name hero-with-stats
 // @source https://bundui.io/blocks/marketing/hero-sections, https://dev.to/vaibhavg/shadcn-hero-sections-37af
 
-'use client';
-
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
@@ -19,10 +17,11 @@ const SUBHEADLINE_DELAY = '0.25s';
 const CTA_DELAY = '0.4s';
 const STAT_BASE_DELAY = 0.6;
 const STAT_STAGGER = 0.12;
-const MAX_AVATARS = 5;
 const HEADING_CLAMP = 'clamp(2.5rem, 5vw + 1rem, 4.5rem)';
-const ACTIVE_SCALE = '0.98';
-const CTA_FONT_SIZE = '0.9375rem';
+const SUBHEADLINE_CLAMP = 'clamp(1.125rem, 1vw + 0.75rem, 1.25rem)';
+const STAT_VALUE_CLAMP = 'clamp(1.875rem, 3vw + 0.5rem, 3rem)';
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -80,6 +79,11 @@ const keyframes = `
   @keyframes hws-count-in {
     from, to { opacity: 1; transform: none; }
   }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 `;
 
@@ -111,7 +115,6 @@ export default function HeroWithStats({
         style={{ backgroundColor: 'var(--background)' }}
       >
         <div className="mx-auto max-w-7xl w-full">
-          {/* Top: Headline + CTAs */}
           <header className="max-w-3xl">
             <h1
               className="font-bold tracking-tight leading-[1.08]"
@@ -127,8 +130,9 @@ export default function HeroWithStats({
 
             {subheadline && (
               <p
-                className="mt-5 md:mt-6 text-lg md:text-xl leading-relaxed max-w-xl"
+                className="mt-5 md:mt-6 leading-relaxed max-w-xl"
                 style={{
+                  fontSize: SUBHEADLINE_CLAMP,
                   color: 'var(--muted-foreground)',
                   animation: `hws-fade-up ${FADE_DURATION} ${EASING} both`,
                   animationDelay: SUBHEADLINE_DELAY,
@@ -152,16 +156,16 @@ export default function HeroWithStats({
                     href={ctaHref}
                     className={cn(
                       'inline-flex items-center justify-center',
-                      `rounded-lg px-7 py-3.5 text-[${CTA_FONT_SIZE}] font-semibold`,
-                      'transition-all duration-200',
+                      'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
+                      'transition-all duration-200 motion-reduce:transition-none',
                       'hover:brightness-110 hover:shadow-lg',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                      `active:scale-[${ACTIVE_SCALE}]`,
+                      FOCUS_RING,
+                      'active:scale-[0.98] motion-reduce:active:scale-100',
                     )}
                     style={{
                       backgroundColor: 'var(--primary)',
                       color: 'var(--primary-foreground)',
-                      ['--tw-ring-color' as string]: 'var(--primary)',
+                      ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                       ['--tw-ring-offset-color' as string]: 'var(--background)',
                     }}
                   >
@@ -174,16 +178,16 @@ export default function HeroWithStats({
                     href={secondaryCtaHref}
                     className={cn(
                       'inline-flex items-center justify-center',
-                      `rounded-lg px-7 py-3.5 text-[${CTA_FONT_SIZE}] font-semibold`,
-                      'border transition-all duration-200',
+                      'rounded-lg px-7 py-3.5 text-[0.9375rem] font-semibold',
+                      'border transition-all duration-200 motion-reduce:transition-none',
                       'hover:brightness-110',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                      `active:scale-[${ACTIVE_SCALE}]`,
+                      FOCUS_RING,
+                      'active:scale-[0.98] motion-reduce:active:scale-100',
                     )}
                     style={{
                       color: 'var(--foreground)',
-                      borderColor: 'color-mix(in srgb, var(--foreground) 20%, transparent)',
-                      ['--tw-ring-color' as string]: 'var(--foreground)',
+                      borderColor: 'var(--border)',
+                      ['--tw-ring-color' as string]: 'var(--ring, hsl(215 20% 65%))',
                       ['--tw-ring-offset-color' as string]: 'var(--background)',
                     }}
                   >
@@ -194,17 +198,15 @@ export default function HeroWithStats({
             )}
           </header>
 
-          {/* Divider */}
           <div
             className="mt-14 md:mt-20 h-px w-full"
             style={{
-              backgroundColor: 'color-mix(in srgb, var(--foreground) 10%, transparent)',
+              backgroundColor: 'var(--border)',
             }}
             role="separator"
             aria-hidden="true"
           />
 
-          {/* Stats grid */}
           <dl
             className={cn(
               'mt-10 md:mt-14 grid gap-8',
@@ -215,19 +217,25 @@ export default function HeroWithStats({
           >
             {stats.map((stat, i) => (
               <div
-                key={i}
+                key={stat.label}
                 className="flex flex-col"
                 style={{
                   animation: `hws-count-in ${COUNT_DURATION} ${EASING} both`,
                   animationDelay: `${STAT_BASE_DELAY + i * STAT_STAGGER}s`,
                 }}
               >
-                <dt className="order-2 mt-2 text-sm md:text-base" style={{ color: 'var(--muted-foreground)' }}>
+                <dt
+                  className="order-2 mt-2 text-sm md:text-base"
+                  style={{ color: 'var(--muted-foreground)' }}
+                >
                   {stat.label}
                 </dt>
                 <dd
-                  className="order-1 text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight"
-                  style={{ color: 'var(--primary)' }}
+                  className="order-1 font-bold tracking-tight"
+                  style={{
+                    fontSize: STAT_VALUE_CLAMP,
+                    color: 'var(--primary)',
+                  }}
                 >
                   {stat.value}
                 </dd>
