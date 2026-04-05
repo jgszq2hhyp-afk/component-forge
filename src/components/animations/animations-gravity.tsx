@@ -25,7 +25,8 @@ import Matter, {
   Runner,
   World,
 } from "matter-js"
-// @ts-expect-error svg-path-commander has no type declarations
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore svg-path-commander may lack type declarations
 import SVGPathCommander from "svg-path-commander"
 
 import { cn } from "@/lib/utils"

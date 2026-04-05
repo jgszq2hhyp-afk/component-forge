@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { notFound } from "next/navigation";
-import { getPreviewProps, hasPreview } from "@/lib/preview-data";
+import { getPreviewProps } from "@/lib/preview-data";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
@@ -20,7 +20,7 @@ export function generateStaticParams() {
   if (!fs.existsSync(COMPONENTS_DIR)) return params;
   const cats = fs.readdirSync(COMPONENTS_DIR, { withFileTypes: true });
   for (const cat of cats) {
-    if (!cat.isDirectory() || cat.name.startsWith("_") || cat.name === "ui") continue;
+    if (!cat.isDirectory() || cat.name.startsWith("_")) continue;
     const files = fs
       .readdirSync(path.join(COMPONENTS_DIR, cat.name))
       .filter((f) => f.endsWith(".tsx"));
@@ -52,24 +52,6 @@ export default async function PreviewPage({
   const { category, name } = await params;
   const filePath = path.join(COMPONENTS_DIR, category, `${name}.tsx`);
   if (!fs.existsSync(filePath)) notFound();
-
-  if (!hasPreview(category, name)) {
-    return (
-      <div
-        className="flex min-h-screen items-center justify-center"
-        style={{ backgroundColor: "var(--background)" }}
-      >
-        <div className="text-center">
-          <p className="text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>
-            Preview coming soon
-          </p>
-          <p className="mt-1 font-mono text-xs" style={{ color: "var(--muted-foreground)" }}>
-            {category}/{name}
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   const props = getPreviewProps(category, name);
 

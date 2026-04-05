@@ -61,6 +61,7 @@ const CATEGORY_META: Record<string, { description: string; icon: string }> = {
   tabs: { description: "Animated underline, vertical & pill tabs", icon: "🗂️" },
   team: { description: "Team grids, carousels & story timelines", icon: "👥" },
   testimonials: { description: "Quotes, carousels, video walls & marquees", icon: "💬" },
+  ui: { description: "Interactive UI primitives and micro-interactions", icon: "🧩" },
   video: { description: "Video heroes, showcases & testimonials", icon: "🎬" },
 };
 
@@ -82,7 +83,7 @@ function getCategories(): CategoryInfo[] {
   if (fs.existsSync(COMPONENTS_DIR)) {
     const dirs = fs.readdirSync(COMPONENTS_DIR, { withFileTypes: true });
     for (const dir of dirs) {
-      if (!dir.isDirectory() || dir.name.startsWith("_") || dir.name === "ui") continue;
+      if (!dir.isDirectory() || dir.name.startsWith("_")) continue;
       const files = fs.readdirSync(path.join(COMPONENTS_DIR, dir.name)).filter(f => f.endsWith(".tsx"));
       const meta = CATEGORY_META[dir.name] ?? { description: `${dir.name} components`, icon: "📦" };
       categories.push({ name: dir.name, count: files.length, ...meta });

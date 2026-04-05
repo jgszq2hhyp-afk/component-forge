@@ -66,7 +66,7 @@ function getAllCategories(): string[] {
   if (fs.existsSync(COMPONENTS_DIR)) {
     const dirs = fs.readdirSync(COMPONENTS_DIR, { withFileTypes: true });
     for (const dir of dirs) {
-      if (dir.isDirectory() && !dir.name.startsWith("_") && dir.name !== "ui") {
+      if (dir.isDirectory() && !dir.name.startsWith("_")) {
         cats.push(dir.name);
       }
     }
@@ -196,50 +196,74 @@ export default async function CategoryPage({
         style={{ borderColor: "var(--border)" }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             {files.map((file) => (
               <article
                 key={file.name}
-                className="flex flex-col gap-2 rounded-xl border p-5 transition-all duration-200 hover:shadow-md motion-reduce:transition-none"
+                className="flex flex-col overflow-hidden rounded-xl border transition-all duration-200 hover:shadow-md motion-reduce:transition-none"
                 style={{
                   borderColor: "var(--border)",
                   backgroundColor: "var(--card)",
                 }}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <h3
-                    className="font-mono text-sm font-semibold"
-                    style={{ color: "var(--foreground)" }}
-                  >
-                    {file.name}
-                  </h3>
-                  <span
-                    className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider"
-                    style={{
-                      backgroundColor: file.isClient
-                        ? "color-mix(in srgb, var(--accent, var(--muted-foreground)) 10%, transparent)"
-                        : "color-mix(in srgb, var(--primary) 10%, transparent)",
-                      color: file.isClient
-                        ? "var(--accent, var(--muted-foreground))"
-                        : "var(--primary)",
-                    }}
-                  >
-                    {file.isClient ? "Client" : "Server"}
-                  </span>
+                {/* Preview */}
+                <div
+                  className="relative overflow-hidden border-b"
+                  style={{
+                    borderColor: "var(--border)",
+                    aspectRatio: "16/10",
+                    backgroundColor: "var(--background)",
+                  }}
+                >
+                  <iframe
+                    src={`/preview/${category}/${file.name}`}
+                    loading="lazy"
+                    className="pointer-events-none absolute left-0 top-0 origin-top-left"
+                    style={{ width: "200%", height: "200%", transform: "scale(0.5)" }}
+                    title={`Preview of ${file.name}`}
+                    tabIndex={-1}
+                  />
                 </div>
-                <div className="mt-auto flex items-center gap-3">
-                  <span
-                    className="text-xs"
-                    style={{ color: "var(--muted-foreground)" }}
-                  >
-                    {file.fileName}
-                  </span>
-                  <span
-                    className="ml-auto text-xs"
-                    style={{ color: "var(--muted-foreground)" }}
-                  >
-                    {file.lineCount} lines
-                  </span>
+                {/* Meta */}
+                <div className="flex flex-col gap-2 p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3
+                      className="font-mono text-sm font-semibold"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      {file.name}
+                    </h3>
+                    <span
+                      className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider"
+                      style={{
+                        backgroundColor: file.isClient
+                          ? "color-mix(in srgb, var(--accent, var(--muted-foreground)) 10%, transparent)"
+                          : "color-mix(in srgb, var(--primary) 10%, transparent)",
+                        color: file.isClient
+                          ? "var(--accent, var(--muted-foreground))"
+                          : "var(--primary)",
+                      }}
+                    >
+                      {file.isClient ? "Client" : "Server"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="text-xs"
+                      style={{ color: "var(--muted-foreground)" }}
+                    >
+                      {file.lineCount} lines
+                    </span>
+                    <a
+                      href={`/preview/${category}/${file.name}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-auto text-xs font-medium hover:underline"
+                      style={{ color: "var(--primary)" }}
+                    >
+                      Open Preview →
+                    </a>
+                  </div>
                 </div>
               </article>
             ))}

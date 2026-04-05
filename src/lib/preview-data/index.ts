@@ -10,23 +10,26 @@ import { data as batch9 } from "./batch-9";
 import { data as batch10 } from "./batch-10";
 
 type PreviewProps = Record<string, unknown>;
+type BatchData = Record<string, Record<string, PreviewProps>>;
 
 /* ------------------------------------------------------------------ */
-/*  Merged preview data from all batches                               */
+/*  Deep-merge batches (category-level merge, not shallow spread)      */
 /* ------------------------------------------------------------------ */
 
-const allData: Record<string, Record<string, PreviewProps>> = {
-  ...batch1,
-  ...batch2,
-  ...batch3,
-  ...batch4,
-  ...batch5,
-  ...batch6,
-  ...batch7,
-  ...batch8,
-  ...batch9,
-  ...batch10,
-};
+function mergeBatches(...batches: BatchData[]): Record<string, Record<string, PreviewProps>> {
+  const result: Record<string, Record<string, PreviewProps>> = {};
+  for (const batch of batches) {
+    for (const [category, components] of Object.entries(batch)) {
+      result[category] = { ...result[category], ...components };
+    }
+  }
+  return result;
+}
+
+const allData = mergeBatches(
+  batch1, batch2, batch3, batch4, batch5,
+  batch6, batch7, batch8, batch9, batch10,
+);
 
 /* ------------------------------------------------------------------ */
 /*  Public API                                                         */
