@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prebuild": "npx tsx scripts/generate-index.ts",
+    "prebuild": "npx tsx scripts/generate-index.ts && npx tsx scripts/generate-dep-map.ts",
     "generate-index": "npx tsx scripts/generate-index.ts",
     "dev": "next dev",
     "build": "next build",
