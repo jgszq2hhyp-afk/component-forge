@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { notFound } from "next/navigation";
 import { getPreviewProps } from "@/lib/preview-data";
+import { PreviewErrorBoundary } from "@/components/preview-error-boundary";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
@@ -72,7 +73,9 @@ export default async function PreviewPage({
     }
     return (
       <div style={{ backgroundColor: "var(--background)", minHeight: "100vh" }}>
-        <Component {...props} />
+        <PreviewErrorBoundary name={name} category={category}>
+          <Component {...props} />
+        </PreviewErrorBoundary>
       </div>
     );
   } catch {
